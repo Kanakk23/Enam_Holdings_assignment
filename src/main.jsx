@@ -39,6 +39,8 @@ import "@fontsource/ibm-plex-sans/latin-400.css";
 import "@fontsource/ibm-plex-sans/latin-500.css";
 import "@fontsource/ibm-plex-sans/latin-600.css";
 import "./style.css";
+import { FinancialAnalysis, RecordEvidence } from "./finance-ui.jsx";
+import { sourcePassage } from "./finance.mjs";
 const Icon = ({ as: C, ...p }) => <C size={18} strokeWidth={1.7} {...p} />;
 const stored = (key, fallback) => {
   try {
@@ -128,6 +130,11 @@ function App() {
       asOf: null,
       errors: [],
     }),
+    [financeSelections, setFinanceSelections] = useState({}),
+    [localFacts, setLocalFacts] = useState(() => stored("finn-facts", [])),
+    [localGuidance, setLocalGuidance] = useState(() =>
+      stored("finn-guidance", []),
+    ),
     [tab, setTab] = useState("brief"),
     [view, setView] = useState(null),
     [query, setQuery] = useState(""),
@@ -186,6 +193,40 @@ function App() {
       localStorage.setItem("finn-threshold", JSON.stringify(threshold));
     } catch {}
   }, [threshold]);
+  const saveRecord = (kind, record) => {
+    const setter = kind === "figure" ? setLocalFacts : setLocalGuidance;
+    const key = kind === "figure" ? "finn-facts" : "finn-guidance";
+    setter((prev) => {
+      const next = [...prev, record];
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        setError(
+          "The record is available for this session, but browser storage is full.",
+        );
+      }
+      return next;
+    });
+  };
+  const removeRecord = (kind, id) => {
+    const setter = kind === "figure" ? setLocalFacts : setLocalGuidance;
+    const key = kind === "figure" ? "finn-facts" : "finn-guidance";
+    setter((prev) => {
+      const next = prev.filter((r) => r.id !== id);
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+  const factEvidence = (record) => {
+    const passage = sourcePassage(record, data.documents);
+    if (!passage) {
+      setError("The original passage is unavailable.");
+      return;
+    }
+    evidence(passage);
+  };
   const open = (v) => {
     stack.current.push({ view, scroll: window.scrollY });
     setView(v);
@@ -497,15 +538,22 @@ function App() {
                 {d.ticker} <span>PDF page {p.page}</span>
               </div>
               <p className="source-note">
-                Exact extracted text. PDF layout and table columns may differ;
-                verify numerical interpretations in the original document.
+                Source excerpt. PDF layout and table columns may differ; verify
+                numerical interpretations in the original document.
               </p>
+              {p.section && <p className="source-section">{p.section}</p>}
               <blockquote>{p.text}</blockquote>
             </div>
             <p className="subtle">
               Retrieved {d.retrievedAt?.slice(0, 10)} · Reporting period{" "}
               {d.period}. This archived document is not a current filing alert.
             </p>
+            <RecordEvidence
+              key={d.id + "-" + p.page}
+              document={d}
+              passage={p}
+              onSave={saveRecord}
+            />
           </>
         ) : (
           <p>
@@ -1143,9 +1191,35 @@ function App() {
                       {research.answer && (
                         <div className="answer">{research.answer}</div>
                       )}
+                      <FinancialAnalysis
+                        key={research.ticker}
+                        ticker={research.ticker}
+                        facts={[...(data.facts || []), ...localFacts]}
+                        guidance={[...(data.guidance || []), ...localGuidance]}
+                        documents={data.documents}
+                        onSource={factEvidence}
+                        onRemove={removeRecord}
+                        context={financeSelections[research.ticker] || {}}
+                        onContext={(value) =>
+                          setFinanceSelections((prev) => ({
+                            ...prev,
+                            [research.ticker]: {
+                              ...prev[research.ticker],
+                              ...value,
+                            },
+                          }))
+                        }
+                      />
                       {research.documents?.length > 0 && (
                         <PersonStrip t={research.ticker} />
                       )}{" "}
+                      {!research.passages?.length &&
+                        research.documents?.length > 0 && (
+                          <p className="notice">
+                            No matching passage was found for this question. Try
+                            a broader term or index another original report.
+                          </p>
+                        )}
                       {research.passages?.map((p, i) => (
                         <button
                           className="passage-preview"
@@ -1170,9 +1244,9 @@ function App() {
                       <div className="notice">
                         <Info size={17} />
                         <span>
-                          Historical source coverage only. Explicit guidance and
-                          comparable actuals have not yet been verified; no
-                          delivery verdict is inferred.
+                          Financial conclusions use the reviewed records shown
+                          above. Missing metrics and open target periods remain
+                          unresolved.
                         </span>
                       </div>
                     </>

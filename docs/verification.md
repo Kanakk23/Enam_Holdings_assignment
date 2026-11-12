@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-`npm test`: 17 deterministic checks passed. They cover missing/negative growth bases, volume baselines, timestamp windows, preserved routine disclosures, threshold changes, synthetic colleague overlap constraints, ticker validation, discovery excluding summaries, proxy URL restrictions, API malformed/missing inputs, exact-passage provenance, and strict finite snapshot JSON.
+`npm test`: 36 checks pass, including 3,300 generated property cases. The original 17 checks cover missing/negative growth bases, volume baselines, timestamp windows, preserved routine disclosures, threshold changes, synthetic colleague overlap constraints, ticker validation, discovery excluding summaries, proxy URL restrictions, API malformed/missing inputs, exact-passage provenance, and strict finite snapshot JSON.
 
 `npm run build`: Vite production client and a standalone Worker ESM build. PDF.js is a lazy chunk; IBM Plex is self-hosted. The PDF worker is fetched only for PDF indexing.
 
@@ -35,11 +35,26 @@ No physical iPhone/Android, assistive-technology user study or exhaustive access
 | --- | --- | --- |
 | Push | Window/company filter changes records; priority reasons are visible; routine records can be expanded; review status persists | Cached, bounded source coverage; no background notification delivery |
 | EOD trigger | Changing thresholds changes qualifying signals with a displayed reason/session | Last complete available session, not intraday monitoring |
-| Pull | Company question retrieves linked original passages; opening a passage preserves document/page identity | Extractive evidence, not verified financial analysis |
+| Pull | Company question retrieves original passages; reviewed financial records support source-linked arithmetic and guidance comparisons | Financial coverage depends on reviewed records; no automatic table extraction or enabled model synthesis |
 | Unseen symbol | Valid new ticker triggers the same discovery and PDF extraction pipeline | Source must be accessible and text-readable; scans require OCR |
 | Network | Company/sector matches appear inside research and filing details; a known/inferred path exposes role-date evidence | Entire fixture is synthetic; overlap never confirms acquaintance |
 | Source | Original URL, period, page and retrieval date are reachable and Back retains context | Original layout governs table interpretation |
 
 ## Remaining work before a strong final challenge submission
 
-Add source-verified quarterly metrics and guidance comparisons; evaluate concise synthesis on unseen and conflicting documents; replace bounded filing-directory coverage with a complete exchange ingestion path; add a refresh/deploy cadence; and prepare the requested covering note and original build-history material. The repository and preview are implementation milestones, not a claim that every challenge opportunity has been completed.
+Extend the reviewed metrics to automated extraction and additional companies; evaluate concise synthesis on unseen and conflicting documents; replace bounded filing-directory coverage with a complete exchange ingestion path; add a refresh/deploy cadence; and prepare the requested covering note and original build-history material. The repository and preview are implementation milestones, not a claim that every challenge opportunity has been completed.
+
+
+## Financial extension verification — November 13, 2026
+
+The extension adds generated-input checks for reporting-unit equivalence, common-scale invariance of growth, identity comparisons, period-offset roundtrips, and order-independent conflict detection. Across these properties, 3,300 generated cases run per suite execution. Regression cases cover non-positive bases, reported/adjusted mismatches, incompatible accounting/currency/periods, rounded figures, invalid dates, missing source IDs and long repeating calculated decimals.
+
+Every reviewed seed value and guidance bound is checked against its selected source excerpt, document identity and page range. A completed FY26 constant-currency guidance range resolves to a matched annual management-reported actual. FY27 targets remain open; margin guidance with unclear adjustment treatment is not judged.
+
+`node scripts/verify-finance-render.mjs` checks server-rendered output for quarterly figures and calculated changes, annual consolidated totals, an adjusted-period comparison, source-linked guidance states, the unseen-company empty state and the evidence form. This is not a browser interaction test. The production Worker artifact is also checked with `scripts/verify-build.mjs`.
+
+The latest browser attempt was rejected by automatic approval review because the session usage limit was reached. No alternate browser or headless workaround was used. The previous prototype's browser checks remain historical evidence only; the new financial layouts need a fresh visual and interaction pass.
+
+Live model synthesis remains disabled: there is no configured model key. No paid API call or live model quality evaluation was performed.
+
+For the updated phone demo, open Research → INFY. Inspect Q2 FY27, open a change and its sources, then select FY26 / Ind AS to inspect annual totals. Compare reported versus adjusted Q4 FY26 margins and the four-call revenue-guidance ledger. Open a source and demonstrate the generic reviewed-record form. The selected period and basis should be retained on return.

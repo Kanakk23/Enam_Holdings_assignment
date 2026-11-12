@@ -36,4 +36,15 @@ Contact matching is deterministic: same company, then sector, with explicit rela
 
 ## Next work
 
-The largest product gap is verified financial interpretation. Add structured extraction with period/unit/consolidation schemas, reconciled arithmetic and source-layout validation before showing comparison tables or delivery verdicts. A second gap is complete, regularly refreshed exchange coverage. A third is the model evaluation needed before turning concise synthesis on by default. These should precede more screen types.
+The remaining gaps are automatic financial extraction beyond the reviewed sample, complete refreshed exchange coverage, and live model evaluation. The comparison workspace now calculates from source-reviewed inputs and refuses incompatible or unresolved records. These data-quality improvements should precede more screen types.
+
+
+## Financial comparison extension
+
+The research screen adds a statement table rather than metric tiles. A period selector and explicit statement/consolidation/currency controls establish the comparison context. Values link to source pages; QoQ/YoY changes disclose their formulas and evidence pairs. On narrow screens each metric becomes a two-column row with the value above the two change labels. There is no decorative chart.
+
+The guidance history uses four dated rows. Each separates the quarter in which management spoke from the period the target covers. Open target years remain unjudged. A completed range receives a result only when metric, period, currency, consolidation, statement basis and adjustments match. Unqualified adjustment treatment stays unresolved.
+
+The source reader offers a collapsed evidence-recording form. It requires literal number support and an explicit source check; it is a review workflow, not an implication that the model verified the number. Comparison controls are retained when opening evidence and returning. Short reviewed table-cell extracts identify their omitted columns and link to the full original layout.
+
+This extension retains the existing type, colour and spacing system. Server rendering was checked. A fresh visual/mobile browser pass is still needed because automatic approval review blocked the browser session at its usage limit.

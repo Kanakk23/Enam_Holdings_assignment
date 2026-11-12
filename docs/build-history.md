@@ -12,3 +12,10 @@ This is a concise engineering log of this implementation session, not an edited 
 8. Documented source limits, optional model setup, reproduction steps and remaining financial-analysis work. Packaged the build and source for the private preview and assignment repository.
 
 No real financial data, biographies or source passages were generated to fill missing evidence. No live model call or paid API subscription was used. See verification notes for the exact checks and any remaining limits.
+
+
+## Financial extension
+
+Recovered the source after workspace maintenance, then restored the unfinished financial work from retained original PDFs and reviewed-source manifests. Added decimal calculations, strict comparison contexts, source-bound review entry, guidance timing/basis checks and a reviewed Infosys cache. Shared the retrieval logic between client and server and preserved comparison controls across source navigation.
+
+Generated-input and source-cache checks passed. Server rendering exposed a long-decimal formatting failure that ordinary arithmetic tests had missed; added a focused regression and corrected the renderer. Browser verification was blocked by automatic approval review at the usage limit, so no new visual pass is claimed. Live AI is still unconfigured.

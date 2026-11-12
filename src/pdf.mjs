@@ -67,6 +67,9 @@ export async function indexPdf(source, onProgress) {
     partial: pageCount > total,
     period: source.period || "See original document",
     retrievedAt: new Date().toISOString(),
-    passages: passages.sort((a, b) => b.score - a.score).slice(0, 24),
+    passages: passages
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 24)
+      .map((p, i) => ({ ...p, id: `${sha256.slice(0, 16)}:${p.page}:${i}` })),
   };
 }

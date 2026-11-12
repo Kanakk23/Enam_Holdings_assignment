@@ -24,7 +24,7 @@ The build produces a self-contained Worker ESM at `dist/server/index.js`. It ser
 
 - **Push:** 18-company portfolio, a cached set of recent BSE filing links, an exact rolling 24-hour window, company/date filters, transparent rule-based prioritisation, collapsed routine disclosures and persisted review status.
 - **Triggered EOD signals:** configurable close-to-close move and volume multiple, with the current observation excluded from the prior 20-session volume baseline. Missing closes are excluded; prices show their actual session.
-- **Pull:** indexed original annual reports and earnings-call transcripts, scoped questions, exact retrieved passages, PDF page references and original links. Additional research companies are Coforge, Persistent Systems and Tata Consumer Products.
+- **Pull:** original annual reports and earnings-call transcripts, scoped evidence retrieval, PDF-page references and original links. Infosys now includes reviewed quarterly/annual figures, calculated comparable-period changes, separate reported/adjusted views, and a four-call guidance ledger. Additional research companies are Coforge, Persistent Systems and Tata Consumer Products.
 - **Unseen tickers:** enter a valid NSE symbol. FINN discovers original annual-report and raw-transcript links from Screener's document directory, then downloads a selected primary PDF through a restricted proxy and extracts its text in the browser. No ticker-to-answer lookup table. Availability depends on the original publisher.
 - **Network:** 36 clearly synthetic profiles, company/sector experience matching within research and filing details, direct network search, and explicit known-contact versus inferred colleague-overlap paths.
 - **Trust:** historical report periods, publication/indexing distinction, source retrieval date, incomplete and unavailable-source states, and an explicitly labelled extractive default.
@@ -51,7 +51,7 @@ The URL above is a usage placeholder, not a real source. On Windows, use `.venv\
 
 ## Free operation and optional model
 
-The default product makes **zero model API calls**. React, Vite, Lucide, PDF.js, IBM Plex Sans, requests, Beautiful Soup, pypdf and yfinance are free/open-source dependencies. Public sites can restrict access or change markup. There is no Firecrawl dependency, paid search API or paid market-data feed.
+The default product makes **zero model API calls**. React, Vite, Lucide, PDF.js, IBM Plex Sans, decimal.js, requests, Beautiful Soup, pypdf and yfinance are free/open-source dependencies. Public sites can restrict access or change markup. There is no Firecrawl dependency, paid search API or paid market-data feed.
 
 An optional Gemini synthesis adapter is implemented server-side but disabled. It requires both `ENABLE_FREE_MODEL=true` and `GEMINI_API_KEY`. Use it only with a Gemini free-tier project with no billing attached. FINN cannot inspect your provider billing settings. Free quota depends on the project/model; a quota or network failure falls back to exact excerpts. No model key was provided and no live synthesis call was made during this build. See [Google's current pricing](https://ai.google.dev/gemini-api/docs/pricing) and [rate-limit documentation](https://ai.google.dev/gemini-api/docs/rate-limits). Search grounding is not used.
 
@@ -60,11 +60,28 @@ No paid plan or service was purchased. Hosting availability is subject to the ac
 ## Deliberate limits
 
 - The filing directory snapshot contains up to five recent links per portfolio company, not an exhaustive exchange feed. Some BSE PDF requests returned HTTP 403 in this environment. FINN retains the original link and reports download failures.
-- Extraction preserves source text but does not verify financial table column alignment. It does not produce a verified quarterly Revenue/EBITDA/PBT/PAT comparison, investment verdict, or four-quarter promises-versus-delivery score.
-- The initial annual reports for Infosys and TCS are historical 2024–25 documents. Their period is visible, and they are not presented as the latest results.
+- The initial financial comparison cache contains 37 manually reviewed Infosys records and eight explicit guidance statements. The generic evidence form supports additional companies; automatic financial table extraction is not implemented. Missing EBITDA/PBT/PAT figures remain gaps. There is no investment verdict or composite management score.
+- Infosys includes its 2025–26 annual report and five earnings-call transcripts covering Q2 FY26 through Q2 FY27. Older 2024–25 Infosys/TCS reports remain clearly dated. Source coverage is historical and bounded.
 - Browser PDF indexing accepts up to 25 MB and reads at most 300 pages. Python ingestion also limits downloads to 25 MB. Scanned PDFs need a later OCR step. Retrieval is lexical and can miss relevant passages.
 - Network records are fictional; sector experience is a reason to investigate, not evidence that a contact knows current company facts or unpublished information.
 - Data and preferences are browser-local. This is a single-user prototype, without a shared account database or scheduled notifications.
 - Live model quality has not been evaluated. Deterministic tests verify retrieval/provenance and error handling, not whether a model's financial analysis is correct.
+
+## Financial evidence workflow
+
+Open **Research → INFY** for the seeded example. Choose a reporting period and statement basis. Each figure links to its original page; each change expands to show its formula and the two sources. The annual Ind AS table separates total profit after tax from profit attributable to owners. The quarterly commentary is labelled `Issuer commentary`, not silently assigned an accounting standard.
+
+The guidance ledger compares each target against a reviewed actual for that same period and basis. Open years, missing actuals, rounded values, unclear adjustments and conflicting records withhold a delivery conclusion. A lower guidance range is not an investment recommendation.
+
+For another company, open an original passage and expand **Record a figure or guidance**. Enter the literal value, units, reporting/target period, consolidation and statement basis, then confirm the source check. Records persist in that browser. Values absent from the selected passage are rejected. The comparison calendar currently assumes a March financial year-end.
+
+The reviewed seed is an input cache, separate from calculation logic. Re-import or validate it with:
+
+```sh
+node scripts/import-reviewed-evidence.mjs
+node scripts/verify-finance-render.mjs
+```
+
+`verify-finance-render` checks server-rendered markup and data presentation; it is not browser or visual verification. The latest browser check was unavailable because automatic approval review hit the session usage limit.
 
 See [design decisions](docs/design.md), [data provenance](docs/data-provenance.md), [verification and demo](docs/verification.md), and [build history](docs/build-history.md).

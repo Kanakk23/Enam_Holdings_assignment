@@ -20,3 +20,16 @@ Python extraction selects up to 18 financially relevant page excerpts per docume
 Research defaults to lexical passage retrieval. Optional model synthesis receives only numbered source passages and the question, with instructions to cite claims and avoid outside company knowledge. Prompt instructions are not a factual-verification guarantee; live model evaluation is still required.
 
 Browser imports are saved locally, with a maximum of eight imported documents. No personal contacts or uploaded private documents are sent to a model in this prototype. The PDF proxy accepts only a source URL rediscovered for the requested company. It rejects non-public-form HTTPS URLs and checks redirects and a 25 MB bound. This is not a general-purpose URL fetch endpoint.
+
+
+## Reviewed financial inputs
+
+`scripts/reviewed-evidence.json` contains 37 source-reviewed Infosys records, eight explicit guidance ranges and six issuer document manifests. It is a cached, reviewed dataset. `src/finance.mjs` contains company-independent decimal arithmetic, currency-unit normalization, period matching, conflict detection and guidance assessment. No ticker-specific financial-answer branch is used.
+
+The annual table was checked against the original report layout (PDF page 33, printed page 64), including standalone versus consolidated columns and total after-tax profit versus attributable profit. Its short numeric extracts reproduce selected cells; omitted growth columns are identified. Five transcripts provide management-reported quarterly and annual figures. The last four calls supply the guidance history; the older Q2 FY26 call supplies comparison evidence.
+
+Quarterly transcript figures use the `Issuer commentary` statement basis. That label does not certify IFRS/Ind AS reconciliation. The annual financial table uses its explicitly stated Ind AS basis. Adjusted and reported figures remain distinct, and the labour-code treatment is identified in the relevant passage metadata. Coarsely rounded source figures withhold precise growth calculations.
+
+`node scripts/import-reviewed-evidence.mjs` validates source hashes/identities, document types, page references, literal numeric support, periods and review metadata before importing the cache. These checks support provenance; human review remains responsible for the meaning and column selection. Browser-entered records are separately labelled `user_checked` and retained locally until removed or browser storage is cleared. The comparison calendar currently supports March year-end fiscal periods.
+
+Client and server retrieval share the same implementation. It considers source section metadata and report dates, withholds unrelated matches and limits repeated passages from one document. An index date does not make an old reporting period current.

@@ -1,3 +1,4 @@
+import { passagesFor } from "../src/retrieval.mjs";
 import { discover, download } from "./sources.mjs";
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -74,20 +75,7 @@ export default {
       const question = String(
         body.question || "Growth, margins and cash generation",
       ).slice(0, 600);
-      const terms = question.toLowerCase().match(/[a-z]{3,}/g) || [];
-      const passages = documents
-        .flatMap((document) =>
-          document.passages.map((p) => ({
-            ...p,
-            document,
-            score: terms.reduce(
-              (s, w) => s + (p.text.toLowerCase().includes(w) ? 1 : 0),
-              0,
-            ),
-          })),
-        )
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 4);
+      const passages = passagesFor(documents, question);
       if (!env.GEMINI_API_KEY || env.ENABLE_FREE_MODEL !== "true")
         return json({
           ticker,

@@ -148,50 +148,7 @@ export function filterEvents(
         b.date.localeCompare(a.date),
     );
 }
-export function passagesFor(documents, query) {
-  const ignored = new Set([
-    "what",
-    "the",
-    "and",
-    "did",
-    "does",
-    "say",
-    "about",
-    "primary",
-    "documents",
-    "company",
-    "reported",
-    "with",
-    "from",
-    "that",
-    "this",
-    "how",
-  ]);
-  const words = (query.toLowerCase().match(/[a-z]{3,}/g) || []).filter(
-    (w) => !ignored.has(w),
-  );
-  const ranked = documents
-    .flatMap((d) =>
-      d.passages.map((p) => ({
-        ...p,
-        document: d,
-        score: words.reduce(
-          (n, w) => n + (p.text.toLowerCase().includes(w) ? 1 : 0),
-          0,
-        ),
-      })),
-    )
-    .sort((a, b) => b.score - a.score);
-  const used = new Map();
-  return ranked
-    .filter((p) => {
-      const count = used.get(p.document.id) || 0;
-      if (count >= 2) return false;
-      used.set(p.document.id, count + 1);
-      return true;
-    })
-    .slice(0, 4);
-}
+export { passagesFor } from "./retrieval.mjs";
 export function connectionFor(person, all = people) {
   if (person.relationship === "Known demo contact")
     return { kind: "known", path: ["You", person.name] };
