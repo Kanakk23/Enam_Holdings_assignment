@@ -1,0 +1,21 @@
+{
+  "name": "finn",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build && node scripts/build-worker.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "^0.468.0",
+    "pdfjs-dist": "5.4.624",
+    "@fontsource/ibm-plex-sans": "5.2.8"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
