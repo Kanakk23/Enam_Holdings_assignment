@@ -23,3 +23,8 @@ Generated-input and source-cache checks passed. Server rendering exposed a long-
 ## Investor walkthrough revision
 
 Reviewed both assignment PDFs and walked through desktop and a 390-pixel iframe. Found an owner-only deployment gate, generic brief prompts, a BSE 403, short evidence fragments, excessive preamble, literal-only network search and a misplaced modal. Added deterministic evidence-led findings, full original-page context, question-aware contacts, separate open/completed guidance views, primary-PDF recovery, visible dates/coverage and per-source EOD refresh. Original build-session exports must still accompany the submission; this log is not a reconstructed transcript. Kept repository and preview permissions unchanged.
+
+
+## API connection update
+
+Added working Groq/OpenRouter/Gemini request adapters and an in-app AI setup dialog after the missing connection path was identified. Added a short provider connection check, current-tab credential handling, original-passage synthesis with source-reference buttons, free-only OpenRouter model selection, bounded requests and safe extractive fallback. Fixed local environment forwarding. Extended API contract tests and server-rendered UI checks. The browser URL policy blocked fresh interactive verification; no valid user key or live model evaluation is claimed.

@@ -53,7 +53,15 @@ The URL above is a usage placeholder, not a real source. On Windows, use `.venv\
 
 The default product makes **zero model API calls**. React, Vite, Lucide, PDF.js, IBM Plex Sans, decimal.js, requests, Beautiful Soup, pypdf and yfinance are free/open-source dependencies. Public sites can restrict access or change markup. There is no Firecrawl dependency, paid search API or paid market-data feed.
 
-An optional Gemini synthesis adapter is implemented server-side but disabled. It requires both `ENABLE_FREE_MODEL=true` and `GEMINI_API_KEY`. Use it only with a Gemini free-tier project with no billing attached. FINN cannot inspect your provider billing settings. Free quota depends on the project/model; a quota or network failure falls back to exact excerpts. No model key was provided and no live synthesis call was made during this build. See [Google's current pricing](https://ai.google.dev/gemini-api/docs/pricing) and [rate-limit documentation](https://ai.google.dev/gemini-api/docs/rate-limits). Search grounding is not used.
+**Connect a key in the website:** open **AI setup** in the top bar → choose **Groq**, **OpenRouter** or **Gemini** → paste the key → **Test & connect**. The connection check makes one short completion request. Then run a company question in Research. For a newly imported PDF, choose **Synthesize indexed evidence** after indexing finishes. AI answers include buttons that open the numbered source passages.
+
+The key remains in React memory in the current tab, passes over HTTPS through FINN's server to the selected provider, and is not saved to localStorage, sessionStorage, a database or Git. Reloading clears it. Closing the setup dialog preserves the connected key until reload or **Disconnect AI**. Questions and up to four retrieved primary-source passages are sent to that provider; synthetic network profiles are excluded. Do not paste a key into the chat, source files, or a `VITE_` variable.
+
+Groq defaults to `openai/gpt-oss-120b`, with `openai/gpt-oss-20b` and `llama-3.3-70b-versatile` also available. OpenRouter defaults to `openrouter/free`; the server rejects models that are neither that free router nor a `:free` model. Gemini retains `gemini-3.1-flash-lite`. Use Groq on its free plan, or Gemini on a free-tier project without billing. FINN cannot inspect account billing settings or guarantee continuing free quotas. There is no automatic retry, provider switch, paid fallback, model search or grounding request. Timeouts, quota/authentication failures, incomplete responses and missing/invalid citation references fall back to exact passages. Citation checks validate reference numbers, not whether a claim is entailed by its source.
+
+For an operator-managed server key, copy `.env.example` to the ignored `.env.local`, set `ENABLE_FREE_MODEL=true`, `AI_PROVIDER`, `AI_MODEL`, and the matching `GROQ_API_KEY`, `OPENROUTER_API_KEY` or `GEMINI_API_KEY`; restart the local server. Local values are now passed to the development Worker only. For hosted deployment, configure these names as server runtime variables/secrets and redeploy; a local `.env.local` does not configure the hosted site. No production key is configured by this commit. Existing Gemini-only environment setups remain supported when `AI_PROVIDER` is absent.
+
+Provider references: [Groq API and limits](https://console.groq.com/docs/rate-limits), [OpenRouter free models](https://openrouter.ai/collections/free-models), [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing). No valid key was provided and no authenticated live synthesis or model-quality evaluation is claimed.
 
 No paid plan or service was purchased. Hosting availability is subject to the account's existing Sites access. The app can run locally without that hosting service.
 
@@ -82,7 +90,7 @@ node scripts/import-reviewed-evidence.mjs
 node scripts/verify-finance-render.mjs
 ```
 
-`verify-finance-render` checks server-rendered markup and data presentation; it is not browser or visual verification. The latest browser check was unavailable because automatic approval review hit the session usage limit.
+`verify-finance-render` checks server-rendered markup and data presentation; it is not browser or visual verification. See the dated verification notes for the subsequent investor walkthrough and API setup checks.
 
 See [design decisions](docs/design.md), [data provenance](docs/data-provenance.md), [verification and demo](docs/verification.md), and [build history](docs/build-history.md).
 

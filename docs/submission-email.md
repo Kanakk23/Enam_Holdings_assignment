@@ -12,7 +12,7 @@ AI build sessions: [Add original exports/share links before submission]
 
 The prototype includes an 18-company brief with configurable EOD thresholds, primary-document discovery for arbitrary NSE symbols, source-linked comparisons and guidance assessment, and a clearly synthetic network. The comparison and evidence-review logic is generic; the reviewed financial cache is currently concentrated on Infosys. Additional company sources are included, with narrower coverage.
 
-I chose deterministic decimal calculations and explicit basis/period matching for numerical claims. The opening findings state supported movements without inventing causes. Optional model synthesis is disabled until a free-tier key is configured and evaluated. No paid inference calls were made.
+I chose deterministic decimal calculations and explicit basis/period matching for numerical claims. The opening findings state supported movements without inventing causes. Optional Groq, OpenRouter and Gemini synthesis connects through AI setup using a tab-only key, or a server runtime secret. It sends only the question and retrieved primary-source passages. OpenRouter paid routes are blocked; provider failures retain the original passages. No valid key or live model-quality evaluation was available during the build, and no paid inference calls were made.
 
 React and PDF.js run in the browser; a Worker serves the app and restricts primary-PDF retrieval to discovered source URLs. Yahoo EOD data and exchange-link metadata refresh on demand in bounded requests, with five-minute server caching. Partial failures retain previous observations and remain visible. Filings are a bounded directory sample, not a complete exchange feed.
 

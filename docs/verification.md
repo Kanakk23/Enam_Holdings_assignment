@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-`npm test`: 36 checks pass, including 3,300 generated property cases. The original 17 checks cover missing/negative growth bases, volume baselines, timestamp windows, preserved routine disclosures, threshold changes, synthetic colleague overlap constraints, ticker validation, discovery excluding summaries, proxy URL restrictions, API malformed/missing inputs, exact-passage provenance, and strict finite snapshot JSON.
+`npm test`: 66 checks pass, including 3,300 generated property cases. The original 17 checks cover missing/negative growth bases, volume baselines, timestamp windows, preserved routine disclosures, threshold changes, synthetic colleague overlap constraints, ticker validation, discovery excluding summaries, proxy URL restrictions, API malformed/missing inputs, exact-passage provenance, and strict finite snapshot JSON.
 
 `npm run build`: Vite production client and a standalone Worker ESM build. PDF.js is a lazy chunk; IBM Plex is self-hosted. The PDF worker is fetched only for PDF indexing.
 
@@ -19,7 +19,7 @@ Python ingestion was run against real issuer PDFs and all 18 EOD symbols. BSE-li
 - Generic discovery for an unseeded HCLTECH symbol returned original report/transcript choices. Those BSE-hosted documents are subject to publisher access limits; no unsupported company answer was filled in.
 - Original Coforge October transcript downloaded and indexed through PDF.js in the browser, then appeared as page-specific exact excerpts. This verifies actual client PDF parsing, not a simulated progress state.
 
-No physical iPhone/Android, assistive-technology user study or exhaustive accessibility certification was performed. No live model call or statistical model regression verdict is claimed. The synthesis adapter remains disabled because no user-provided free-tier key or model-evaluation baseline was available.
+No physical iPhone/Android, assistive-technology user study or exhaustive accessibility certification was performed. No live model call or statistical model regression verdict is claimed. The original synthesis adapter was disabled because no user-provided free-tier key or model-evaluation baseline was available. See the API connection update below for the current setup.
 
 ## Three-minute phone demo
 
@@ -35,7 +35,7 @@ No physical iPhone/Android, assistive-technology user study or exhaustive access
 | --- | --- | --- |
 | Push | Window/company filter changes records; priority reasons are visible; routine records can be expanded; review status persists | Cached, bounded source coverage; no background notification delivery |
 | EOD trigger | Changing thresholds changes qualifying signals with a displayed reason/session | Last complete available session, not intraday monitoring |
-| Pull | Company question retrieves original passages; reviewed financial records support source-linked arithmetic and guidance comparisons | Financial coverage depends on reviewed records; no automatic table extraction or enabled model synthesis |
+| Pull | Company question retrieves original passages; reviewed financial records support source-linked arithmetic and guidance comparisons | Financial coverage depends on reviewed records; no automatic table extraction; model synthesis requires a valid connected key |
 | Unseen symbol | Valid new ticker triggers the same discovery and PDF extraction pipeline | Source must be accessible and text-readable; scans require OCR |
 | Network | Company/sector matches appear inside research and filing details; a known/inferred path exposes role-date evidence | Entire fixture is synthetic; overlap never confirms acquaintance |
 | Source | Original URL, period, page and retrieval date are reachable and Back retains context | Original layout governs table interpretation |
@@ -66,3 +66,12 @@ For the updated phone demo, open Research → INFY. Inspect Q2 FY27, open a chan
 The phone walkthrough verified that margins/cash comparisons appear on the first viewport, their links open original-page text, completed commitments exclude unfinished targets, and the previously failing natural network query returns relevant experience. A network query is a lexical/synonym match, not general semantic reasoning.
 
 The live portfolio refresh completed all 18 market and filing checks in this browser. A fresh DIXON attempt discovered original documents, attempted two PDF imports, then exposed the publisher 403 and local-copy recovery controls. Unseen-company financial extraction was not completed. Browser review caught a topic-ranking bug that could suggest an unrelated sector for an unknown ticker; the role bonus now requires a company/sector match and a regression test covers it.
+
+
+## API connection update
+
+Groq, OpenRouter and Gemini now share a bounded server-side synthesis adapter. AI setup accepts a password-masked key, tests one short completion, and retains a successful session configuration only in React memory. The key is not persisted to browser storage or rendered markup. Disconnect removes the session key; reload clears it. Operator environment secrets remain an alternative, and the local development server now forwards its non-client-prefixed environment values.
+
+The 23 new deterministic integration tests exercise fixed provider destinations, authentication headers, bounded prompts/tokens, absence of external tools, free-only OpenRouter routing, safe authentication/quota/model/network errors, no retry or paid fallback, empty/truncated/invalidly cited output, request limits, same-origin checks and credential redaction. They also verify default zero-call behaviour, source preservation after failure, and unseen browser-indexed evidence with explicit unverified-text provenance. The entire suite has 66 checks, including the existing 3,300 generated financial cases. Provider responses in these integration tests are controlled fixtures; they do not establish real model accuracy.
+
+`node scripts/verify-model-render.mjs` checks server-rendered password controls, provider choices, no rendered credential, session/privacy copy and citation buttons. `node scripts/verify-build.mjs` exercises the standalone production Worker. A fresh browser inspection of the API setup was blocked by the browser URL security policy; no alternate browser path was used. No valid user key was available for authenticated live completion or statistical model comparison. These remain explicit verification limits.

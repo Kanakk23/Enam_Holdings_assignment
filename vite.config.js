@@ -1,7 +1,11 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { readFile } from "node:fs/promises";
 import worker from "./server/worker.mjs";
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Only the development server receives these values. Never use VITE_ for secrets.
+  const values = loadEnv(mode, process.cwd(), "");
+  const localEnv = Object.fromEntries(["ENABLE_FREE_MODEL", "AI_PROVIDER", "AI_MODEL", "GROQ_API_KEY", "OPENROUTER_API_KEY", "GEMINI_API_KEY"].map(key => [key, values[key]]));
+  return {
   build: { outDir: "dist/client" },
   plugins: [
     {
@@ -26,6 +30,7 @@ export default defineConfig({
               ...(body.length ? { body } : {}),
             });
             const response = await worker.fetch(request, {
+              ...localEnv,
               ASSETS: {
                 fetch: async () =>
                   new Response(await readFile("public/data/seed.json")),
@@ -49,4 +54,5 @@ export default defineConfig({
       },
     },
   ],
+};
 });
