@@ -2569,42 +2569,7 @@ dialog {
   }
 }
 
-/* AI connection uses the same quiet controls as the evidence workspace. */
-.ai-setup-button {
-  min-height: 44px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #fff;
-  color: #17212b;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  font: inherit;
-  font-size: 13px;
-}
-.ai-connected-dot { width: 7px; height: 7px; border-radius: 50%; background: #387453; }
-.ai-dialog { padding: 24px; }
-.ai-dialog .section-line { margin-bottom: 8px; }
-.ai-dialog h2 { font-size: 22px; }
-.ai-dialog p { line-height: 1.55; }
-.ai-dialog select, .ai-dialog input {
-  width: 100%; min-height: 44px; border: 1px solid var(--line);
-  border-radius: 5px; padding: 9px 11px; font: inherit; color: inherit; background: #fff;
-  box-sizing: border-box;
-}
-.ai-dialog label { display: block; margin: 14px 0 6px; font-weight: 500; }
-.ai-dialog .subtle { margin: 8px 0 12px; font-size: 13px; }
-.ai-dialog form > .button { width: 100%; justify-content: center; }
-.ai-dialog .ai-status { border-bottom: 1px solid var(--line); padding-bottom: 12px; font-size: 13px; }
-.ai-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
-.ai-research-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; color: var(--muted); font-size: 13px; }
 .model-answer { border-block: 1px solid var(--line); padding: 18px 0; margin: 12px 0; }
 .model-answer h3 { font-size: 19px; }
 .model-answer .answer { white-space: pre-wrap; line-height: 1.75; padding: 0; background: transparent; }
 .inline-citation { display: inline; min-width: 30px; min-height: 44px; padding: 4px; border: 0; background: transparent; color: var(--blue); text-decoration: underline; font: inherit; }
-@media (max-width: 600px) {
-  .ai-setup-button { margin-left: auto; padding: 0 10px; }
-  .ai-dialog { padding: 20px; }
-}

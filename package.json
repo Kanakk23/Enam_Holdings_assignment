@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build && node scripts/build-worker.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "configure:ai": "node scripts/configure-ai.mjs"
   },
   "dependencies": {
     "react": "^19.0.0",

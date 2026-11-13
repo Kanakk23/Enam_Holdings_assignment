@@ -1,6 +1,8 @@
 import { passagesFor } from "../src/retrieval.mjs";
 import { discover, download, refreshTicker, publicUrl } from "./sources.mjs";
-import { ModelError, modelConfig, modelHealth, modelCompletion, synthesize } from "./models.mjs";
+import { ModelError } from "./models.mjs";
+import { createResearchEngine, researchTask } from "./research-engine.mjs";
+const researchEngine = createResearchEngine();
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
@@ -66,23 +68,8 @@ export default {
       if (!valid(t)) return json({ error: "Invalid ticker" }, 400);
       return json(await refreshTicker(t));
     }
-    if (url.pathname === "/api/health")
-      return json({
-        ok: true,
-        ...modelHealth(env),
-      });
-    if (url.pathname === "/api/model/test") {
-      if (request.method !== "POST") return json({ error: "Use POST to test a provider." }, 405);
-      try {
-        const body = await requestJson(request);
-        const config = modelConfig({}, body.ai);
-        if (!config) throw new ModelError("configuration", "Enter a provider and key to connect.", 400);
-        await modelCompletion(config, "Reply with OK only. Do not use tools.", "Connection check.", { test: true });
-        return json({ ok: true, provider: config.provider, model: config.model });
-      } catch (e) {
-        return json({ error: e instanceof ModelError ? e.message : "The connection check failed.", code: e.code || "unavailable" }, e.status || 502);
-      }
-    }
+    if (url.pathname === "/api/health") return json({ ok: true });
+    if (url.pathname.startsWith("/api/model/")) return json({ error: "Not found" }, 404);
     if (url.pathname === "/api/discover" || url.pathname === "/api/document") {
       const ticker = (url.searchParams.get("ticker") || "").toUpperCase();
       if (!valid(ticker))
@@ -119,6 +106,8 @@ export default {
       }
       if (!body || typeof body !== "object" || Array.isArray(body))
         return json({ error: "Expected a JSON object." }, 400);
+      if (Object.keys(body).some(key => !["ticker", "question", "documents"].includes(key)))
+        return json({ error: "Research accepts a ticker, a question and indexed documents." }, 400);
       const ticker = String(body.ticker || "").toUpperCase();
       if (!valid(ticker)) return json({ error: "Invalid NSE ticker" }, 400);
       const seed = await env.ASSETS.fetch(
@@ -142,26 +131,23 @@ export default {
       const question = String(
         body.question || "Growth, margins and cash generation",
       ).slice(0, 600);
-      const passages = passagesFor(documents, question);
+      const passages = passagesFor(documents, question, { limit: researchTask(question) === "reason" ? 8 : 4 });
       const base = {
         ticker, question, documents, passages, mode: "extractive",
         ...(documents.some(d => d.browserSupplied) ? {
           sourceWarning: "Includes text extracted in this browser. The server has not independently verified the PDF's contents or identity.",
         } : {}),
       };
-      try {
-        const config = modelConfig(env, body.ai);
-        if (!config) return json(base);
-        if (!passages.length) return json({ ...base, warning: "No matching primary-source passages were found. No model request was made." });
-        const answer = await synthesize(config, question, passages);
-        return json({ ...base, mode: "model", provider: config.provider, model: config.model, answer });
-      } catch (e) {
-        return json({
-          ...base,
-          warning: e instanceof ModelError ? e.message : "Model unavailable; exact source passages remain accessible.",
-          modelError: e.code || "unavailable",
-        });
-      }
+      const result = await researchEngine.research({
+        ticker, question, passages,
+        scope: request.headers.get("oai-authenticated-user-id") || "owner-private-service",
+      }, env);
+      if (env.AI_LOG_USAGE === "true") console.info(JSON.stringify({
+        event: "research_usage", calls: result.stats.calls, cacheHits: result.stats.cacheHits,
+        reservedTokens: result.stats.reservedTokens, task: result.stats.task, stages: result.stats.stages,
+      }));
+      // Only investor-facing output is returned. Keys, routes, models and budget traces stay on the server.
+      return json({ ...base, ...(result.answer ? { mode: "model", answer: result.answer, answerKind: result.kind } : {}), ...(result.warning ? { warning: result.warning } : {}) });
     }
     return env.ASSETS.fetch(request);
   },

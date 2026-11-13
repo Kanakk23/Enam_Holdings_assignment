@@ -30,3 +30,8 @@ Reviewed both assignment PDFs and walked through desktop and a 390-pixel iframe.
 Added working Groq/OpenRouter/Gemini request adapters and an in-app AI setup dialog after the missing connection path was identified. Added a short provider connection check, current-tab credential handling, original-passage synthesis with source-reference buttons, free-only OpenRouter model selection, bounded requests and safe extractive fallback. Fixed local environment forwarding. Extended API contract tests and server-rendered UI checks. The browser URL policy blocked fresh interactive verification; no valid user key or live model evaluation is claimed.
 
 The production API smoke check exposed a Worker-specific unsupported redirect mode that Node fixtures did not catch. Corrected it to manual redirect handling, added a no-forwarding regression and republished.
+
+
+## Backend-only model routing revision
+
+Reread the supplied complete challenge, especially the efficiency examples on page 4. Removed the prior investor-facing key and provider setup. Moved configuration to server-only environment secrets and added hidden terminal entry for local development. Introduced task-specific Groq/Gemini routes, exact-quote extraction, bounded stronger reasoning, deterministic arithmetic bypass, source/query caches, pending-request coalescing, token reservations and failure cooldowns. Updated tests and submission documentation. Older setup descriptions in this history describe superseded work, not the current product. Live accuracy remains untested without valid keys.

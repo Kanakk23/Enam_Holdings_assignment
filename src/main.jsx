@@ -43,7 +43,7 @@ import { FinancialAnalysis, RecordEvidence } from "./finance-ui.jsx";
 import { ResearchFinding } from "./finding-ui.jsx";
 import { networkMatches, conversationPrompts } from "./investigation.mjs";
 import { sourcePassage } from "./finance.mjs";
-import { AiSetup, ModelAnswer } from "./model-ui.jsx";
+import { ModelAnswer } from "./model-ui.jsx";
 const Icon = ({ as: C, ...p }) => <C size={18} strokeWidth={1.7} {...p} />;
 const stored = (key, fallback) => {
   try {
@@ -160,17 +160,6 @@ function App() {
       stored("finn-threshold", { price: 5, volume: 2 }),
     );
   const [refreshing, setRefreshing] = useState(false);
-  const [ai, setAi] = useState(null);
-  const [aiOpen, setAiOpen] = useState(false);
-  const [serverAi, setServerAi] = useState(null);
-  const aiTrigger = useRef(null);
-  const showAiSetup = () => {
-    aiTrigger.current = document.activeElement;
-    setAiOpen(true);
-  };
-  useEffect(() => {
-    fetch("/api/health").then(r => r.json()).then(setServerAi).catch(() => {});
-  }, []);
   async function refreshPortfolio() {
     setRefreshing(true);
     setError("");
@@ -398,7 +387,7 @@ function App() {
           const r = await fetch("/api/research", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ticker: t, question: prompt, ai, documents: local.filter(d => d.sha256).slice(-8).map(d => ({
+            body: JSON.stringify({ ticker: t, question: prompt, documents: local.filter(d => d.sha256).slice(-8).map(d => ({
               id: d.id, ticker: d.ticker, title: d.title, type: d.type, url: d.url,
               period: d.period, partial: d.partial, userProvided: d.userProvided,
               passages: d.passages.map(p => ({ id: p.id, page: p.page, text: p.text })),
@@ -406,9 +395,9 @@ function App() {
             cache: "no-store",
           });
           result = await r.json();
-          if (!r.ok) throw Error(result.error || "The AI research service is unavailable.");
+          if (!r.ok) throw Error(result.error || "The research note is unavailable.");
         } catch (e) {
-          result = { ticker: t, question: prompt, documents: local, passages: passagesFor(local, prompt), mode: "extractive", warning: e.message || "AI unavailable. Exact source passages remain accessible." };
+          result = { ticker: t, question: prompt, documents: local, passages: passagesFor(local, prompt), mode: "extractive", warning: e.message || "The research note is unavailable. Exact source passages remain accessible." };
         }
         setResearch(
           result?.documents
@@ -788,9 +777,7 @@ function App() {
             <Search size={15} /> Research a company <kbd>⌘ K</kbd>
           </button>
           <span className="user-avatar">KK</span>
-          <button className="ai-setup-button" onClick={showAiSetup}>
-            <span className={ai?.apiKey || (!ai && serverAi?.provider) ? "ai-connected-dot" : ""} /> AI setup
-          </button>
+
         </header>
         <main
           id="main"
@@ -1274,7 +1261,7 @@ function App() {
                           : research.mode === "discovery"
                             ? "DOCUMENT DISCOVERY"
                             : research.mode === "model"
-                              ? "CITED AI RESEARCH"
+                              ? "CITED RESEARCH"
                               : "PRIMARY-SOURCE EXCERPTS"}
                     </span>
                   </div>
@@ -1306,11 +1293,7 @@ function App() {
                         onSource={factEvidence}
                       />
                       <PersonStrip t={research.ticker} />
-                      <div className="ai-research-controls">
-                        <span>{ai?.apiKey ? `AI connected · ${ai.provider}` : ai?.provider === "off" ? "AI disabled for this tab" : serverAi?.provider ? `AI configured · ${serverAi.provider}` : "AI synthesis is not connected"}</span>
-                        <button className="text-button" onClick={showAiSetup}>{ai?.apiKey ? "Change provider" : "Connect AI"}</button>
-                      </div>
-                      {research.warning && <p className="notice" role="status">{research.warning} <button className="text-button" onClick={showAiSetup}>AI setup</button></p>}
+                      {research.warning && <p className="notice" role="status">{research.warning}</p>}
                       {research.sourceWarning && <p className="notice">{research.sourceWarning}</p>}
                       {research.answer && <ModelAnswer research={research} onSource={evidence} />}
                       <details
@@ -1351,7 +1334,7 @@ function App() {
                           {research.mode === "discovery"
                             ? "Awaiting document selection"
                             : research.mode === "model"
-                              ? "AI synthesis, supported by retrieved passages"
+                              ? "Generated note, supported by retrieved passages"
                               : "Exact passages · no model interpretation"}
                         </div>
                         <button className="text-button" onClick={findSources}>
@@ -1433,8 +1416,8 @@ function App() {
                           </section>
                         )}
                       </details>
-                      {research.passages?.length > 0 && research.mode !== "model" && (ai?.apiKey || (!ai && serverAi?.provider)) && (
-                        <button className="button secondary" disabled={busy || indexing} onClick={() => runResearch(research.ticker, research.question)}>Synthesize indexed evidence <ArrowRight size={15} /></button>
+                      {research.passages?.length > 0 && research.mode !== "model" && (
+                        <button className="button secondary" disabled={busy || indexing} onClick={() => runResearch(research.ticker, research.question)}>Refresh research note <ArrowRight size={15} /></button>
                       )}
                       <FinancialAnalysis
                         key={research.ticker}
@@ -1684,7 +1667,6 @@ function App() {
           </Preferences>
         </div>
       )}
-      {aiOpen && <AiSetup active={ai} server={serverAi} onConnect={setAi} onClose={() => setAiOpen(false)} returnFocus={aiTrigger.current} />}
     </div>
   );
 }

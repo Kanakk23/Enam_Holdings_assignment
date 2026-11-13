@@ -31,7 +31,7 @@ function dateFor(d) {
   const ys = (d.reportPeriod || d.period || d.title || "").match(/20\d{2}/g);
   return ys ? Math.max(...ys.map(Number)) + "-03-31" : "0000-01-01";
 }
-export function passagesFor(documents, query) {
+export function passagesFor(documents, query, { limit = 4 } = {}) {
   const words = [
     ...new Set(
       (normalize(query).match(/fy20\d{2}|20\d{2}|[a-z]{3,}/g) || []).filter(
@@ -80,5 +80,5 @@ export function passagesFor(documents, query) {
       used.set(p.document.id, count + 1);
       return true;
     })
-    .slice(0, 4);
+    .slice(0, Math.max(1, Math.min(8, limit)));
 }

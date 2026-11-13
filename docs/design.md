@@ -56,6 +56,8 @@ The company research page now leads with source-linked, deterministic comparison
 Digest dates are next to the digest controls. Coverage exposes partial failures and an on-demand refresh. The mobile density and modal positioning were adjusted following the investor walkthrough. Synthetic experience was revised to include a finance controller at Infosys; matching uses company, sector, role and question relevance, while relationship certainty remains independently labelled.
 
 
-## Connecting optional AI
+## Backend research orchestration
 
-AI setup stays in the workspace header, reachable on a phone without opening investor preferences. It presents provider, model, password field and one connection action in that order. A successful test retains the key for the current tab only. Privacy and free-plan limits are adjacent to the action. Research distinguishes generated notes from deterministic financial findings, opens numbered references in the source reader and exposes failures above the collapsed research tools. Connecting a provider does not hide the original passages or change the numerical calculation path.
+Provider configuration is absent from the investor interface. Keys are server secrets. The research view shows a source-based note or selected original extracts, with numbered links into the source reader. It never asks the investor to choose a model, inspect quotas or manage credentials. Generic partial-success copy preserves the evidence when analysis cannot complete.
+
+The backend routes short evidence selection to a smaller model and cross-document reasoning to a stronger model, with bounded context, source validation, caching and fallbacks. Numerical comparisons and network matching remain deterministic. See model-routing.md for the exact operational limits and unverified assumptions.

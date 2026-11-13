@@ -39,13 +39,15 @@ const retrieval = (await readFile("src/retrieval.mjs", "utf8")).replace(
   /export /g,
   "",
 );
-const modelChoices = (await readFile("src/model-config.mjs", "utf8")).replace(/export /g, "");
+const engine = (await readFile("server/research-engine.mjs", "utf8"))
+  .replace(/import\s+\{[^}]+\}\s+from\s+["'][^"']+["'];?\s*/g, "")
+  .replace(/export /g, "");
 const models = (await readFile("server/models.mjs", "utf8"))
   .replace(/import\s+\{[^}]+\}\s+from\s+["'][^"']+["'];?\s*/g, "")
   .replace(/export /g, "");
 const handler = (await readFile("server/worker.mjs", "utf8"))
   .replace(
-    /import\s+\{[^}]+\}\s+from\s+["'](?:\.\/sources|\.\/models|\.\.\/src\/retrieval)\.mjs["'];?\s*/g,
+    /import\s+\{[^}]+\}\s+from\s+["'](?:\.\/sources|\.\/models|\.\/research-engine|\.\.\/src\/retrieval)\.mjs["'];?\s*/g,
     "",
   )
   .replace("export default", "const handler=");
@@ -55,7 +57,7 @@ await mkdir("dist/.openai", { recursive: true });
 await copyFile(".openai/hosting.json", "dist/.openai/hosting.json");
 await writeFile(
   "dist/server/index.js",
-  `${sources}\n${retrieval}\n${modelChoices}\n${models}\n${serve}\n${handler}\nexport default {fetch(request,env,ctx){return handler.fetch(request,{...env,ASSETS:{fetch:serveAsset}},ctx)}};`,
+  `${sources}\n${retrieval}\n${models}\n${engine}\n${serve}\n${handler}\nexport default {fetch(request,env,ctx){return handler.fetch(request,{...env,ASSETS:{fetch:serveAsset}},ctx)}};`,
 );
 console.log(
   `Worker built with ${Object.keys(files).length} self-contained assets.`,

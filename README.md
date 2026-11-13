@@ -49,19 +49,42 @@ The URL above is a usage placeholder, not a real source. On Windows, use `.venv\
 
 `.github/workflows/ingest.yml` exposes the same generic ingestion through a manual GitHub Actions workflow. It consumes the account's included Actions minutes; it is not scheduled automatically. A changed repository snapshot must be rebuilt and redeployed to update the hosted snapshot. Browser-imported excerpts persist in that browser only, up to eight documents, and do not change the shared repository.
 
-## Free operation and optional model
+## Free operation and backend model routing
 
-The default product makes **zero model API calls**. React, Vite, Lucide, PDF.js, IBM Plex Sans, decimal.js, requests, Beautiful Soup, pypdf and yfinance are free/open-source dependencies. Public sites can restrict access or change markup. There is no Firecrawl dependency, paid search API or paid market-data feed.
+The snapshot works without model keys. React, Vite, Lucide, PDF.js, IBM Plex Sans, decimal.js and the ingestion libraries are free/open-source. There is no Firecrawl, paid search API or paid market-data feed dependency.
 
-**Connect a key in the website:** open **AI setup** in the top bar → choose **Groq**, **OpenRouter** or **Gemini** → paste the key → **Test & connect**. The connection check makes one short completion request. Then run a company question in Research. For a newly imported PDF, choose **Synthesize indexed evidence** after indexing finishes. AI answers include buttons that open the numbered source passages.
+API keys, provider selection and model routing are backend concerns. The investor interface has no API-key field, provider controls or model names. Requests containing client-side credentials or routing overrides are rejected. The public health response reveals only service health.
 
-The key remains in React memory in the current tab, passes over HTTPS through FINN's server to the selected provider, and is not saved to localStorage, sessionStorage, a database or Git. Reloading clears it. Closing the setup dialog preserves the connected key until reload or **Disconnect AI**. Questions and up to four retrieved primary-source passages are sent to that provider; synthetic network profiles are excluded. Do not paste a key into the chat, source files, or a `VITE_` variable.
+| Work | Backend route | Why |
+| --- | --- | --- |
+| Short evidence extraction | Groq `openai/gpt-oss-20b` | A bounded structured-output task; no large writer model needed |
+| Comparisons, guidance, narrative versus numbers | Gemini `gemini-3.8-flash` | Reserve a stronger model for questions that require reasoning across sources |
+| Extraction when Groq is unavailable | Gemini `gemini-3.5-flash-lite` | A small alternative with a free tier |
+| Reasoning when Gemini is unavailable | Groq `openai/gpt-oss-120b` | A stronger alternative within the same free-plan account |
+| Arithmetic, filing priority and contact/relationship matching | Code | Reproducible results and zero model calls |
 
-Groq defaults to `openai/gpt-oss-120b`, with `openai/gpt-oss-20b` and `llama-3.3-70b-versatile` also available. OpenRouter defaults to `openrouter/free`; the server rejects models that are neither that free router nor a `:free` model. Gemini retains `gemini-3.1-flash-lite`. Use Groq on its free plan, or Gemini on a free-tier project without billing. FINN cannot inspect account billing settings or guarantee continuing free quotas. There is no automatic retry, provider switch, paid fallback, model search or grounding request. Timeouts, quota/authentication failures, incomplete responses and missing/invalid citation references fall back to exact passages. Citation checks validate reference numbers, not whether a claim is entailed by its source.
+Small analytical contexts go directly to the reasoning model. Larger contexts use at most two extraction chunks first; each extracted quote must occur literally in the numbered source. Straightforward research returns selected original evidence without another model rewrite. Generated analysis rejects invalid references and unsupported numerical tokens. These checks do not prove semantic entailment.
 
-For an operator-managed server key, copy `.env.example` to the ignored `.env.local`, set `ENABLE_FREE_MODEL=true`, `AI_PROVIDER`, `AI_MODEL`, and the matching `GROQ_API_KEY`, `OPENROUTER_API_KEY` or `GEMINI_API_KEY`; restart the local server. Local values are now passed to the development Worker only. For hosted deployment, configure these names as server runtime variables/secrets and redeploy; a local `.env.local` does not configure the hosted site. No production key is configured by this commit. Existing Gemini-only environment setups remain supported when `AI_PROVIDER` is absent.
+The engine retrieves up to eight relevant passages, caps each context at 1,800 characters, and limits each uncached investigation to three provider attempts, including fallback attempts. Successful extraction/results are cached for 30 minutes in a bounded in-memory cache, keyed by evidence, query, model configuration and authenticated scope. Simultaneous identical requests share work. Source or credential changes invalidate the cache. Quota/authentication failures create short cooldowns instead of repeated retries. The cache and reservations are per Worker isolate; they are not a durable cache or a global account quota manager.
 
-Provider references: [Groq API and limits](https://console.groq.com/docs/rate-limits), [OpenRouter free models](https://openrouter.ai/collections/free-models), [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing). No valid key was provided and no authenticated live synthesis or model-quality evaluation is claimed.
+### Configure server keys
+
+Use a **Groq Free account** and a **Gemini free-tier project without billing attached**. The allowlist contains free-tier models; it cannot detect whether the account associated with a key has enabled paid billing. Provider quotas and model availability remain authoritative. No credit purchase, plan upgrade, paid-only model or search-grounding call is made by FINN.
+
+Locally, run:
+
+```sh
+npm run configure:ai
+npm run dev
+```
+
+The terminal prompts for both keys without echo and writes the ignored `.env.local` with restricted file permissions. It makes no API request. Alternatively, copy `.env.example` to `.env.local`, add `GROQ_API_KEY` and `GEMINI_API_KEY`, and set `ENABLE_FREE_MODEL=true`. Never use a `VITE_` prefix for secrets.
+
+For the hosted app, set those same values in **server runtime secrets/environment variables**, then redeploy. The local setup command does not configure hosted secrets. No real provider key was supplied or installed during this change, so an authenticated live model-quality evaluation remains outstanding.
+
+Only the question and retrieved annual-report/transcript passages reach the models; network profiles and relationship data stay out. Gemini free-tier inputs may be used to improve Google's products, so this prototype sends public document evidence only. Private investor notes and real network data need a different data-processing arrangement. Optional `AI_LOG_USAGE=true` logs only task/model/call-count/token-reservation metadata on the backend, never keys, source text, identities or questions.
+
+See [routing and efficiency decisions](docs/model-routing.md), [Groq limits](https://console.groq.com/docs/rate-limits), [Groq structured outputs](https://console.groq.com/docs/structured-outputs), and [Gemini free-tier pricing](https://ai.google.dev/gemini-api/docs/pricing).
 
 No paid plan or service was purchased. Hosting availability is subject to the account's existing Sites access. The app can run locally without that hosting service.
 

@@ -4,8 +4,8 @@ import path from "node:path";
 const { default: worker } = await import(
   pathToFileURL(path.resolve("dist/server/index.js"))
 );
-const call = (url, options) =>
-  worker.fetch(new Request("https://finn.example" + url, options), {});
+const call = (url, options, env = {}) =>
+  worker.fetch(new Request("https://finn.example" + url, options), env);
 const page = await call("/");
 assert.equal(page.status, 200);
 assert.match(page.headers.get("content-type"), /text\/html/);
@@ -18,7 +18,7 @@ const data = await (await call("/data/seed.json")).json();
 assert.ok(data.documents.length >= 2);
 assert.equal(Object.keys(data.market).length, 18);
 const health = await (await call("/api/health")).json();
-assert.equal(health.mode, "extractive");
+assert.deepEqual(health, { ok: true });
 const research = await (
   await call("/api/research", {
     method: "POST",
@@ -27,31 +27,28 @@ const research = await (
 ).json();
 assert.equal(research.mode, "extractive");
 assert.ok(research.passages[0].document.url);
-assert.equal((await call("/api/model/test", {
-  method: "POST", body: JSON.stringify({ ai: { provider: "openrouter", model: "paid/model", apiKey: "test-only-placeholder-key" } }),
-})).status, 400);
+assert.equal((await call("/api/model/test", { method: "POST", body: "{}" })).status, 404);
+assert.equal((await call("/api/research", { method: "POST", body: JSON.stringify({ ticker: "INFY", ai: { apiKey: "client-key-placeholder" } }) })).status, 400);
 const savedFetch = globalThis.fetch;
 try {
   const seen = [];
   globalThis.fetch = async (url, options) => {
     seen.push(url);
     assert.equal(options.headers.Authorization, "Bearer test-only-placeholder-key");
-    return Response.json({ choices: [{ finish_reason: "stop", message: { content: "Illustrative built-Worker test response. [1]" } }] });
+    assert.equal(options.redirect, "manual");
+    const input = JSON.parse(JSON.parse(options.body).messages[1].content);
+    return Response.json({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ items: [{ reference: input.passages[0].reference, quote: input.passages[0].text.slice(0, 180), topic: "cash" }] }) } }] });
   };
-  const connected = await (await call("/api/model/test", {
-    method: "POST", body: JSON.stringify({ ai: { provider: "groq", apiKey: "test-only-placeholder-key" } }),
-  })).json();
-  assert.equal(connected.ok, true);
   const synthesized = await (await call("/api/research", {
-    method: "POST", body: JSON.stringify({ ticker: "INFY", question: "cash generation", ai: { provider: "groq", apiKey: "test-only-placeholder-key" } }),
-  })).json();
+    method: "POST", body: JSON.stringify({ ticker: "INFY", question: "cash generation" }),
+  }, { ENABLE_FREE_MODEL: "true", GROQ_API_KEY: "test-only-placeholder-key" })).json();
   assert.equal(synthesized.mode, "model");
-  assert.equal(synthesized.provider, "groq");
+  assert.equal(synthesized.answerKind, "selected-evidence");
+  assert.equal(synthesized.provider, undefined); assert.equal(synthesized.model, undefined); assert.equal(synthesized.stats, undefined);
   assert.ok(!JSON.stringify(synthesized).includes("test-only-placeholder-key"));
-  assert.equal(seen.length, 2);
-  assert.ok(seen.every(url => url === "https://api.groq.com/openai/v1/chat/completions"));
+  assert.equal(seen.length, 1); assert.ok(seen[0].startsWith("https://api.groq.com/"));
 } finally { globalThis.fetch = savedFetch; }
 assert.equal((await call("/missing-file.js")).status, 404);
 console.log(
-  "Built Worker verified: page, bundled assets, strict snapshot, extractive API, provider connection/synthesis fixtures, paid-route rejection, credential redaction, provenance and 404.",
+  "Built Worker verified: page, bundled assets, strict snapshot, extractive API, backend routing/synthesis fixtures, client-key rejection, credential redaction, provenance and 404.",
 );
