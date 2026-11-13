@@ -19,3 +19,7 @@ No real financial data, biographies or source passages were generated to fill mi
 Recovered the source after workspace maintenance, then restored the unfinished financial work from retained original PDFs and reviewed-source manifests. Added decimal calculations, strict comparison contexts, source-bound review entry, guidance timing/basis checks and a reviewed Infosys cache. Shared the retrieval logic between client and server and preserved comparison controls across source navigation.
 
 Generated-input and source-cache checks passed. Server rendering exposed a long-decimal formatting failure that ordinary arithmetic tests had missed; added a focused regression and corrected the renderer. Browser verification was blocked by automatic approval review at the usage limit, so no new visual pass is claimed. Live AI is still unconfigured.
+
+## Investor walkthrough revision
+
+Reviewed both assignment PDFs and walked through desktop and a 390-pixel iframe. Found an owner-only deployment gate, generic brief prompts, a BSE 403, short evidence fragments, excessive preamble, literal-only network search and a misplaced modal. Added deterministic evidence-led findings, full original-page context, question-aware contacts, separate open/completed guidance views, primary-PDF recovery, visible dates/coverage and per-source EOD refresh. Original build-session exports must still accompany the submission; this log is not a reconstructed transcript. Kept repository and preview permissions unchanged.

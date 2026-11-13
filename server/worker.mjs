@@ -1,5 +1,5 @@
 import { passagesFor } from "../src/retrieval.mjs";
-import { discover, download } from "./sources.mjs";
+import { discover, download, refreshTicker } from "./sources.mjs";
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
@@ -12,6 +12,11 @@ const valid = (t) => /^[A-Z0-9][A-Z0-9&-]{0,24}$/.test(t);
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/api/refresh") {
+      const t = (url.searchParams.get("ticker") || "").toUpperCase();
+      if (!valid(t)) return json({ error: "Invalid ticker" }, 400);
+      return json(await refreshTicker(t));
+    }
     if (url.pathname === "/api/health")
       return json({
         ok: true,

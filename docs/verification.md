@@ -58,3 +58,11 @@ The latest browser attempt was rejected by automatic approval review because the
 Live model synthesis remains disabled: there is no configured model key. No paid API call or live model quality evaluation was performed.
 
 For the updated phone demo, open Research → INFY. Inspect Q2 FY27, open a change and its sources, then select FY26 / Ind AS to inspect annual totals. Compare reported versus adjusted Q4 FY26 margins and the four-call revenue-guidance ledger. Open a source and demonstrate the generic reviewed-record form. The selected period and basis should be retained on return.
+
+## Investor workflow revision — 13 November 2026
+
+43 automated tests pass, including 3,300 generated arithmetic/conflict cases. New checks cover source-paired findings, exclusion of conflicting figures, empty answers for unseen symbols, natural network search, topic-sensitive recommendations, retained full-page context and independent refresh failures. Production build, standalone Worker checks and server-rendered finance checks pass. Browser checks use a 390 CSS-pixel iframe rather than a physical device.
+
+The phone walkthrough verified that margins/cash comparisons appear on the first viewport, their links open original-page text, completed commitments exclude unfinished targets, and the previously failing natural network query returns relevant experience. A network query is a lexical/synonym match, not general semantic reasoning.
+
+The live portfolio refresh completed all 18 market and filing checks in this browser. A fresh DIXON attempt discovered original documents, attempted two PDF imports, then exposed the publisher 403 and local-copy recovery controls. Unseen-company financial extraction was not completed. Browser review caught a topic-ranking bug that could suggest an unrelated sector for an unknown ticker; the role bonus now requires a company/sector match and a regression test covers it.

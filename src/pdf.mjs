@@ -1,18 +1,26 @@
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 GlobalWorkerOptions.workerSrc = workerUrl;
-export async function indexPdf(source, onProgress) {
-  const response = await fetch(
-    `/api/document?ticker=${encodeURIComponent(source.ticker)}&url=${encodeURIComponent(source.url)}`,
-  );
-  if (!response.ok) {
-    let detail;
-    try {
-      detail = await response.json();
-    } catch {}
-    throw Error(detail?.error || "The original PDF is unavailable.");
+export async function indexPdf(source, onProgress, suppliedBytes) {
+  let bytes = suppliedBytes;
+  if (!bytes) {
+    const response = await fetch(
+      `/api/document?ticker=${encodeURIComponent(source.ticker)}&url=${encodeURIComponent(source.url)}`,
+    );
+    if (!response.ok) {
+      let detail;
+      try {
+        detail = await response.json();
+      } catch {}
+      throw Error(detail?.error || "The original PDF is unavailable.");
+    }
+    bytes = new Uint8Array(await response.arrayBuffer());
   }
-  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (
+    bytes.length > 25000000 ||
+    new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-"
+  )
+    throw Error("Choose an original PDF under 25 MB.");
   const hash = await crypto.subtle.digest("SHA-256", bytes);
   const sha256 = Array.from(new Uint8Array(hash))
     .map((x) => x.toString(16).padStart(2, "0"))
@@ -61,6 +69,7 @@ export async function indexPdf(source, onProgress) {
     );
   return {
     ...source,
+    userProvided: !!suppliedBytes,
     id: sha256.slice(0, 16),
     sha256,
     pageCount,

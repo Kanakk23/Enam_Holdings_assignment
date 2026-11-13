@@ -40,6 +40,8 @@ import "@fontsource/ibm-plex-sans/latin-500.css";
 import "@fontsource/ibm-plex-sans/latin-600.css";
 import "./style.css";
 import { FinancialAnalysis, RecordEvidence } from "./finance-ui.jsx";
+import { ResearchFinding } from "./finding-ui.jsx";
+import { networkMatches, conversationPrompts } from "./investigation.mjs";
 import { sourcePassage } from "./finance.mjs";
 const Icon = ({ as: C, ...p }) => <C size={18} strokeWidth={1.7} {...p} />;
 const stored = (key, fallback) => {
@@ -156,6 +158,62 @@ function App() {
     [threshold, setThreshold] = useState(() =>
       stored("finn-threshold", { price: 5, volume: 2 }),
     );
+  const [refreshing, setRefreshing] = useState(false);
+  async function refreshPortfolio() {
+    setRefreshing(true);
+    setError("");
+    const records = [];
+    for (let i = 0; i < portfolio.length; i += 3) {
+      await Promise.all(
+        portfolio.slice(i, i + 3).map(async (c) => {
+          try {
+            const r = await fetch(`/api/refresh?ticker=${c.ticker}`);
+            if (!r.ok) throw Error("Refresh unavailable");
+            records.push(await r.json());
+          } catch (e) {
+            records.push({ ticker: c.ticker, errors: [e.message] });
+          }
+        }),
+      );
+    }
+    setData((prev) => {
+      const next = {
+        ...prev,
+        market: { ...prev.market },
+        filings: [...(prev.filings || [])],
+        filingCoverage: records.map((r) => ({
+          ticker: r.ticker,
+          status:
+            r.filings === null || r.filings === undefined
+              ? "unavailable"
+              : "ok",
+          checkedAt: r.checkedAt,
+          count: r.filings?.length || 0,
+          errors: r.errors,
+        })),
+      };
+      for (const r of records) {
+        if (r.market) next.market[r.ticker] = r.market;
+        if (r.filings)
+          next.filings = [
+            ...next.filings.filter((f) => f.ticker !== r.ticker),
+            ...r.filings,
+          ];
+      }
+      next.events = [
+        ...next.filings,
+        ...prev.events.filter((e) => e.historical),
+      ];
+      if (records.every((r) => r.filings && r.market))
+        next.asOf = new Date().toISOString();
+      next.lastRefresh = new Date().toISOString();
+      try {
+        localStorage.setItem("finn-refreshed", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    setRefreshing(false);
+  }
   const stack = useRef([]),
     heading = useRef(null),
     input = useRef(null),
@@ -170,8 +228,24 @@ function App() {
         if (!r.ok) throw Error("Unable to load the indexed documents.");
         return r.json();
       })
-      .then((d) =>
-        setData({
+      .then((initial) => {
+        const cached = stored("finn-refreshed", null);
+        const d =
+          cached && Date.parse(cached.lastRefresh) > Date.parse(initial.asOf)
+            ? {
+                ...initial,
+                market: { ...initial.market, ...cached.market },
+                filings: cached.filings,
+                events: [
+                  ...(cached.filings || []),
+                  ...initial.events.filter((e) => e.historical),
+                ],
+                filingCoverage: cached.filingCoverage,
+                asOf: cached.asOf,
+                lastRefresh: cached.lastRefresh,
+              }
+            : initial;
+        return setData({
           ...d,
           documents: [
             ...d.documents,
@@ -179,8 +253,8 @@ function App() {
               (x) => !d.documents.some((y) => x.id === y.id),
             ),
           ],
-        }),
-      )
+        });
+      })
       .catch((e) => setError(e.message));
   }, []);
   useEffect(() => {
@@ -304,6 +378,7 @@ function App() {
       status: "Locating original reports and transcripts…",
     });
     try {
+      setError("");
       const local = docs(t);
       if (local.length) {
         let result;
@@ -339,6 +414,12 @@ function App() {
           passages: [],
           mode: "discovery",
         });
+        const choices = (result.sources || []).sort(
+          (a, b) =>
+            Number(a.url.includes("bseindia.com")) -
+            Number(b.url.includes("bseindia.com")),
+        );
+        for (const source of choices.slice(0, 2)) await importSource(source);
       }
     } catch (e) {
       setResearch({ ticker: t, question: prompt, error: e.message });
@@ -367,14 +448,16 @@ function App() {
       setBusy(false);
     }
   }
-  async function importSource(source) {
+  async function importSource(source, suppliedBytes) {
     setIndexing(true);
     setError("");
     setResearch((r) => ({ ...r, status: "Downloading the original PDF…" }));
     try {
       const { indexPdf } = await import("./pdf.mjs");
-      const d = await indexPdf(source, (status) =>
-        setResearch((r) => ({ ...r, status })),
+      const d = await indexPdf(
+        source,
+        (status) => setResearch((r) => ({ ...r, status })),
+        suppliedBytes,
       );
       setData((prev) => ({
         ...prev,
@@ -411,9 +494,9 @@ function App() {
       setIndexing(false);
     }
   }
-  function PersonStrip({ t }) {
+  function PersonStrip({ t, question = research?.question || "" }) {
     const c = company(t),
-      matches = matchPeople(t, c.sector);
+      matches = matchPeople(t, c.sector, people, question);
     return (
       <section className="people-strip">
         <div className="section-line">
@@ -430,7 +513,9 @@ function App() {
           <button
             className="person-row"
             key={p.id}
-            onClick={() => open({ kind: "person", person: p, ticker: t })}
+            onClick={() =>
+              open({ kind: "person", person: p, ticker: t, question })
+            }
           >
             <span className="avatar">
               {p.name
@@ -448,7 +533,10 @@ function App() {
                 {p.company === t
                   ? "First-hand company experience"
                   : "Relevant sector experience"}{" "}
-                · {p.start}–{p.end}
+                · {p.start}–{p.end} ·{" "}
+                {p.relationship === "Known demo contact"
+                  ? "Known contact"
+                  : "Inferred overlap"}
               </em>
             </span>
             <ChevronRight size={16} />
@@ -476,11 +564,11 @@ function App() {
           className="event-title"
           onClick={() => open({ kind: "event", event: e })}
         >
-          {e.title}
+          {e.ticker} · {e.title}
           <ArrowUpRight size={featured ? 23 : 18} />
         </button>
         <p>{e.description}</p>
-        {featured && (
+        {false && featured && (
           <div className="research-question">
             <span>QUESTION TO INVESTIGATE</span>
             <strong>{e.question}</strong>
@@ -522,7 +610,10 @@ function App() {
           <>
             <div className="source-toolbar">
               <span>
-                <ShieldCheck size={16} /> Original primary document
+                <ShieldCheck size={16} />{" "}
+                {d.userProvided
+                  ? "User-supplied copy · identity not verified"
+                  : "Original primary document"}
               </span>
               <a
                 className="button primary"
@@ -542,7 +633,7 @@ function App() {
                 numerical interpretations in the original document.
               </p>
               {p.section && <p className="source-section">{p.section}</p>}
-              <blockquote>{p.text}</blockquote>
+              <blockquote>{p.context || p.text}</blockquote>
             </div>
             <p className="subtle">
               Retrieved {d.retrievedAt?.slice(0, 10)} · Reporting period{" "}
@@ -821,18 +912,11 @@ function App() {
               <section className="section">
                 <h3>Questions to take into a conversation</h3>
                 <ol className="questions">
-                  <li>
-                    Which operating indicators would help assess the company’s
-                    stated priorities?
-                  </li>
-                  <li>
-                    What industry constraints usually determine the pace of
-                    execution?
-                  </li>
-                  <li>
-                    Which disclosures would you compare at the next reporting
-                    period?
-                  </li>
+                  {conversationPrompts(view.question, view.person.role).map(
+                    (q) => (
+                      <li key={q}>{q}</li>
+                    ),
+                  )}
                 </ol>
                 <p className="subtle">
                   General preparation prompts, not claims that this person knows
@@ -847,7 +931,10 @@ function App() {
                   <h1>
                     Your brief<span className="heading-period">.</span>
                   </h1>
-                  <p>The changes worth a closer look.</p>
+                  <p>
+                    {important.length} disclosures to review · {signals.length}{" "}
+                    market signals
+                  </p>
                 </div>
                 <div className="brief-stamp">
                   <BookOpen size={24} />
@@ -895,6 +982,65 @@ function App() {
                   <SlidersHorizontal size={17} />
                 </button>
               </div>
+              <div className="inline-dates">
+                <label>
+                  From
+                  <input
+                    aria-label="Digest from"
+                    type="date"
+                    value={from}
+                    onChange={(e) => {
+                      setFrom(e.target.value);
+                      setWindow("archive");
+                    }}
+                  />
+                </label>
+                <label>
+                  Through
+                  <input
+                    aria-label="Digest through"
+                    type="date"
+                    value={to}
+                    onChange={(e) => {
+                      setTo(e.target.value);
+                      setWindow("archive");
+                    }}
+                  />
+                </label>
+              </div>
+              <details className="coverage-detail">
+                <summary>Coverage and freshness</summary>
+                <button
+                  className="button secondary"
+                  disabled={refreshing}
+                  onClick={refreshPortfolio}
+                >
+                  {refreshing
+                    ? "Refreshing public sources…"
+                    : "Refresh portfolio sources"}
+                </button>
+                <p>
+                  Last refresh attempt: {data.lastRefresh || "Not yet run"}.
+                  Source checks are cached for five minutes.
+                </p>
+                {data.filingCoverage?.map((c) => (
+                  <p key={c.ticker}>
+                    {c.ticker}: {c.status} · {c.count} links{" "}
+                    {c.errors?.join(" · ")}
+                  </p>
+                ))}
+                <p>
+                  Bounded sample: up to five recent directory links per company.
+                  Failed fetches and an empty window do not mean no disclosures
+                  exist. Checked through {data.asOf}. EOD market sessions are
+                  shown separately.
+                </p>
+                <p>
+                  {data.errors?.length || 0} archived ingestion errors recorded
+                  (separate from the latest refresh). Refreshing this page
+                  reloads the saved snapshot; source refresh runs separately.
+                </p>
+              </details>
               <div className="coverage">
                 <span className="availability" />
                 <span>{data.documents.length} primary documents indexed</span>
@@ -908,6 +1054,21 @@ function App() {
                   {showReviewed ? "Hide reviewed" : "Show reviewed"}
                 </button>
               </div>
+              <section className="continue-research">
+                <h2>Continue an investigation</h2>
+                <p>Archived primary evidence · not a new filing alert</p>
+                <button
+                  className="button secondary"
+                  onClick={() =>
+                    runResearch(
+                      "INFY",
+                      "Did margins improve and did cash conversion keep up?",
+                    )
+                  }
+                >
+                  Infosys · margins, cash and guidance <ArrowRight size={15} />
+                </button>
+              </section>
               <div className="section-line attention-heading">
                 <h2>
                   Worth your attention <span>{important.length}</span>
@@ -1033,9 +1194,13 @@ function App() {
             </>
           ) : tab === "research" ? (
             <>
-              <div className="page-intro">
+              <div
+                className={
+                  "page-intro " + (research ? "compact-research-intro" : "")
+                }
+              >
                 <h1>
-                  A question, with evidence
+                  Company research
                   <span className="heading-period">.</span>
                 </h1>
                 <p>
@@ -1108,86 +1273,137 @@ function App() {
                     </div>
                   ) : (
                     <>
-                      <p className="question-display">{research.question}</p>
-                      <form
-                        className="followup-form"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          runResearch(research.ticker, question);
-                          setQuestion("");
-                        }}
+                      <ResearchFinding
+                        ticker={research.ticker}
+                        facts={[...(data.facts || []), ...localFacts]}
+                        documents={data.documents}
+                        question={research.question}
+                        onSource={factEvidence}
+                      />
+                      <PersonStrip t={research.ticker} />
+                      <details
+                        className="research-tools"
+                        open={research.mode === "discovery"}
                       >
-                        <label htmlFor="research-question">
-                          Investigate a specific question
-                        </label>
-                        <div>
-                          <input
-                            id="research-question"
-                            value={question}
-                            onChange={(e) => setQuestion(e.target.value)}
-                            placeholder="e.g. What did management say about margins?"
-                            required
-                          />
-                          <button className="button secondary">
-                            Find evidence <ArrowRight size={15} />
-                          </button>
+                        <summary>
+                          Ask a question or check source coverage
+                        </summary>
+                        <p className="question-display">{research.question}</p>
+                        <form
+                          className="followup-form"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            runResearch(research.ticker, question);
+                            setQuestion("");
+                          }}
+                        >
+                          <label htmlFor="research-question">
+                            Investigate a specific question
+                          </label>
+                          <div>
+                            <input
+                              id="research-question"
+                              value={question}
+                              onChange={(e) => setQuestion(e.target.value)}
+                              placeholder="e.g. What did management say about margins?"
+                              required
+                            />
+                            <button className="button secondary">
+                              Find evidence <ArrowRight size={15} />
+                            </button>
+                          </div>
+                        </form>
+                        <div className="coverage research-coverage">
+                          <ShieldCheck size={15} />
+                          {research.documents?.length || 0} indexed documents ·{" "}
+                          {research.mode === "discovery"
+                            ? "Awaiting document selection"
+                            : research.mode === "model"
+                              ? "AI synthesis, supported by retrieved passages"
+                              : "Exact passages · no model interpretation"}
                         </div>
-                      </form>
-                      <div className="coverage research-coverage">
-                        <ShieldCheck size={15} />
-                        {research.documents?.length || 0} indexed documents ·{" "}
-                        {research.mode === "discovery"
-                          ? "Awaiting document selection"
-                          : research.mode === "model"
-                            ? "AI synthesis, supported by retrieved passages"
-                            : "Exact passages · no model interpretation"}
-                      </div>
-                      <button className="text-button" onClick={findSources}>
-                        Find more reports &amp; transcripts{" "}
-                        <RefreshCw size={14} />
-                      </button>
-                      {research.documents?.some((d) => d.partial) && (
-                        <p className="notice">
-                          Partial coverage: only the first 300 pages of a large
-                          PDF were indexed. Open the original for the full
-                          document.
-                        </p>
-                      )}
-                      {research.warning && (
-                        <p className="notice">{research.warning}</p>
-                      )}
-                      {research.mode === "discovery" && (
-                        <div className="notice">
-                          <Info size={17} />
-                          <span>
-                            {foundSources.length
-                              ? "Original documents found. Choose one to read and index in this browser."
-                              : "No original PDFs were found. Try another symbol or use the official-PDF ingestion workflow in the repository."}{" "}
-                            Extraction runs locally; no model credits are
-                            needed.
-                          </span>
-                        </div>
-                      )}
-                      {foundSources.length > 0 && (
-                        <section className="source-discovery">
-                          <h3>Original documents available</h3>
-                          {foundSources.map((source, i) => (
-                            <div key={source.url} className="source-choice">
-                              <div>
-                                <strong>{source.title}</strong>
-                                <small>{new URL(source.url).hostname}</small>
+                        <button className="text-button" onClick={findSources}>
+                          Find more reports &amp; transcripts{" "}
+                          <RefreshCw size={14} />
+                        </button>
+                        {research.documents?.some((d) => d.partial) && (
+                          <p className="notice">
+                            Partial coverage: only the first 300 pages of a
+                            large PDF were indexed. Open the original for the
+                            full document.
+                          </p>
+                        )}
+                        {research.warning && (
+                          <p className="notice">{research.warning}</p>
+                        )}
+                        {research.mode === "discovery" && (
+                          <div className="notice">
+                            <Info size={17} />
+                            <span>
+                              {foundSources.length
+                                ? "Original documents found. Choose one to read and index in this browser."
+                                : "No original PDFs were found. Try another symbol or use the official-PDF ingestion workflow in the repository."}{" "}
+                              Extraction runs locally; no model credits are
+                              needed.
+                            </span>
+                          </div>
+                        )}
+                        {foundSources.length > 0 && (
+                          <section className="source-discovery">
+                            <h3>Original documents available</h3>
+                            {foundSources.map((source, i) => (
+                              <div key={source.url} className="source-choice">
+                                <div>
+                                  <strong>{source.title}</strong>
+                                  <small>{new URL(source.url).hostname}</small>
+                                </div>
+                                <button
+                                  className="button secondary"
+                                  onClick={() => importSource(source)}
+                                  disabled={indexing}
+                                >
+                                  Read document <ArrowRight size={15} />
+                                </button>
+                                <a
+                                  className="text-button"
+                                  href={source.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  Open original externally
+                                </a>
+                                <label className="pdf-recovery">
+                                  Use a downloaded original PDF
+                                  <input
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      if (file.size > 25000000) {
+                                        setError("This PDF exceeds 25 MB.");
+                                        return;
+                                      }
+                                      if (
+                                        !window.confirm(
+                                          "Confirm this is the original document at the listed source URL. It will be indexed only in this browser.",
+                                        )
+                                      )
+                                        return;
+                                      await importSource(
+                                        source,
+                                        new Uint8Array(
+                                          await file.arrayBuffer(),
+                                        ),
+                                      );
+                                    }}
+                                  />
+                                </label>
                               </div>
-                              <button
-                                className="button secondary"
-                                onClick={() => importSource(source)}
-                                disabled={indexing}
-                              >
-                                Read document <ArrowRight size={15} />
-                              </button>
-                            </div>
-                          ))}
-                        </section>
-                      )}
+                            ))}
+                          </section>
+                        )}
+                      </details>
                       {research.answer && (
                         <div className="answer">{research.answer}</div>
                       )}
@@ -1210,9 +1426,7 @@ function App() {
                           }))
                         }
                       />
-                      {research.documents?.length > 0 && (
-                        <PersonStrip t={research.ticker} />
-                      )}{" "}
+
                       {!research.passages?.length &&
                         research.documents?.length > 0 && (
                           <p className="notice">
@@ -1232,8 +1446,8 @@ function App() {
                               {p.document.title} · PDF p. {p.page}
                             </span>
                             <p>
-                              {p.text.slice(0, 430)}
-                              {p.text.length > 430 ? "…" : ""}
+                              {(p.context || p.text).slice(0, 430)}
+                              {(p.context || p.text).length > 430 ? "…" : ""}
                             </p>
                             <span className="text-link">
                               Read the source <ArrowUpRight size={13} />
@@ -1306,39 +1520,34 @@ function App() {
                 </span>
               </div>
               <div className="people-list">
-                {people
-                  .filter((p) =>
-                    `${p.name} ${p.role} ${p.company} ${p.sector}`
-                      .toLowerCase()
-                      .includes(networkFilter.toLowerCase()),
-                  )
-                  .map((p) => (
-                    <button
-                      className="person-row"
-                      key={p.id}
-                      onClick={() =>
-                        open({ kind: "person", person: p, ticker: p.company })
-                      }
-                    >
-                      <span className="avatar">{p.name.slice(0, 1)}</span>
-                      <span>
-                        <strong>{p.name}</strong>
-                        <small>
-                          {p.role} · {p.company}
-                        </small>
-                        <em>
-                          {p.sector} · {p.start}–{p.end} · {p.relationship}
-                        </em>
-                      </span>
-                      <ChevronRight size={16} />
-                    </button>
-                  ))}
+                {networkMatches(networkFilter, people).map((p) => (
+                  <button
+                    className="person-row"
+                    key={p.id}
+                    onClick={() =>
+                      open({
+                        kind: "person",
+                        person: p,
+                        ticker: p.company,
+                        question: networkFilter,
+                      })
+                    }
+                  >
+                    <span className="avatar">{p.name.slice(0, 1)}</span>
+                    <span>
+                      <strong>{p.name}</strong>
+                      <small>
+                        {p.role} · {p.company}
+                      </small>
+                      <em>
+                        {p.sector} · {p.start}–{p.end} · {p.relationship}
+                      </em>
+                    </span>
+                    <ChevronRight size={16} />
+                  </button>
+                ))}
               </div>
-              {!people.some((p) =>
-                `${p.name} ${p.role} ${p.company} ${p.sector}`
-                  .toLowerCase()
-                  .includes(networkFilter.toLowerCase()),
-              ) && (
+              {!networkMatches(networkFilter, people).length && (
                 <div className="empty">
                   <h2>No matching experience found</h2>
                   <p>

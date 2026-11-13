@@ -121,3 +121,136 @@ export async function download(source) {
   }
   throw Error("Too many document redirects.");
 }
+
+const refreshCache = new Map();
+export async function refreshTicker(ticker) {
+  const saved = refreshCache.get(ticker);
+  if (saved && saved.until > Date.now()) return saved.value;
+  const result = {
+    ticker,
+    checkedAt: new Date().toISOString(),
+    market: null,
+    filings: null,
+    errors: [],
+  };
+  await Promise.all([
+    (async () => {
+      try {
+        const r = await fetch(
+          `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker + ".NS")}?range=3mo&interval=1d&includeAdjustedClose=true`,
+          { signal: AbortSignal.timeout(15000) },
+        );
+        if (!r.ok) throw Error(`Market source returned ${r.status}`);
+        const j = (await r.json()).chart?.result?.[0];
+        const closes = j?.indicators?.adjclose?.[0]?.adjclose,
+          volume = j?.indicators?.quote?.[0]?.volume;
+        if (!closes || !volume)
+          throw Error("Adjusted market series unavailable");
+        const indiaDate = new Intl.DateTimeFormat("en-CA", {
+          timeZone: "Asia/Kolkata",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(new Date());
+        const indiaTime = new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Kolkata",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }).format(new Date());
+        const days = j.timestamp
+          .map((t, i) => ({ t, c: closes[i], v: volume[i] }))
+          .filter(
+            (x) =>
+              Number.isFinite(x.c) &&
+              x.c > 0 &&
+              Number.isFinite(x.v) &&
+              (new Date(x.t * 1000).toISOString().slice(0, 10) < indiaDate ||
+                (new Date(x.t * 1000).toISOString().slice(0, 10) ===
+                  indiaDate &&
+                  indiaTime >= "15:45")),
+          );
+        if (days.length < 22)
+          throw Error("Insufficient complete prior sessions");
+        const last = days.at(-1),
+          prior = days.at(-2),
+          avg = days.slice(-21, -1).reduce((n, d) => n + d.v, 0) / 20;
+        result.market = {
+          close: last.c,
+          change: (last.c / prior.c - 1) * 100,
+          session: new Date(last.t * 1000).toISOString().slice(0, 10),
+          volume: last.v,
+          volumeRatio: avg > 0 ? last.v / avg : null,
+          provider: "Yahoo Finance",
+          basis: "provider-adjusted history",
+        };
+      } catch (e) {
+        result.errors.push(e.message);
+      }
+    })(),
+    (async () => {
+      try {
+        const r = await fetch(
+          `https://www.screener.in/company/${encodeURIComponent(ticker)}/consolidated/`,
+          { signal: AbortSignal.timeout(15000) },
+        );
+        if (!r.ok) throw Error(`Filing directory returned ${r.status}`);
+        const html = await r.text();
+        const section = html.split(/id=["']company-announcements-tab["']/)[1];
+        if (!section) throw Error("Filing directory structure changed");
+        result.filings = [];
+        for (const m of section.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)) {
+          const a = m[1].match(
+              /<a[^>]*href=["'](https:\/\/(?:www\.)?bseindia\.com\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/i,
+            ),
+            date = m[1].match(/datetime=["']([^"']+)["']/);
+          if (!a || !date || !Number.isFinite(Date.parse(date[1]))) continue;
+          const title = decode(
+            a[2]
+              .replace(/<[^>]*>/g, " ")
+              .replace(/\s+/g, " ")
+              .trim(),
+          );
+          const raw = decode(a[1]);
+          const id = Array.from(
+            new Uint8Array(
+              await crypto.subtle.digest(
+                "SHA-256",
+                new TextEncoder().encode(raw),
+              ),
+            ),
+          )
+            .map((x) => x.toString(16).padStart(2, "0"))
+            .join("")
+            .slice(0, 16);
+          const routine =
+            /newspaper|certificate|trading window|investor meet|loss of share/i.test(
+              title,
+            );
+          result.filings.push({
+            id,
+            ticker,
+            title,
+            date: date[1].slice(0, 10),
+            publishedAt: date[1],
+            url: raw,
+            sourceType: "BSE filing",
+            historical: false,
+            priority: routine ? "Routine" : "Review",
+            rank: routine ? 9 : /results|transcript/i.test(title) ? 0 : 4,
+            description:
+              "Original disclosure located; its financial impact has not been verified.",
+            question:
+              "What does the original disclosure establish, and what needs verification?",
+          });
+          if (result.filings.length === 5) break;
+        }
+      } catch (e) {
+        result.errors.push(e.message);
+      }
+    })(),
+  ]);
+  if (refreshCache.size > 100) refreshCache.clear();
+  refreshCache.set(ticker, { until: Date.now() + 300000, value: result });
+  return result;
+}

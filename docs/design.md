@@ -48,3 +48,9 @@ The guidance history uses four dated rows. Each separates the quarter in which m
 The source reader offers a collapsed evidence-recording form. It requires literal number support and an explicit source check; it is a review workflow, not an implication that the model verified the number. Comparison controls are retained when opening evidence and returning. Short reviewed table-cell extracts identify their omitted columns and link to the full original layout.
 
 This extension retains the existing type, colour and spacing system. Server rendering was checked. A fresh visual/mobile browser pass is still needed because automatic approval review blocked the browser session at its usage limit.
+
+## Investor walkthrough improvements
+
+The company research page now leads with source-linked, deterministic comparisons and question-aware contacts. Source tools and the question form use progressive disclosure. The brief has a clearly dated archive entry point so a demonstration does not depend on a new filing occurring that day. Source context includes original page text; technical recording controls remain optional. The guidance view separates completed target periods from open targets, and compares the latest two explicit ranges on a matching basis without calling an open target delivered.
+
+Digest dates are next to the digest controls. Coverage exposes partial failures and an on-demand refresh. The mobile density and modal positioning were adjusted following the investor walkthrough. Synthetic experience was revised to include a finance controller at Infosys; matching uses company, sector, role and question relevance, while relationship certainty remains independently labelled.

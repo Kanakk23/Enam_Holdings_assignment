@@ -68,14 +68,17 @@ export const people = Array.from({ length: 36 }, (_, i) => {
     name: names[i],
     company: company.ticker,
     sector: company.sector,
-    role: [
-      "Operations lead",
-      "Finance controller",
-      "Enterprise sales director",
-      "Supply-chain manager",
-      "Industry analyst",
-      "Product director",
-    ][i % 6],
+    role:
+      i === 20
+        ? "Finance controller"
+        : [
+            "Operations lead",
+            "Finance controller",
+            "Enterprise sales director",
+            "Supply-chain manager",
+            "Industry analyst",
+            "Product director",
+          ][i % 6],
     start: 2016 + (i % 5),
     end: 2020 + (i % 5),
     relationship:
@@ -97,14 +100,19 @@ export function marketSignals(market, threshold) {
       return reasons.length ? [{ ticker, ...m, reasons }] : [];
     });
 }
-export function matchPeople(ticker, sector, all = people) {
+export function matchPeople(ticker, sector, all = people, question = "") {
   return all
     .map((p) => ({
       ...p,
       score:
         (p.company === ticker ? 4 : 0) +
         (p.sector === sector ? 2 : 0) +
-        (p.relationship === "Known demo contact" ? 1 : 0),
+        (p.relationship === "Known demo contact" ? 1 : 0) +
+        ((p.company === ticker || p.sector === sector) &&
+        /cash|margin|conversion|profit/i.test(question) &&
+        /finance/i.test(p.role)
+          ? 5
+          : 0),
     }))
     .filter((p) => p.score > 1)
     .sort((a, b) => b.score - a.score)

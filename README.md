@@ -25,7 +25,7 @@ The build produces a self-contained Worker ESM at `dist/server/index.js`. It ser
 - **Push:** 18-company portfolio, a cached set of recent BSE filing links, an exact rolling 24-hour window, company/date filters, transparent rule-based prioritisation, collapsed routine disclosures and persisted review status.
 - **Triggered EOD signals:** configurable close-to-close move and volume multiple, with the current observation excluded from the prior 20-session volume baseline. Missing closes are excluded; prices show their actual session.
 - **Pull:** original annual reports and earnings-call transcripts, scoped evidence retrieval, PDF-page references and original links. Infosys now includes reviewed quarterly/annual figures, calculated comparable-period changes, separate reported/adjusted views, and a four-call guidance ledger. Additional research companies are Coforge, Persistent Systems and Tata Consumer Products.
-- **Unseen tickers:** enter a valid NSE symbol. FINN discovers original annual-report and raw-transcript links from Screener's document directory, then downloads a selected primary PDF through a restricted proxy and extracts its text in the browser. No ticker-to-answer lookup table. Availability depends on the original publisher.
+- **Unseen tickers:** enter a valid NSE symbol. FINN discovers original annual-report and raw-transcript links from Screener's document directory, then automatically attempts up to two discovered primary PDFs through a restricted proxy and extracts its text in the browser. No ticker-to-answer lookup table. Availability depends on the original publisher.
 - **Network:** 36 clearly synthetic profiles, company/sector experience matching within research and filing details, direct network search, and explicit known-contact versus inferred colleague-overlap paths.
 - **Trust:** historical report periods, publication/indexing distinction, source retrieval date, incomplete and unavailable-source states, and an explicitly labelled extractive default.
 
@@ -85,3 +85,13 @@ node scripts/verify-finance-render.mjs
 `verify-finance-render` checks server-rendered markup and data presentation; it is not browser or visual verification. The latest browser check was unavailable because automatic approval review hit the session usage limit.
 
 See [design decisions](docs/design.md), [data provenance](docs/data-provenance.md), [verification and demo](docs/verification.md), and [build history](docs/build-history.md).
+
+## Updated investor workflow
+
+Start at Brief → Continue an investigation for an explicitly archived Infosys case. The research view leads with comparable-period movements and current/prior evidence pairs, then question-aware network matches. The detailed financial table, completed/open guidance filters and revisions remain available below. Findings are calculated from reviewed inputs, not generated explanations of causality.
+
+Open Coverage and freshness → Refresh portfolio sources for on-demand Yahoo EOD and filing-directory checks. Partial failures retain previous data and expose per-company errors. Successful results persist in that browser. This refresh does not require a Git commit or deployment; scheduled unattended publication is not implemented. Source coverage remains bounded.
+
+Unseen-symbol discovery now attempts two listed original PDFs automatically. Publisher restrictions can still prevent extraction. Choose another original, or use the per-source downloaded-PDF input after checking its identity. The fallback is browser-local and does not certify publisher authenticity. Automatic financial table extraction and live model evaluation remain unfinished.
+
+A covering-email draft is in docs/submission-email.md. Repository visibility, evaluator access and original AI-session export links must be resolved before submitting; no email has been sent.

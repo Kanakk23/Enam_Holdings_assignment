@@ -2354,3 +2354,217 @@ summary:focus-visible {
   white-space: normal;
   overflow-wrap: anywhere;
 }
+/* Investor workflow: findings first, evidence on demand. */
+dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+}
+.research-finding {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border, #dce1e7);
+  margin-bottom: 14px;
+}
+.research-finding h3 {
+  font-size: 21px;
+}
+.research-finding ul {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+.research-finding li {
+  padding: 10px 0;
+}
+.research-finding li button,
+.guidance-revision button {
+  min-height: 44px;
+  padding: 8px 10px;
+  color: #244ba5;
+  background: transparent;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.research-finding > p:last-child {
+  font-size: 13px;
+  color: #526070;
+  max-width: 70ch;
+}
+.research-tools,
+.coverage-detail {
+  padding: 12px 0;
+}
+.research-tools > summary,
+.coverage-detail > summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 12px 0;
+  font-size: 14px;
+}
+.compact-research-intro {
+  margin-bottom: 10px !important;
+}
+.compact-research-intro h1 {
+  font-size: 22px !important;
+}
+.compact-research-intro p,
+.brief-stamp {
+  display: none !important;
+}
+.research-form {
+  margin-bottom: 8px;
+}
+.suggestions {
+  margin-bottom: 12px !important;
+}
+.research-result {
+  margin-top: 18px !important;
+}
+.research-result .people-strip {
+  margin-top: 12px;
+  margin-bottom: 18px;
+  padding: 10px 0;
+}
+.research-result .people-strip .person-row {
+  padding: 10px 0;
+}
+.continue-research {
+  padding: 16px 0;
+  border-block: 1px solid #dde2e8;
+  margin: 14px 0;
+}
+.continue-research h2 {
+  font-size: 18px;
+}
+.continue-research p {
+  font-size: 12px;
+  margin: 5px 0 10px;
+  color: #526070;
+}
+.inline-dates {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.inline-dates label {
+  display: grid;
+  font-size: 12px;
+  gap: 4px;
+}
+.inline-dates input,
+.ledger-mode select {
+  padding: 10px;
+  min-height: 44px;
+  border: 1px solid #ccd3dc;
+  background: white;
+  border-radius: 4px;
+}
+.ledger-mode {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.guidance-revision {
+  padding: 14px 0;
+  border-bottom: 1px solid #dde2e8;
+  margin-bottom: 20px;
+}
+.guidance-revision p {
+  font-size: 14px;
+  max-width: 70ch;
+}
+.pdf-recovery {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  max-width: 100%;
+  padding: 12px 0;
+}
+.pdf-recovery input {
+  max-width: 100%;
+  font-size: 12px;
+}
+.source-choice {
+  flex-wrap: wrap;
+}
+.calculation summary {
+  min-width: 44px;
+  padding-inline: 5px;
+}
+.calculation > div {
+  min-width: 130px;
+}
+.document-sheet blockquote {
+  white-space: pre-wrap;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.sidebar-foot button {
+  min-height: 44px;
+}
+@media (max-width: 700px) {
+  .page-intro {
+    margin-bottom: 18px !important;
+  }
+  .page-intro h1 {
+    font-size: 27px;
+  }
+  .content {
+    padding-top: 20px;
+  }
+  .brief-intro h1 {
+    font-size: 27px;
+  }
+  .attention-heading {
+    margin-top: 18px !important;
+  }
+  .featured {
+    padding: 18px !important;
+  }
+  .event {
+    margin-bottom: 14px;
+  }
+  .research-result .section-line {
+    gap: 10px;
+  }
+  .research-result .section-line .label {
+    font-size: 11px;
+  }
+  .research-result .financial-panel {
+    margin-top: 18px;
+  }
+  .market-table small,
+  .market-provenance,
+  .event-meta,
+  .source-note,
+  .analysis-note,
+  .person-row em {
+    font-size: 12px !important;
+  }
+  .guidance-row small,
+  .current-figure small,
+  .analysis-basis,
+  .citation-button {
+    font-size: 12px !important;
+  }
+  .financial-table td {
+    min-width: 0;
+  }
+  .ledger-mode {
+    align-items: start;
+    flex-direction: column;
+  }
+  .source-choice {
+    display: block;
+  }
+  .research-finding {
+    padding-top: 4px;
+  }
+  .research-finding h3 {
+    font-size: 19px;
+  }
+}

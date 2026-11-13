@@ -152,10 +152,30 @@ export function FinancialAnalysis({
       ["revenue", "ebitda", "pbt", "pat"].includes(r.metric) &&
       r.current.status === "missing",
   );
-  const ledger = guidance
+  const [ledgerMode, setLedgerMode] = useState(context.ledgerMode || "all");
+  const ledgerAll = guidance
     .filter((g) => g.ticker === ticker && g.metric === guidanceMetric)
-    .sort((a, b) => (b.issuedAt || "").localeCompare(a.issuedAt || ""))
+    .sort((a, b) => (b.issuedAt || "").localeCompare(a.issuedAt || ""));
+  const ledger = ledgerAll
+    .filter(
+      (g) =>
+        ledgerMode === "all" ||
+        (ledgerMode === "completed"
+          ? periodEnd(g.targetPeriod) <= new Date().toISOString().slice(0, 10)
+          : periodEnd(g.targetPeriod) > new Date().toISOString().slice(0, 10)),
+    )
     .slice(0, 4);
+  const latest = ledgerAll[0],
+    priorGuidance = ledgerAll.find(
+      (g) =>
+        g.id !== latest?.id &&
+        g.targetPeriod === latest?.targetPeriod &&
+        g.scope === latest?.scope &&
+        g.accounting === latest?.accounting &&
+        g.basis === latest?.basis &&
+        g.unit === latest?.unit &&
+        sourceProof(g, documents),
+    );
   if (!own.length && !guidance.some((g) => g.ticker === ticker))
     return (
       <section className="financial-panel">
@@ -350,6 +370,37 @@ export function FinancialAnalysis({
         </>
       )}
       <div className="guidance-ledger">
+        <label className="ledger-mode">
+          View commitments
+          <select
+            aria-label="Guidance period status"
+            value={ledgerMode}
+            onChange={(e) =>
+              remember("ledgerMode", e.target.value, setLedgerMode)
+            }
+          >
+            <option value="all">All statements</option>
+            <option value="open">Open targets</option>
+            <option value="completed">Completed target periods</option>
+          </select>
+        </label>
+        {latest && priorGuidance && sourceProof(latest, documents) && (
+          <div className="guidance-revision">
+            <h3>Latest guidance revision</h3>
+            <p>
+              For {periodLabel(latest.targetPeriod)}: {priorGuidance.lower}–
+              {priorGuidance.upper} → {latest.lower}–{latest.upper}{" "}
+              {latest.unit}. This compares explicit ranges on the same basis; it
+              is not a delivery verdict.
+            </p>
+            <Source record={latest} onSource={onSource}>
+              Latest statement
+            </Source>
+            <Source record={priorGuidance} onSource={onSource}>
+              Previous statement
+            </Source>
+          </div>
+        )}
         <div className="section-line">
           <h3>Guidance versus delivery</h3>
           <label className="sr-only" htmlFor="guidance-metric">
