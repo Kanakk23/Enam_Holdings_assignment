@@ -28,7 +28,7 @@ for (const provider of ["groq", "openrouter", "gemini"]) {
     assert.equal(await synthesize(config, "cash generation", passages, { fetcher }), answer);
     const { url, options } = seen[0];
     assert.equal(new URL(url).hostname, { groq: "api.groq.com", openrouter: "openrouter.ai", gemini: "generativelanguage.googleapis.com" }[provider]);
-    assert.equal(options.redirect, "error");
+    assert.equal(options.redirect, "manual");
     assert.ok(options.signal);
     assert.equal(provider === "gemini" ? options.headers["x-goog-api-key"] : options.headers.Authorization, provider === "gemini" ? fakeKey : `Bearer ${fakeKey}`);
     assert.ok(!url.includes(fakeKey));
@@ -70,6 +70,20 @@ test("network failure and provider JSON errors never expose upstream content or 
   const config = modelConfig({}, { provider: "openrouter", apiKey: fakeKey });
   for (const fetcher of [async () => { throw Error(fakeKey); }, async () => new Response("bad JSON " + fakeKey), async () => Response.json({ error: { code: 429, message: fakeKey } })])
     await assert.rejects(modelCompletion(config, "system", "input", { fetcher }), e => !e.message.includes(fakeKey));
+});
+
+test("provider redirects are rejected without forwarding the key to a new origin", async () => {
+  let calls = 0;
+  await assert.rejects(modelCompletion(modelConfig({}, { provider: "groq", apiKey: fakeKey }), "system", "input", {
+    fetcher: async (url, options) => {
+      calls++;
+      // Emulate the deployed Worker's supported redirect modes.
+      assert.equal(options.redirect, "manual");
+      assert.equal(new URL(url).hostname, "api.groq.com");
+      return new Response(null, { status: 307, headers: { Location: "https://evil.example/collect" } });
+    },
+  }), e => e.code === "unavailable");
+  assert.equal(calls, 1);
 });
 
 test("research keeps exact evidence on quota failure and returns clickable citation inputs on success", async t => {

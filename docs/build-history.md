@@ -28,3 +28,5 @@ Reviewed both assignment PDFs and walked through desktop and a 390-pixel iframe.
 ## API connection update
 
 Added working Groq/OpenRouter/Gemini request adapters and an in-app AI setup dialog after the missing connection path was identified. Added a short provider connection check, current-tab credential handling, original-passage synthesis with source-reference buttons, free-only OpenRouter model selection, bounded requests and safe extractive fallback. Fixed local environment forwarding. Extended API contract tests and server-rendered UI checks. The browser URL policy blocked fresh interactive verification; no valid user key or live model evaluation is claimed.
+
+The production API smoke check exposed a Worker-specific unsupported redirect mode that Node fixtures did not catch. Corrected it to manual redirect handling, added a no-forwarding regression and republished.

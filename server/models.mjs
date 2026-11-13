@@ -78,7 +78,9 @@ export async function modelCompletion(config, system, input, { test = false, fet
   try {
     response = await fetcher(endpoint, {
       method: "POST", headers, body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(25000), redirect: "error",
+      // Workers supports manual/follow, not Fetch's error redirect mode.
+      // A 3xx is rejected below; credentials must never follow a redirect.
+      signal: AbortSignal.timeout(25000), redirect: "manual",
     });
     if (!response.ok) throw upstreamError(response.status);
     output = await response.json();
