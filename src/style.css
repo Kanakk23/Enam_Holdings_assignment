@@ -2573,3 +2573,21 @@ dialog {
 .model-answer h3 { font-size: 19px; }
 .model-answer .answer { white-space: pre-wrap; line-height: 1.75; padding: 0; background: transparent; }
 .inline-citation { display: inline; min-width: 30px; min-height: 44px; padding: 4px; border: 0; background: transparent; color: var(--blue); text-decoration: underline; font: inherit; }
+/* Research work stays close to the evidence, including on a narrow screen. */
+.date-filters { margin:12px 0; color:var(--muted,#526071); }
+.date-filters summary,.raw-title summary { cursor:pointer; padding:10px 0; min-height:44px; }
+.document-sheet .focused-quote { white-space:normal; margin:12px 0 20px; line-height:1.65; }
+.focused-quote mark { color:#152b53; background:#edf2fc; box-decoration-break:clone; }
+.document-sheet details blockquote { white-space:normal; margin:12px 0; }
+.raw-title { margin-bottom:20px; overflow-wrap:anywhere; }
+.raw-title p { font-size:14px; }
+.person-row small { white-space:normal; }
+@media(max-width:700px){
+ .compact-research-intro { margin-bottom:12px; }
+ .compact-research-intro h1 { font-size:18px; }
+ .research-form.has-company { padding:6px 10px; margin-bottom:12px; }
+ .suggestions.has-company { display:none; }
+ .document-sheet { padding:16px; }
+ .source-note { font-size:13px; line-height:1.5; }
+ .person-row { align-items:flex-start; }
+}

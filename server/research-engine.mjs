@@ -1,5 +1,6 @@
+import { financialInstructions, validateFinancialCandidates, proseCandidates } from "./financial-extraction.mjs";
 import { ModelError, configuredModels, modelCompletion, researchInstructions, extractionInstructions } from "./models.mjs";
-const engineVersion = "source-routing-v2";
+const engineVersion = "source-routing-v3";
 export function researchTask(question) {
   const q = String(question).toLowerCase();
   if (/\b(calculate|compute|work out)\b/.test(q) && /\b(growth|yoy|qoq|ratio|conversion|change|percentage)\b/.test(q)) return "calculation";
@@ -41,7 +42,7 @@ export function sourceInputs(passages, maxChars = 1800, question = "") {
     const fingerprint = `${p.document.id}:${p.page}:${p.context || text}`;
     if (seen.has(fingerprint)) return [];
     seen.add(fingerprint);
-    return [{ reference: i + 1, documentId: p.document.id, title: String(p.document.title).slice(0, 200), page: p.page,
+    return [{ reference: i + 1, documentId: p.document.id, passageId: p.id, title: String(p.document.title).slice(0, 200), page: p.page,
       period: p.document.reportPeriod || p.document.period || "See original", text }];
   });
 }
@@ -102,18 +103,18 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
     const tokenCap = config.provider === "groq" ? modelLimit(env.GROQ_TOKENS_PER_MINUTE, 7000, 8000) : modelLimit(env.GEMINI_TOKENS_PER_MINUTE, 18000, 50000);
     if (bucket.calls >= rpm || bucket.tokens + estimate > tokenCap) throw new ModelError("budget");
     bucket.calls++; bucket.tokens += estimate; stats.calls++; stats.reservedTokens += estimate;
-    const stage = { provider: config.provider, model: config.model, purpose: structured ? "extract" : "reason" };
-    stats.stages.push(stage);
+    const stage = { provider: config.provider, model: config.model, purpose: structured === "financial" ? "financial" : structured ? "extract" : "reason" };
+    stage.startedAt = now(); stats.stages.push(stage);
     try {
-      const answer = await modelCompletion(config, system, input, { structured, fetcher, timeoutMs: Math.max(1, Math.min(25000, stats.deadline - now())) });
-      stage.outcome = "completed"; stage.outputCharacters = answer.length;
+      const answer = await modelCompletion(config, system, input, { structured, fetcher, onUsage: usage => { stage.usage = usage; }, timeoutMs: Math.max(1, Math.min(structured ? 7000 : 10000, stats.deadline - now())) });
+      stage.durationMs = now() - stage.startedAt; stage.outcome = "completed"; stage.outputCharacters = answer.length;
       return answer;
     }
     catch (error) {
-      stage.outcome = "failed"; stage.code = error.code || "unavailable";
+      stage.durationMs = now() - stage.startedAt; stage.outcome = "failed"; stage.code = error.code || "unavailable";
       if (error.detail) stage.detail = error.detail;
       if (error.upstreamStatus) stage.upstreamStatus = error.upstreamStatus;
-      const duration = error.code === "quota" ? 60000 : ["authentication", "model"].includes(error.code) ? 10 * 60000 : error.code === "unavailable" ? 15000 : 0;
+      const duration = error.code === "quota" ? 60000 : ["authentication", "model"].includes(error.code) ? 10 * 60000 : ["unavailable", "timeout"].includes(error.code) ? 30000 : 0;
       if (duration) cooldown.set(bucketKey, now() + duration);
       throw error;
     }
@@ -131,6 +132,24 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
     throw failure;
   }
   return {
+    async financial({ticker, passages, scope = "private-owner"}, env = {}) {
+      const stats={calls:0,cacheHits:0,reservedTokens:0,stages:[],deadline:now()+18000,task:"financial"};
+      const sources=sourceInputs(passages,1800,"revenue operating margin free cash flow").map(s=>({...s,type:passages.find(p=>p.document?.id===s.documentId)?.document?.type}));
+      const literal=validateFinancialCandidates(proseCandidates(sources),sources,ticker);
+      if(literal.facts.length>=2)return {...literal,stats};
+      let configs;try {configs=configuredModels(env);}catch{return {...literal,stats};}
+      if(!configs.extract&&!configs.extractFallback)return {...literal,stats};
+      try {
+        const key=await engineHash(["financial-v1",scope,ticker,sources,Object.values(configs).map(c=>[c.model,c.apiKey])]);
+        const result=await cached(key,()=>withFallback([configs.extract,configs.extractFallback],async config=>{
+          const raw=await invoke(config,financialInstructions,JSON.stringify({passages:sources}),"financial",env,stats);
+          let output;try {output=JSON.parse(raw);}catch{throw new ModelError("evidence");}
+          if(!Array.isArray(output.facts)||output.facts.length>12)throw new ModelError("evidence");
+          return validateFinancialCandidates(output.facts,sources,ticker);
+        }),stats);
+        return {facts:[...new Map([...literal.facts,...result.facts].map(f=>[f.id,f])).values()],rejections:result.rejections,stats};
+      }catch(error){stats.failureCode=error.code||"unavailable";return {...literal,stats};}
+    },
     async research({ ticker, question, passages, scope = "private-owner" }, env = {}) {
       const stats = { calls: 0, cacheHits: 0, reservedTokens: 0, task: researchTask(question), stages: [], deadline: now() + 30000 };
       if (stats.task === "calculation") return { warning: "Use the source-linked financial comparison below. Arithmetic is calculated from reviewed figures, and missing or incomparable inputs remain unresolved.", stats };

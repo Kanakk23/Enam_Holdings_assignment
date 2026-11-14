@@ -179,11 +179,9 @@ export function FinancialAnalysis({
   if (!own.length && !guidance.some((g) => g.ticker === ticker))
     return (
       <section className="financial-panel">
-        <h3>Build a financial comparison</h3>
+        <h3>Comparable actuals not established</h3>
         <p className="market-provenance">
-          Open a source passage to record an explicitly reported figure or
-          guidance range. Values stay attached to the source, period and
-          accounting basis.
+          Automatic extraction accepts explicit period, units and basis only. Inspect a source passage to verify or add an actual.
         </p>
       </section>
     );
@@ -194,7 +192,7 @@ export function FinancialAnalysis({
     >
       <div className="section-line">
         <h3>Reported performance</h3>
-        <span className="label">Reviewed primary sources</span>
+        <span className="label">Primary-source actuals</span>
       </div>
       {period && (
         <>
@@ -370,6 +368,7 @@ export function FinancialAnalysis({
         </>
       )}
       <div className="guidance-ledger">
+        {guidance.some(g=>g.ticker===ticker && ["within","above","below"].includes(assessGuidance(g,facts,documents).status)) && <button className="button secondary" onClick={()=>remember("ledgerMode","completed",setLedgerMode)}>Inspect completed commitments</button>}
         <label className="ledger-mode">
           View commitments
           <select

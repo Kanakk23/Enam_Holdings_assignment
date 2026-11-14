@@ -1,5 +1,5 @@
 import React from "react";
-import { findings } from "./investigation.mjs";
+import { findings, investigationQuestion } from "./investigation.mjs";
 import { periodLabel } from "./finance.mjs";
 export function ResearchFinding({
   ticker,
@@ -32,6 +32,7 @@ export function ResearchFinding({
           </li>
         ))}
       </ul>
+      <div className="next-question"><h4>Question to resolve</h4><p>{investigationQuestion(question)}</p></div>
       <p>
         These comparisons establish the movement, not its cause. Check
         management’s explanation and the accounting basis before drawing a

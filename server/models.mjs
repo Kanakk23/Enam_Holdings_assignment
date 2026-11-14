@@ -1,3 +1,4 @@
+import { financialSchema } from "./financial-extraction.mjs";
 // Server-only provider adapter. This module must never be imported by src/.
 export class ModelError extends Error {
   constructor(code, message = "The research note is unavailable. Original source passages remain accessible.", status = 502) {
@@ -44,7 +45,7 @@ function providerFailure(status) {
   error.upstreamStatus = status;
   return error;
 }
-export async function modelCompletion(config, system, input, { structured = false, fetcher = fetch, timeoutMs = 25000 } = {}) {
+export async function modelCompletion(config, system, input, { structured = false, fetcher = fetch, timeoutMs = 25000, onUsage = () => {} } = {}) {
   const supported = config.provider === "groq"
     ? [...allowedServerModels.GROQ_EXTRACT_MODEL, ...allowedServerModels.GROQ_REASON_MODEL].includes(config.model)
     : config.provider === "gemini" && [...allowedServerModels.GEMINI_EXTRACT_MODEL, ...allowedServerModels.GEMINI_REASON_MODEL].includes(config.model);
@@ -64,7 +65,7 @@ export async function modelCompletion(config, system, input, { structured = fals
     payload = {
       model: config.model, messages: [{ role: "system", content: system }, { role: "user", content: input }],
       temperature: 0, max_completion_tokens: config.maxTokens, reasoning_effort: "low", include_reasoning: false, stream: false,
-      ...(structured ? { response_format: { type: "json_schema", json_schema: { name: "evidence_records", strict: true, schema: evidenceSchema } } } : {}),
+      ...(structured ? { response_format: { type: "json_schema", json_schema: { name: "evidence_records", strict: true, schema: structured === "financial" ? financialSchema : evidenceSchema } } } : {}),
     };
   }
   let response, output;
@@ -77,6 +78,8 @@ export async function modelCompletion(config, system, input, { structured = fals
     throw new ModelError(error?.name === "TimeoutError" || error?.name === "AbortError" ? "timeout" : "unavailable");
   }
   if (output?.error) throw providerFailure(Number(output.error.code) || 503);
+  const usage = config.provider === "gemini" ? output.usageMetadata : output.usage;
+  onUsage({inputTokens:usage?.promptTokenCount ?? usage?.prompt_tokens ?? null,outputTokens:usage?.candidatesTokenCount ?? usage?.completion_tokens ?? null});
   const candidate = config.provider === "gemini" ? output?.candidates?.[0] : output?.choices?.[0];
   const finish = candidate?.finishReason || candidate?.finish_reason;
   if (["length", "MAX_TOKENS", "content_filter", "SAFETY", "RECITATION"].includes(finish)) {

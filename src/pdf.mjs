@@ -1,3 +1,4 @@
+import {reportPeriod} from "./report-period.mjs";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 GlobalWorkerOptions.workerSrc = workerUrl;
@@ -28,6 +29,7 @@ export async function indexPdf(source, onProgress, suppliedBytes) {
   const pdf = await getDocument({ data: bytes, isEvalSupported: false })
     .promise;
   const passages = [];
+  let header="";
   const pageCount = pdf.numPages;
   const total = Math.min(pageCount, 300);
   try {
@@ -39,6 +41,7 @@ export async function indexPdf(source, onProgress, suppliedBytes) {
       let text = "";
       for (const item of content.items)
         if (item.str) text += item.str + (item.hasEOL ? "\n" : " ");
+      if(n<=3)header+=text+"\n";
       const blocks = text.split(/(?<=[.!?])\s+/).map((t) => t.trim());
       for (let i = 0; i < blocks.length; i++)
         if (
@@ -74,7 +77,7 @@ export async function indexPdf(source, onProgress, suppliedBytes) {
     sha256,
     pageCount,
     partial: pageCount > total,
-    period: source.period || "See original document",
+    period: reportPeriod(header,source.type) || source.period || "See original document",
     retrievedAt: new Date().toISOString(),
     passages: passages
       .sort((a, b) => b.score - a.score)

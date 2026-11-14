@@ -91,7 +91,7 @@ No paid plan or service was purchased. Hosting availability is subject to the ac
 ## Deliberate limits
 
 - The filing directory snapshot contains up to five recent links per portfolio company, not an exhaustive exchange feed. Some BSE PDF requests returned HTTP 403 in this environment. FINN retains the original link and reports download failures.
-- The initial financial comparison cache contains 37 manually reviewed Infosys records and eight explicit guidance statements. The generic evidence form supports additional companies; automatic financial table extraction is not implemented. Missing EBITDA/PBT/PAT figures remain gaps. There is no investment verdict or composite management score.
+- The initial financial comparison cache contains 37 manually reviewed Infosys records and eight explicit guidance statements. The generic evidence form supports additional companies; automatic extraction now supports explicitly bound prose actuals, with a bounded model proposal and deterministic validation. Ambiguous tables remain unsupported. Missing EBITDA/PBT/PAT figures remain gaps. There is no investment verdict or composite management score.
 - Infosys includes its 2025–26 annual report and five earnings-call transcripts covering Q2 FY26 through Q2 FY27. Older 2024–25 Infosys/TCS reports remain clearly dated. Source coverage is historical and bounded.
 - Browser PDF indexing accepts up to 25 MB and reads at most 300 pages. Python ingestion also limits downloads to 25 MB. Scanned PDFs need a later OCR step. Retrieval is lexical and can miss relevant passages.
 - Network records are fictional; sector experience is a reason to investigate, not evidence that a contact knows current company facts or unpublished information.
@@ -123,6 +123,10 @@ Start at Brief → Continue an investigation for an explicitly archived Infosys 
 
 Open Coverage and freshness → Refresh portfolio sources for on-demand Yahoo EOD and filing-directory checks. Partial failures retain previous data and expose per-company errors. Successful results persist in that browser. This refresh does not require a Git commit or deployment; scheduled unattended publication is not implemented. Source coverage remains bounded.
 
-Unseen-symbol discovery now attempts two listed original PDFs automatically. Publisher restrictions can still prevent extraction. Choose another original, or use the per-source downloaded-PDF input after checking its identity. The fallback is browser-local and does not certify publisher authenticity. Automatic financial table extraction and live model evaluation remain unfinished.
+Unseen-symbol discovery now attempts two listed original PDFs automatically. Publisher restrictions can still prevent extraction. Choose another original, or use the per-source downloaded-PDF input after checking its identity. The fallback is browser-local and does not certify publisher authenticity. Automatic financial extraction is deliberately limited to explicit prose. Broad table extraction and reviewed live model evaluation remain unfinished.
 
 A covering-email draft is in docs/submission-email.md. Repository visibility, evaluator access and original AI-session export links must be resolved before submitting; no email has been sent.
+
+## Engineering verification update
+
+Automatic actual extraction runs in the backend and feeds source-linked comparisons without manual entry when the evidence contract passes. Research attempts now reserve fallback time and cool down timed-out routes. The brief selects at most five issuers, retaining the rest in its disclosure archive. See [engineering evaluation](docs/engineering-evaluation.md) for commands, measured synthetic contract results, failure boundaries, and the phone demo. Fixture passes are not live financial accuracy.

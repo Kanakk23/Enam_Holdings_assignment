@@ -103,7 +103,7 @@ export default {
         return json({ error: e.message }, 502);
       }
     }
-    if (url.pathname === "/api/research" && request.method === "POST") {
+    if (["/api/research", "/api/financials"].includes(url.pathname) && request.method === "POST") {
       let body;
       try {
         body = await requestJson(request);
@@ -134,6 +134,11 @@ export default {
           },
           422,
         );
+      if (url.pathname === "/api/financials") {
+        const result = await researchEngine.financial({ticker, passages:passagesFor(documents,"revenue operating margin free cash flow consolidated standalone",{limit:8}), scope:request.headers.get("oai-authenticated-user-id")||"owner-private-service"},env);
+        if(env.AI_LOG_USAGE === "true") console.info(JSON.stringify({event:"financial_usage",...result.stats,rejections:result.rejections}));
+        return json({facts:result.facts, message:result.facts.length ? "Automatically extracted; literal evidence checks passed. Verify accounting interpretation in the original." : "No unambiguous financial actuals could be extracted. Original evidence remains available."});
+      }
       const question = String(
         body.question || "Growth, margins and cash generation",
       ).slice(0, 600);

@@ -1,3 +1,4 @@
+import { selectAttention, eventContext, contactRelevance, evidenceFocus } from "./research-product.mjs";
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -41,7 +42,7 @@ import "@fontsource/ibm-plex-sans/latin-600.css";
 import "./style.css";
 import { FinancialAnalysis, RecordEvidence } from "./finance-ui.jsx";
 import { ResearchFinding } from "./finding-ui.jsx";
-import { networkMatches, conversationPrompts } from "./investigation.mjs";
+import { networkMatches, conversationPrompts, investigationQuestion } from "./investigation.mjs";
 import { sourcePassage } from "./finance.mjs";
 import { ModelAnswer } from "./model-ui.jsx";
 const Icon = ({ as: C, ...p }) => <C size={18} strokeWidth={1.7} {...p} />;
@@ -160,6 +161,18 @@ function App() {
       stored("finn-threshold", { price: 5, volume: 2 }),
     );
   const [refreshing, setRefreshing] = useState(false);
+  const [automaticFacts, setAutomaticFacts] = useState([]), [financialStatus,setFinancialStatus]=useState("");
+  const financialSignature = research?.documents?.map(d=>d.id).join("|") || "";
+  useEffect(()=>{
+    setAutomaticFacts([]); setFinancialStatus("");
+    if(busy || indexing || !research?.documents?.length || (data.facts||[]).filter(f=>f.ticker===research.ticker).length>=2)return;
+    const controller=new AbortController();
+    setFinancialStatus("Checking financial actuals against the original passages…");
+    fetch("/api/financials",{method:"POST",headers:{"Content-Type":"application/json"},signal:controller.signal,body:JSON.stringify({ticker:research.ticker,documents:research.documents.filter(d=>d.sha256).slice(-8).map(d=>({id:d.id,ticker:d.ticker,title:d.title,type:d.type,url:d.url,period:d.period,partial:d.partial,userProvided:d.userProvided,passages:d.passages.map(p=>({id:p.id,page:p.page,text:p.text}))}))})})
+      .then(async r=>{if(!r.ok)throw Error();return r.json();}).then(r=>{setAutomaticFacts(r.facts||[]);setFinancialStatus(r.message);})
+      .catch(e=>{if(e.name!=="AbortError")setFinancialStatus("Automatic figures are unavailable. You can still inspect the original evidence or record a checked figure.");});
+    return ()=>controller.abort();
+  },[research?.ticker,financialSignature,busy,indexing]);
   async function refreshPortfolio() {
     setRefreshing(true);
     setError("");
@@ -300,7 +313,7 @@ function App() {
       setError("The original passage is unavailable.");
       return;
     }
-    evidence(passage);
+    evidence({...passage, focus:evidenceFocus(passage,record)});
   };
   const open = (v) => {
     stack.current.push({ view, scroll: window.scrollY });
@@ -358,8 +371,7 @@ function App() {
     to: windowMode === "24h" ? "" : to,
     since: windowMode === "24h" ? Date.now() - 864e5 : null,
   }).filter((e) => showReviewed || !e.reviewed);
-  const important = liveEvents.filter((e) => e.priority !== "Routine"),
-    ordinary = liveEvents.filter((e) => e.priority === "Routine");
+  const {important,ordinary} = selectAttention(liveEvents);
   async function runResearch(
     t,
     prompt = "What do the primary documents say about growth, margins and cash generation?",
@@ -428,7 +440,12 @@ function App() {
             Number(a.url.includes("bseindia.com")) -
             Number(b.url.includes("bseindia.com")),
         );
-        for (const source of choices.slice(0, 2)) await importSource(source);
+        const imported=[];
+        for (const source of choices.slice(0, 2)) {const d=await importSource(source);if(d)imported.push(d);}
+        if(imported.length){
+          const response=await fetch("/api/research",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ticker:t,question:prompt,documents:imported.map(d=>({id:d.id,ticker:t,title:d.title,type:d.type,url:d.url,period:d.period,partial:d.partial,userProvided:d.userProvided,passages:d.passages.map(p=>({id:p.id,page:p.page,text:p.text}))}))})});
+          const answer=await response.json();if(response.ok)setResearch(answer);
+        }
       }
     } catch (e) {
       setResearch({ ticker: t, question: prompt, error: e.message });
@@ -496,6 +513,7 @@ function App() {
           status: "",
         };
       });
+      return d;
       setFoundSources((v) => v.filter((x) => x.url !== source.url));
     } catch (e) {
       setError(e.message);
@@ -547,6 +565,7 @@ function App() {
                   ? "Known contact"
                   : "Inferred overlap"}
               </em>
+              <small>{contactRelevance(p,question,t)}</small>
             </span>
             <ChevronRight size={16} />
           </button>
@@ -571,9 +590,9 @@ function App() {
         </div>
         <button
           className="event-title"
-          onClick={() => open({ kind: "event", event: e })}
+          onClick={() => open({ kind: "event", event: eventContext(e) })}
         >
-          {e.ticker} · {e.title}
+          {e.title}
           <ArrowUpRight size={featured ? 23 : 18} />
         </button>
         <p>{e.description}</p>
@@ -586,7 +605,7 @@ function App() {
         <div className="event-bottom">
           <button
             className="text-button"
-            onClick={() => open({ kind: "event", event: e })}
+            onClick={() => open({ kind: "event", event: eventContext(e) })}
           >
             <FileText size={15} /> {e.sourceType} <ArrowRight size={15} />
           </button>
@@ -642,7 +661,8 @@ function App() {
                 numerical interpretations in the original document.
               </p>
               {p.section && <p className="source-section">{p.section}</p>}
-              <blockquote>{p.context || p.text}</blockquote>
+              <blockquote className="focused-quote"><mark>{p.focus || evidenceFocus(p)}</mark></blockquote>
+              <details><summary>Surrounding page context</summary><blockquote>{String(p.context || p.text).replace(/\s+/g," ").trim()}</blockquote></details>
             </div>
             <p className="subtle">
               Retrieved {d.retrievedAt?.slice(0, 10)} · Reporting period{" "}
@@ -837,8 +857,8 @@ function App() {
                   {view.event.historical ? " · Historical document" : ""}
                 </p>
               </div>
+              <details className="raw-title"><summary>Original exchange title</summary><p>{view.event.rawTitle}</p></details>
               <div className="insight-box">
-                <span>THE QUESTION</span>
                 <h2>{view.event.question}</h2>
                 <p>{view.event.description}</p>
               </div>
@@ -883,7 +903,7 @@ function App() {
               >
                 Research this question <ArrowRight size={16} />
               </button>
-              <PersonStrip t={view.event.ticker} />
+              <PersonStrip t={view.event.ticker} question={view.event.question} />
               <button
                 className="button secondary"
                 onClick={() => mark(view.event.id)}
@@ -912,6 +932,7 @@ function App() {
                   claim about a real person.
                 </p>
               </div>
+              <p>{contactRelevance(view.person,view.question,view.ticker)}</p>
               <section className="section">
                 <h3>Your connection</h3>
                 <Connection person={view.person} />
@@ -992,7 +1013,7 @@ function App() {
                   <SlidersHorizontal size={17} />
                 </button>
               </div>
-              <div className="inline-dates">
+              <details className="date-filters"><summary>Custom date range</summary><div className="inline-dates">
                 <label>
                   From
                   <input
@@ -1018,6 +1039,7 @@ function App() {
                   />
                 </label>
               </div>
+              </details>
               <details className="coverage-detail">
                 <summary>Coverage and freshness</summary>
                 <button
@@ -1218,7 +1240,7 @@ function App() {
                 </p>
               </div>
               <form
-                className="research-form"
+                className={"research-form " + (research ? "has-company" : "")}
                 onSubmit={(e) => {
                   e.preventDefault();
                   runResearch(query);
@@ -1236,7 +1258,7 @@ function App() {
                   Research <ArrowRight size={16} />
                 </button>
               </form>
-              <div className="suggestions">
+              <div className={"suggestions " + (research ? "has-company" : "")}>
                 {["INFY", "TCS", "COFORGE", "PERSISTENT", "TATACONSUM"].map(
                   (t) => (
                     <button key={t} onClick={() => runResearch(t)}>
@@ -1285,14 +1307,15 @@ function App() {
                     </div>
                   ) : (
                     <>
+                      {financialStatus && <p className="notice" role="status">{financialStatus}</p>}
                       <ResearchFinding
                         ticker={research.ticker}
-                        facts={[...(data.facts || []), ...localFacts]}
+                        facts={[...(data.facts || []), ...localFacts, ...automaticFacts]}
                         documents={data.documents}
                         question={research.question}
                         onSource={factEvidence}
                       />
-                      <PersonStrip t={research.ticker} />
+                      <PersonStrip t={research.ticker} question={investigationQuestion(research.question)} />
                       {research.warning && <p className="notice" role="status">{research.warning}</p>}
                       {research.sourceWarning && <p className="notice">{research.sourceWarning}</p>}
                       {research.answer && <ModelAnswer research={research} onSource={evidence} />}
@@ -1422,7 +1445,7 @@ function App() {
                       <FinancialAnalysis
                         key={research.ticker}
                         ticker={research.ticker}
-                        facts={[...(data.facts || []), ...localFacts]}
+                        facts={[...(data.facts || []), ...localFacts, ...automaticFacts]}
                         guidance={[...(data.guidance || []), ...localGuidance]}
                         documents={data.documents}
                         onSource={factEvidence}
@@ -1515,7 +1538,7 @@ function App() {
                 </h1>
                 <p>Find relevant experience, with a clear reason to connect.</p>
               </div>
-              <div className="research-form">
+              <div className={"research-form " + (research ? "has-company" : "")}>
                 <Search size={20} />
                 <input
                   aria-label="Find network expertise"

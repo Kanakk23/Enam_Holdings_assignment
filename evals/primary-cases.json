@@ -1,0 +1,32 @@
+{
+  "kind": "real-primary-excerpts-manually-inspected",
+  "cases": [
+    {
+      "id": "primary-HAVELLS",
+      "ticker": "HAVELLS",
+      "url": "https://nsearchives.nseindia.com/corporate/HAVELLS1_24102026122932_signed_Transcript_Q2FY2627.pdf",
+      "period": "FY2027-Q2",
+      "page": 3,
+      "text": "We delivered a strong performance in the second quarter, with revenue growing 35% year-on- year. During the quarter, each of our categories grew, with healthy contributions from both our established categories, including cables and switchgear, as well as the emerging renewables category.",
+      "expected": [],
+      "reason": "Consolidation not explicit in the selected quotation; a whole-company financial record is withheld."
+    },
+    {
+      "id": "primary-DABUR",
+      "ticker": "DABUR",
+      "url": "https://nsearchives.nseindia.com/corporate/DABUR_12052026173233_transcript.pdf",
+      "period": "FY2026-Q4",
+      "page": 3,
+      "text": "In quarter 4, our consolidated revenue grew by 7.3% year-on-year with domestic FMCG business growing at 9.5%, backed by volume growth of 6%. Within the India business, HPC portfolio maintained its strong momentum, recording a double-digit growth of 17% during the quarter.",
+      "expected": [
+        {
+          "metric": "revenue_yoy_growth",
+          "value": "7.3",
+          "unit": "%",
+          "period": "FY2026-Q4"
+        }
+      ],
+      "reason": "Explicit consolidated reported revenue YoY growth; quarter confirmed in original header."
+    }
+  ]
+}

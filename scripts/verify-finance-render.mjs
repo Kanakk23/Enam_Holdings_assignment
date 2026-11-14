@@ -51,7 +51,7 @@ try {
   const unseen = renderToStaticMarkup(
     React.createElement(FinancialAnalysis, { ...props, ticker: "UNSEEN" }),
   );
-  assert.match(unseen, /Build a financial comparison/);
+  assert.match(unseen, /Comparable actuals not established/);
   assert.doesNotMatch(unseen, /Within range/);
   const d = seed.documents.find((d) => d.reportPeriod === "FY2027-Q2");
   const form = renderToStaticMarkup(

@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
             const parts = [];
             for await (const chunk of req) parts.push(chunk);
             const body = Buffer.concat(parts);
-            const request = new Request("http://localhost" + req.url, {
+            const request = new Request(`http://${req.headers.host || "localhost"}` + req.url, {
               method: req.method,
               headers: req.headers,
               ...(body.length ? { body } : {}),

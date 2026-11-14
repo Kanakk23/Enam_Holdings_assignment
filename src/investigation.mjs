@@ -147,3 +147,10 @@ export function networkMatches(query, all) {
     .sort((a, b) => b.score - a.score)
     .map((x) => x.p);
 }
+
+export function investigationQuestion(question="") {
+ if(/cash|conversion/i.test(question))return "Which working-capital or accounting movements explain the cash-conversion change, and does management provide evidence that it will reverse?";
+ if(/margin/i.test(question))return "Which disclosed costs, pricing or utilisation movements explain the margin change, and which are recurring?";
+ if(/guidance|deliver|promis/i.test(question))return "What changed in management’s target, and what comparable actuals can establish delivery for a completed period?";
+ return question || "Which public operating evidence would test this disclosure’s assumptions?";
+}

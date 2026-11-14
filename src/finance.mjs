@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 const D = Decimal.clone({ precision: 40, rounding: Decimal.ROUND_HALF_UP });
 export const metrics = {
   revenue: "Revenue",
+  revenue_yoy_growth: "Revenue YoY growth · reported",
   ebitda: "EBITDA",
   pbt: "Profit before tax",
   pat: "Profit after tax",
@@ -11,6 +12,7 @@ export const metrics = {
   fcf_conversion: "FCF / net profit",
 };
 export const percentageMetrics = new Set([
+  "revenue_yoy_growth",
   "operating_margin",
   "revenue_cc_growth",
   "fcf_conversion",
@@ -67,7 +69,7 @@ export function offsetPeriod(p, n) {
 }
 export function accepted(f) {
   return (
-    ["source_checked", "user_checked"].includes(f?.review) &&
+    ["source_checked", "user_checked", "machine_checked"].includes(f?.review) &&
     !!periodEnd(f.period) &&
     !!f.documentId &&
     Number.isInteger(f.page) &&
@@ -108,7 +110,7 @@ export function sourcePassage(record, documents) {
 }
 export function sourceProof(record, documents) {
   const p = sourcePassage(record, documents);
-  return !!p && p.text.trim().length > 0;
+  return !!p && p.text.trim().length > 0 && (record.review !== "machine_checked" || (typeof record.quote === "string" && (p.context || p.text).replace(/\s+/g, " ").includes(record.quote.replace(/\s+/g, " ")) && quoteContainsNumber(record.quote, record.value)));
 }
 export function compareFacts(current, previous, relation = "yoy") {
   if (!accepted(current) || !accepted(previous))
@@ -235,7 +237,7 @@ export function assessGuidance(
 ) {
   if (
     !g ||
-    !["source_checked", "user_checked"].includes(g.review) ||
+    !["source_checked", "user_checked", "machine_checked"].includes(g.review) ||
     !periodEnd(g.targetPeriod) ||
     !sourceProof(g, documents) ||
     !validDate(g.issuedAt) ||
@@ -345,7 +347,7 @@ export function validateRecord(
 ) {
   if (
     !["figure", "guidance"].includes(kind) ||
-    !["source_checked", "user_checked"].includes(r?.review)
+    !["source_checked", "user_checked", "machine_checked"].includes(r?.review)
   )
     return "The record needs explicit source review.";
   if (
