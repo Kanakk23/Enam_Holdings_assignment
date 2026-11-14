@@ -1,7 +1,7 @@
 import {investigationBrief}from'../src/investigation.mjs';
 import {eventContext}from'../src/research-product.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import fc from 'fast-check';
-import {pdfRows,tablePassages} from '../src/financial-tables.mjs';import{tableActuals}from'../server/table-financials.mjs';import{compareFacts,displayChange}from'../src/finance.mjs';import{createResearchEngine}from'../server/research-engine.mjs';import{issuerSources,primaryKind}from'../server/issuer-discovery.mjs';import{publicUrl}from'../server/sources.mjs';import{verifiedClaims,renderVerified}from'../server/grounding.mjs';
+import {pdfRows,tablePassages} from '../src/financial-tables.mjs';import{tableActuals}from'../server/table-financials.mjs';import{compareFacts,displayChange}from'../src/finance.mjs';import{createResearchEngine}from'../server/research-engine.mjs';import{issuerSources,primaryKind}from'../server/issuer-discovery.mjs';import{publicUrl}from'../server/sources.mjs';import{citedClaims,verifiedClaims,renderVerified}from'../server/grounding.mjs';
 const fixtures=JSON.parse(fs.readFileSync(new URL('../evals/annual-table-cases.json',import.meta.url))).cases;
 for(const c of fixtures)test('held-out annual-statement extraction: '+c.ticker,()=>{const passages=tablePassages(pdfRows(c.items),c.page);const sources=passages.map(p=>({...p,type:c.type,documentId:c.sha256}));const facts=tableActuals(sources,c.ticker);assert.deepEqual(facts.map(({metric,period,value,unit})=>({metric,period,value,unit})),c.expected);for(const metric of ['revenue','pbt','pat']){const [a,b]=facts.filter(f=>f.metric===metric);assert.equal(compareFacts(a,b,'yoy').status,'ok');}});
 test('table order, value, unit, basis and missing-header corruption are rejected',()=>{const c=fixtures[0];const p=tablePassages(pdfRows(c.items),c.page)[0];for(const mutate of [t=>t.unit='INR lakh',t=>t.basis='standalone',t=>t.columns.reverse(),t=>t.header='',t=>t.rows.forEach(r=>r.values.reverse())]){const s={...p,type:'Annual report',documentId:'d',table:structuredClone(p.table)};mutate(s.table);assert.equal(tableActuals([s],'X').length,0);}});
@@ -11,7 +11,15 @@ test('issuer recovery follows only the issuer domain and permitted document type
 const env={ENABLE_FREE_MODEL:'true',GROQ_API_KEY:'test-only-placeholder-key',GEMINI_API_KEY:'test-only-placeholder-key'};
 const source='Management said margins may improve next year because freight costs are expected to fall.';
 const input={ticker:'UNSEEN',question:'Why did margins change?',passages:[{page:3,text:source,document:{id:'doc',type:'Earnings-call transcript',period:'FY2027-Q2'}}]};
-const output=(url,text)=>Response.json(url.includes('googleapis')?{candidates:[{finishReason:'STOP',content:{parts:[{text}]}}]}:{choices:[{finish_reason:'stop',message:{content:text}}]});
+const output=(url,text)=>{if(!text.trim().startsWith('{')&&/\[\d+\]/.test(text)){const m=text.match(/([\s\S]*?)\[(\d+)\]/);text=JSON.stringify({claims:[{text:m[1].trim(),references:[+m[2]]}]});}return Response.json(url.includes('googleapis')?{candidates:[{finishReason:'STOP',content:{parts:[{text}]}}]}:{choices:[{finish_reason:'stop',message:{content:text}}]});};
+test('sentence punctuation after citations is formatting, while uncited assertions still fail',()=>{
+ const sources=[{reference:1,text:source,period:'FY2027-Q2'}];
+ for(let trial=0;trial<3;trial++)for(const punctuation of ['.','!','?']) {
+  const claims=citedClaims(`Management expects improvement [1]${punctuation}\nFreight costs may fall [1]${punctuation}`,sources);
+  assert.equal(claims.length,2);assert.equal(claims[0].text,`Management expects improvement${punctuation}`);
+ }
+ assert.throws(()=>citedClaims('Management expects improvement [1]. Profit definitely doubled.',sources));
+});
 for(const [name,claim]of[['forecast presented as actual','Management improved margins because freight costs fell. [1]'],['unsupported certainty','Management eliminated execution issues and improved margins. [1]'],['negation reversed','Management said margins will not improve. [1]']])test('independent semantic rejection: '+name,async()=>{const calls=[];const engine=createResearchEngine({fetcher:async(url,opt)=>{const p=JSON.parse(opt.body),i=JSON.parse(url.includes('googleapis')?p.contents[0].parts[0].text:p.messages[1].content);calls.push(i);return output(url,i.claims?JSON.stringify({items:i.claims.map(c=>({index:c.index,verdict:'unsupported',reason:'Not entailed by the supplied quotation'}))}):claim);}});const r=await engine.research(input,env);assert.equal(r.answer,undefined);assert.equal(calls.length,2);assert.ok(r.warning);});
 test('mixed grounding retains supported evidence and withholds unsupported claims',()=>{const claims=[{index:0,text:'A reported fact.',evidence:[{reference:1}]},{index:1,text:'An unsupported cause.',evidence:[{reference:2}]}];const v=verifiedClaims(JSON.stringify({items:[{index:0,verdict:'supported',reason:'literal'},{index:1,verdict:'unsupported',reason:'missing'}]}),claims);assert.equal(renderVerified(v),'A reported fact. [1]');assert.throws(()=>verifiedClaims('{"items":[]}',claims));});
 

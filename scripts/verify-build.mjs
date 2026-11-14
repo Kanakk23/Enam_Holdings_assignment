@@ -48,6 +48,22 @@ try {
   assert.ok(!JSON.stringify(synthesized).includes("test-only-placeholder-key"));
   assert.equal(seen.length, 1); assert.ok(seen[0].startsWith("https://api.groq.com/"));
 } finally { globalThis.fetch = savedFetch; }
+try {
+  const {default:isolated}=await import(pathToFileURL(path.resolve('dist/server/index.js')).href+'?structured-research');
+  let calls=0;
+  globalThis.fetch=async(url,options)=>{
+    const payload=JSON.parse(options.body),input=JSON.parse(payload.messages[1].content);calls++;
+    const content=input.outputFormat==='claims'
+      ? {claims:[{text:'Management attributed weaker margins to freight costs.',references:[1]}]}
+      : {items:input.claims.map(c=>({index:c.index,verdict:'supported',reason:'Matches the attributed source statement'}))};
+    if(input.outputFormat==='claims')assert.equal(payload.response_format.json_schema.name,'research_claims');
+    return Response.json({choices:[{finish_reason:'stop',message:{content:JSON.stringify(content)}}]});
+  };
+  const doc={id:'structured-build',ticker:'STRUCTURED',title:'Synthetic build fixture',type:'Earnings-call transcript',url:'https://issuer.example/transcript.pdf',period:'FY2026-Q4',passages:[{page:1,text:'Management attributed weaker margins to freight costs.'}]};
+  const result=await(await isolated.fetch(new Request('https://finn.example/api/research',{method:'POST',body:JSON.stringify({ticker:'STRUCTURED',question:'Why did margins change?',documents:[doc]})}),{ENABLE_FREE_MODEL:'true',GROQ_API_KEY:'test-only-placeholder-key'})).json();
+  assert.equal(result.answerKind,'analysis');assert.match(result.answer,/freight costs/);assert.equal(calls,2);assert.equal(result.stats,undefined);
+  console.log('Packaged structured synthesis and independent verification passed.');
+} finally {globalThis.fetch=savedFetch;}
 assert.equal((await call("/missing-file.js")).status, 404);
 console.log(
   "Built Worker verified: page, bundled assets, strict snapshot, extractive API, backend routing/synthesis fixtures, client-key rejection, credential redaction, provenance and 404.",

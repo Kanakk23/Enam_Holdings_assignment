@@ -1,0 +1,429 @@
+{
+  "kind": "hosted-diagnostic-walkthrough-not-statistical-evaluation",
+  "date": "2026-11-14",
+  "application": "https://finn-research-brief.kanakxaviers123.chatgpt.site/",
+  "limitations": [
+    "Not the 12-question x 3-trial suite.",
+    "Changing deployed versions and quota state; do not compute a pass rate.",
+    "Cached UI repetitions are not independent model trials.",
+    "Only retrieved source passages were reviewed; no investment correctness claim.",
+    "Raw worker request headers, secrets and original source passages are excluded."
+  ],
+  "observations": [
+    {
+      "ticker": "INFY",
+      "question": "What did management say about operating margin?",
+      "outcome": "selected-evidence",
+      "review": "Three displayed extracts match original passages; periods require opening citations.",
+      "claimsReviewed": 3
+    },
+    {
+      "ticker": "PERSISTENT",
+      "question": "What do the primary documents say about growth, margins and cash generation?",
+      "outcome": "note-withheld",
+      "review": "Retained source excerpts; no comparable financial actuals established."
+    },
+    {
+      "ticker": "PERSISTENT",
+      "question": "Why did cash conversion change?",
+      "outcome": "analysis",
+      "answer": "The decline in cash conversion (Operational Cash Flow to PAT) was mainly due to a higher proportion of unbilled revenue in the quarter, which the company expects to normalize in the next quarter [2]",
+      "evidence": {
+        "url": "https://www.persistent.com/wp-content/uploads/2026/04/Analyst-Call-Transcript-Q4FY26.pdf",
+        "page": 9
+      },
+      "review": {
+        "support": "Matches the opened original excerpt.",
+        "qualifier": "Normalization remains an expectation.",
+        "limitation": "Period unresolved in indexed metadata; explicit management attribution could be clearer."
+      }
+    },
+    {
+      "ticker": "INFY",
+      "question": "Did margins improve and did cash conversion keep up?",
+      "outcome": "withheld-in-diagnostic-attempts",
+      "review": "Observed citation, numeric and budget failures on different deployed versions; source-linked comparisons remain available."
+    },
+    {
+      "ticker": "INFY",
+      "question": "Did margins improve and did cash conversion keep up?",
+      "sourceCommit": "47030d79d101c206a4543d4bacaba2f0b6ed9952",
+      "outcome": "partial-analysis-with-scope-error",
+      "review": "Note completed, but human review found that the FY2026-Q3 adjusted cash-conversion value of 118% was a nine-month figure, and an adjusted margin qualifier was omitted. Model verifier false acceptance: not a passing research-quality result. Added generic duration and adjusted-basis checks plus regression cases; final live rerun recorded separately."
+    },
+    {
+      "ticker": "INFY",
+      "question": "Did margins improve and did cash conversion keep up?",
+      "sourceCommit": "750c90c6548307bd96ab2fbe702004f9190f8897",
+      "outcome": "note-withheld-after-additional-guards",
+      "review": "Final signed-in UI check still withheld the research note. Financial comparisons, exact source passages and synthetic contacts remained available. This is an unresolved availability failure, not a passing full analytical workflow."
+    },
+    {
+      "ticker": "INFY",
+      "question": "Did margins improve and did cash conversion keep up?",
+      "sourceCommit": "f448ed8ccad134e150e354599611759ae72db8fa",
+      "outcome": "structured-partial-analysis",
+      "answer": "Adjusted operating margin for FY2026 Q3 was 21.2%, an expansion of 20 basis points sequentially. [3]",
+      "review": {
+        "supported": "The retained margin claim matches the cited source and keeps the adjusted basis.",
+        "failure": "A second retained multi-source causal sentence combined attributed commentary with observations not shown to be causal.",
+        "mitigation": "A generic single-passage causal-claim boundary and its repeated regression case were added after this live run. Final guard is checked deterministically and in the packaged Worker; no stochastic accuracy claim.",
+        "limitations": "The note did not fully answer the latest-period comparison. Original reviewed figures remain the main quantitative comparison."
+      }
+    }
+  ],
+  "traces": [
+    {
+      "timestamp": "2026-11-14T21:39:16.076Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "reason",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.8-flash",
+          "purpose": "reason",
+          "outcome": "failed",
+          "code": "unavailable",
+          "startedAt": 1794692349214,
+          "durationMs": 5181,
+          "upstreamStatus": 503
+        },
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "purpose": "reason",
+          "outcome": "completed",
+          "startedAt": 1794692354395,
+          "usage": {
+            "inputTokens": 2485,
+            "outputTokens": 602
+          },
+          "durationMs": 1681,
+          "outputCharacters": 1437
+        }
+      ],
+      "failureCode": "citations",
+      "calls": 2,
+      "cacheHits": 0,
+      "reservedTokens": 12290
+    },
+    {
+      "timestamp": "2026-11-14T21:39:37.018Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "extract",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite",
+          "purpose": "extract",
+          "outcome": "completed",
+          "startedAt": 1794692375132,
+          "usage": {
+            "inputTokens": 2109,
+            "outputTokens": 246
+          },
+          "durationMs": 1886,
+          "outputCharacters": 732
+        }
+      ],
+      "calls": 1,
+      "cacheHits": 0,
+      "reservedTokens": 5669
+    },
+    {
+      "timestamp": "2026-11-14T21:47:08.763Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "reason",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.8-flash",
+          "purpose": "reason",
+          "outcome": "failed",
+          "code": "timeout",
+          "startedAt": 1794692816985,
+          "durationMs": 10000
+        },
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "purpose": "reason",
+          "outcome": "completed",
+          "startedAt": 1794692826985,
+          "usage": {
+            "inputTokens": 2558,
+            "outputTokens": 570
+          },
+          "durationMs": 1778,
+          "outputCharacters": 691
+        }
+      ],
+      "failureCode": "numbers",
+      "calls": 2,
+      "cacheHits": 0,
+      "reservedTokens": 12624
+    },
+    {
+      "timestamp": "2026-11-14T21:50:20.107Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "reason",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.8-flash",
+          "purpose": "reason",
+          "outcome": "failed",
+          "code": "timeout",
+          "startedAt": 1794693009170,
+          "durationMs": 10000
+        },
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "purpose": "reason",
+          "outcome": "completed",
+          "startedAt": 1794693019170,
+          "usage": {
+            "inputTokens": 2558,
+            "outputTokens": 363
+          },
+          "durationMs": 937,
+          "outputCharacters": 458
+        }
+      ],
+      "failureCode": "citations",
+      "failureDetail": "uncited_or_oversized_claims",
+      "calls": 2,
+      "cacheHits": 0,
+      "reservedTokens": 12624
+    },
+    {
+      "timestamp": "2026-11-14T21:50:38.301Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "extract",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite",
+          "purpose": "extract",
+          "outcome": "completed",
+          "startedAt": 1794693036941,
+          "usage": {
+            "inputTokens": 925,
+            "outputTokens": 217
+          },
+          "durationMs": 1360,
+          "outputCharacters": 885
+        }
+      ],
+      "failureCode": "evidence",
+      "calls": 1,
+      "cacheHits": 0,
+      "reservedTokens": 3198
+    },
+    {
+      "timestamp": "2026-11-14T21:50:39.083Z",
+      "level": "info",
+      "event": "financial_usage",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite",
+          "purpose": "financial",
+          "outcome": "completed",
+          "startedAt": 1794693038377,
+          "usage": {
+            "inputTokens": 544,
+            "outputTokens": 9
+          },
+          "durationMs": 706,
+          "outputCharacters": 17
+        }
+      ],
+      "task": "financial",
+      "calls": 1,
+      "cacheHits": 0,
+      "reservedTokens": 2482,
+      "deadline": 1794693056377
+    },
+    {
+      "timestamp": "2026-11-14T21:57:14.271Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "reason",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.8-flash",
+          "purpose": "reason",
+          "outcome": "failed",
+          "code": "timeout",
+          "startedAt": 1794693421596,
+          "durationMs": 10000
+        },
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "purpose": "reason",
+          "outcome": "completed",
+          "startedAt": 1794693431596,
+          "usage": {
+            "inputTokens": 2558,
+            "outputTokens": 367
+          },
+          "durationMs": 958,
+          "outputCharacters": 480
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite",
+          "purpose": "verify",
+          "outcome": "completed",
+          "startedAt": 1794693432554,
+          "usage": {
+            "inputTokens": 2159,
+            "outputTokens": 295
+          },
+          "durationMs": 1717,
+          "outputCharacters": 858
+        }
+      ],
+      "calls": 3,
+      "cacheHits": 0,
+      "reservedTokens": 17336,
+      "validationWithheld": 1
+    },
+    {
+      "timestamp": "2026-11-14T21:54:50.890Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "reason",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.8-flash",
+          "purpose": "reason",
+          "outcome": "failed",
+          "code": "timeout",
+          "startedAt": 1794693280890,
+          "durationMs": 10000
+        }
+      ],
+      "failureCode": "budget",
+      "calls": 1,
+      "cacheHits": 0,
+      "reservedTokens": 6312
+    },
+    {
+      "timestamp": "2026-11-14T21:54:18.600Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "extract",
+      "stages": [
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-20b",
+          "purpose": "extract",
+          "outcome": "completed",
+          "startedAt": 1794693257936,
+          "usage": {
+            "inputTokens": 1868,
+            "outputTokens": 223
+          },
+          "durationMs": 664,
+          "outputCharacters": 747
+        }
+      ],
+      "calls": 1,
+      "cacheHits": 0,
+      "reservedTokens": 4690
+    },
+    {
+      "timestamp": "2026-11-14T22:07:00.259Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "reason",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.8-flash",
+          "purpose": "reason",
+          "outcome": "failed",
+          "code": "timeout",
+          "startedAt": 1794694009812,
+          "durationMs": 10000
+        },
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "purpose": "reason",
+          "outcome": "completed",
+          "startedAt": 1794694019812,
+          "usage": {
+            "inputTokens": 4125,
+            "outputTokens": 184
+          },
+          "durationMs": 447,
+          "outputCharacters": 431
+        }
+      ],
+      "failureCode": "citations",
+      "failureDetail": "uncited_or_oversized_claims",
+      "calls": 2,
+      "cacheHits": 0,
+      "reservedTokens": 12808
+    },
+    {
+      "timestamp": "2026-11-14T22:13:57.578Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "reason",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.8-flash",
+          "purpose": "reason",
+          "outcome": "failed",
+          "code": "timeout",
+          "startedAt": 1794694424518,
+          "durationMs": 10000
+        },
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "purpose": "reason",
+          "outcome": "completed",
+          "startedAt": 1794694434518,
+          "usage": {
+            "inputTokens": 2640,
+            "outputTokens": 573
+          },
+          "durationMs": 1492,
+          "outputCharacters": 1115
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite",
+          "purpose": "verify",
+          "outcome": "completed",
+          "startedAt": 1794694436010,
+          "usage": {
+            "inputTokens": 1723,
+            "outputTokens": 127
+          },
+          "durationMs": 1568,
+          "outputCharacters": 459
+        }
+      ],
+      "calls": 3,
+      "cacheHits": 0,
+      "reservedTokens": 16803,
+      "validationWithheld": 2
+    }
+  ]
+}

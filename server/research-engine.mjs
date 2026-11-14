@@ -1,8 +1,8 @@
 import {tableActuals} from './table-financials.mjs';
-import {citedClaims,verifiedClaims,renderVerified,verificationInstructions} from './grounding.mjs';
+import {analysisDraft,analysisCandidates,verifiedClaims,renderVerified,verificationInstructions} from './grounding.mjs';
 import { financialInstructions, validateFinancialCandidates, proseCandidates } from "./financial-extraction.mjs";
 import { ModelError, configuredModels, modelCompletion, researchInstructions, extractionInstructions } from "./models.mjs";
-const engineVersion = "grounded-investigation-v4";
+const engineVersion = "grounded-investigation-v10";
 export function researchTask(question) {
   const q = String(question).toLowerCase();
   if (/\b(calculate|compute|work out)\b/.test(q) && /\b(growth|yoy|qoq|ratio|conversion|change|percentage)\b/.test(q)) return "calculation";
@@ -65,18 +65,50 @@ export function checkedExtraction(text, sources) {
   }).filter(item => { const key = `${item.reference}:${item.quote}`; if (seen.has(key)) return false; seen.add(key); return true; });
 }
 const numericTokens = text => (text.match(/\d[\d,]*(?:\.\d+)?/g) || []).map(n => n.replaceAll(",", "").replace(/\.0+$/, ""));
+// Period labels are supported by document metadata as well as page prose. They
+// are not monetary amounts: FY27 must not be mistaken for an invented value 27.
+// Match labels only; an unsupported 27% or INR 27 still fails the numeric guard.
+function withoutSupportedPeriods(text, sources) {
+  const year = value => String(Number(value) < 100 ? 2000 + Number(value) : Number(value));
+  const years = new Set(sources.flatMap(s => [...`${s.period || ""} ${s.text}`.matchAll(/\bFY\s*['’]?(20\d{2}|\d{2})\b/gi)].map(m => year(m[1]))));
+  return text.replace(/\bFY\s*['’]?(20\d{2}|\d{2})\b/gi, (label, value) => {
+    if (!years.has(year(value))) { const error = new ModelError("evidence"); error.detail = "unsupported_fiscal_period"; throw error; }
+    return "fiscal period";
+  });
+}
+const monthCount = text => {
+  const m=String(text).match(/\b(\d{1,2}|three|six|nine|twelve)[\s-]+months?\b/i);
+  return m ? String(({three:3,six:6,nine:9,twelve:12})[m[1].toLowerCase()] || Number(m[1])) : null;
+};
+function durationBoundNumbers(text,sources) {
+  for (const number of new Set(numericTokens(withoutSupportedPeriods(text,sources)))) {
+    const contexts=sources.flatMap(s=>s.text.split(/(?<=[.!?])\s+(?=[A-Z0-9])/u)).filter(sentence=>numericTokens(sentence).includes(number));
+    // If every occurrence of a cited value has a duration qualifier, retain that
+    // duration in the claim. A Q3 document can report nine-month actuals.
+    if(contexts.length && contexts.every(sentence=>monthCount(sentence)) && !contexts.some(sentence=>monthCount(sentence)===monthCount(text))) {
+      const error=new ModelError("evidence");error.detail="missing_duration_qualifier";throw error;
+    }
+    if(contexts.length && contexts.every(sentence=>/\badjusted\b/i.test(sentence)) && !/\badjusted\b/i.test(text)) {
+      const error=new ModelError("evidence");error.detail="missing_adjustment_qualifier";throw error;
+    }
+  }
+}
 export function checkedAnswer(answer, sources) {
-  if (typeof answer !== "string" || answer.split(/\s+/).length > 220) throw new ModelError("citations");
+  const invalid = detail => { const error = new ModelError("citations"); error.detail = detail; throw error; };
+  if (typeof answer !== "string") invalid("non_text");
+  if (answer.trim().split(/\s+/).length > 220) invalid("word_limit");
   const refs = [...answer.matchAll(/\[(\d+)\]/g)].map(m => +m[1]);
-  if (!refs.length || refs.some(n => !sources.some(p => p.reference === n))) throw new ModelError("citations");
+  if (!refs.length) invalid("missing_citation");
+  if (refs.some(n => !sources.some(p => p.reference === n))) invalid("unknown_reference");
   // Numerical invention is blocked. This does not prove semantic entailment.
   const allowed = new Set(sources.filter(p => refs.includes(p.reference)).flatMap(p => numericTokens(p.text)));
-  if (numericTokens(answer.replace(/\[\d+\]/g, "")).some(n => !allowed.has(n))) throw new ModelError("numbers");
+  if (numericTokens(withoutSupportedPeriods(answer.replace(/\[\d+\]/g, ""), sources)).some(n => !allowed.has(n))) throw new ModelError("numbers");
   for (const chunk of answer.matchAll(/([\s\S]*?)((?:\[\d+\]\s*)+)/g)) {
     const references=[...chunk[2].matchAll(/\[(\d+)\]/g)].map(m=>+m[1]);
     const evidence=sources.filter(s=>references.includes(s.reference)).map(s=>s.text).join(" ");
     const localNumbers=new Set(numericTokens(evidence));
-    if(numericTokens(chunk[1]).some(n=>!localNumbers.has(n)))throw new ModelError("numbers");
+    if(numericTokens(withoutSupportedPeriods(chunk[1],sources.filter(s=>references.includes(s.reference)))).some(n=>!localNumbers.has(n)))throw new ModelError("numbers");
+    durationBoundNumbers(chunk[1],sources.filter(s=>references.includes(s.reference)));
     if(/permanently|guaranteed|all execution risks|risk.free|no risks/i.test(chunk[1]) && !evidence.toLowerCase().includes(chunk[1].trim().toLowerCase()))throw new ModelError("evidence");
     const words=chunk[1].toLowerCase().match(/[a-z]{5,}/g)||[];
     if(words.length && !words.some(w=>evidence.toLowerCase().includes(w)))throw new ModelError("evidence");
@@ -114,10 +146,10 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
     const tokenCap = config.provider === "groq" ? modelLimit(env.GROQ_TOKENS_PER_MINUTE, 7000, 8000) : modelLimit(env.GEMINI_TOKENS_PER_MINUTE, 18000, 50000);
     if (bucket.calls >= rpm || bucket.tokens + estimate > tokenCap) throw new ModelError("budget");
     bucket.calls++; bucket.tokens += estimate; stats.calls++; stats.reservedTokens += estimate;
-    const stage = { provider: config.provider, model: config.model, purpose: structured === "financial" ? "financial" : structured === "verify" ? "verify" : structured ? "extract" : "reason" };
+    const stage = { provider: config.provider, model: config.model, purpose: structured === "analysis" ? "reason" : structured === "financial" ? "financial" : structured === "verify" ? "verify" : structured ? "extract" : "reason" };
     stage.startedAt = now(); stats.stages.push(stage);
     try {
-      const answer = await modelCompletion(config, system, input, { structured, fetcher, onUsage: usage => { stage.usage = usage; }, timeoutMs: Math.max(1, Math.min(structured ? 7000 : 10000, stats.deadline - now())) });
+      const answer = await modelCompletion(config, system, input, { structured, fetcher, onUsage: usage => { stage.usage = usage; }, timeoutMs: Math.max(1, Math.min(structured && structured!=="analysis" ? 7000 : 10000, stats.deadline - now())) });
       stage.durationMs = now() - stage.startedAt; stage.outcome = "completed"; stage.outputCharacters = answer.length;
       return answer;
     }
@@ -211,11 +243,36 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
             return { answer: lines.join("\n\n"), kind: "selected-evidence" };
           }
           const selected = records.length ? sources.filter(source => records.some(item => item.reference === source.reference)).map(source => ({ ...source, text: records.filter(item => item.reference === source.reference).map(item => item.quote).join("\n") })) : sources;
-          const answer = await withFallback([configs.reason, configs.reasonFallback], async config => {
-            const raw = await invoke(config, researchInstructions, JSON.stringify({ question, passages: selected }), false, env, stats);
-            return checkedAnswer(raw, selected);
+          const draft = await withFallback([configs.reason, configs.reasonFallback], async config => {
+            const output = await invoke(config, researchInstructions, JSON.stringify({ question, passages: selected, outputFormat:"claims" }), "analysis", env, stats);
+            let raw;
+            try{raw=analysisDraft(output);}catch{const error=new ModelError("citations");error.detail="invalid_structured_claims";throw error;}
+            if (raw.split(/\s+/).length > 220) { const error=new ModelError("citations"); error.detail="word_limit"; throw error; }
+            let proposed;
+            let formattingWithheld=0;
+            try { const parsed=analysisCandidates(raw,selected); proposed=parsed.claims; formattingWithheld=parsed.withheld; }
+            catch { const error=new ModelError("citations"); error.detail="uncited_or_oversized_claims"; throw error; }
+            if ([...raw.matchAll(/\[(\d+)\]/g)].some(m=>!selected.some(s=>s.reference===+m[1]))) {
+              const error=new ModelError("citations"); error.detail="unknown_reference"; throw error;
+            }
+            const accepted=[];
+            for (const claim of proposed) {
+              // Validate each complete cited claim. Never truncate a sentence or
+              // preserve its unsupported number just to make the note available.
+              if (!claim.evidence.length) throw new ModelError("citations");
+              // Multi-source causal narratives proved unreliable in live review.
+              // Keep causal explanations confined to a single original passage;
+              // cross-period movements remain in the deterministic comparisons.
+              if(claim.evidence.length>1 && /\battribut\w*\b|\bdue to\b|\bbecause\b|\bdriven by\b|\blinked to\b|\bled to\b/i.test(claim.text))continue;
+              const text=`${claim.text} ${claim.evidence.map(s=>`[${s.reference}]`).join(" ")}`;
+              try { checkedAnswer(text,selected); accepted.push(claim); }
+              catch(error) { if (!["numbers","evidence","citations"].includes(error.code)) throw error; }
+            }
+            stats.validationWithheld=proposed.length-accepted.length+formattingWithheld;
+            if (!accepted.length) { const error=new ModelError("evidence"); error.detail="no_valid_claims"; throw error; }
+            return {claims:accepted.map((c,index)=>({...c,index})),withheld:stats.validationWithheld};
           });
-          const claims=citedClaims(answer,selected);
+          const claims=draft.claims;
           let verification;
           try {
             const raw=await withFallback([configs.extract,configs.extractFallback],config=>invoke({...config,maxTokens:800},verificationInstructions,JSON.stringify({claims}),"verify",env,stats));
@@ -223,11 +280,13 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
           }catch(error){throw new ModelError("evidence");}
           const grounded=renderVerified(verification);
           if(!grounded)throw new ModelError("evidence");
-          return {answer:grounded,kind:"analysis",...(verification.some(v=>v.verdict==="unsupported")?{warning:"Some proposed claims were withheld because their cited evidence did not support them."}:{}),grounding:{checked:claims.length,withheld:verification.filter(v=>v.verdict==="unsupported").length}};
+          const withheld=draft.withheld+verification.filter(v=>v.verdict==="unsupported").length;
+          return {answer:grounded,kind:"analysis",...(withheld?{warning:"Some proposed claims were withheld because their cited evidence did not support them."}:{}),grounding:{checked:claims.length+draft.withheld,withheld}};
         }, stats);
         return { ...result, stats };
       } catch (error) {
         stats.failureCode = error.code || "unavailable";
+        if (error.detail) stats.failureDetail = error.detail;
         return { stats, warning: "The research note could not complete. Original source passages remain accessible." };
       }
     },

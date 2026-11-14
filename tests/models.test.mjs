@@ -3,12 +3,14 @@ import assert from "node:assert/strict";
 import { configuredModels, modelCompletion, serverModels } from "../server/models.mjs";
 import { createResearchEngine, checkedExtraction, checkedAnswer, researchTask, sourceInputs } from "../server/research-engine.mjs";
 import worker from "../server/worker.mjs";
+import {analysisDraft} from "../server/grounding.mjs";
 const fakeKey = "test-only-placeholder-key";
 const enabled = { ENABLE_FREE_MODEL: "true", GROQ_API_KEY: fakeKey, GEMINI_API_KEY: fakeKey };
 const quote = "Management discussed operating cash generation and its outlook in the original report.";
 const passages = (count = 2) => Array.from({ length: count }, (_, i) => ({ page: i + 1, text: quote, document: { id: `d${i}`, ticker: "UNSEEN", type: "Earnings-call transcript", title: `Original call ${i}`, period: "FY2027-Q2", passages: [{ page: i + 1, text: quote }] } }));
 const query = (question = "What did management say about cash?", count = 2, scope = "owner") => ({ ticker: "UNSEEN", question, passages: passages(count), scope });
-const response = (provider, text, finish) => Response.json(provider === "gemini" ? { candidates: [{ finishReason: finish || "STOP", content: { parts: [{ text }] } }] } : { choices: [{ finish_reason: finish || "stop", message: { content: text } }] });
+const fixtureDraft = text => typeof text==='string' && !text.trim().startsWith('{') && /\[\d+\]/.test(text) ? JSON.stringify({claims:[...text.matchAll(/([\s\S]*?)((?:\[\d+\]\s*)+)/g)].map(m=>({text:m[1].trim(),references:[...m[2].matchAll(/\[(\d+)\]/g)].map(r=>+r[1])}))}) : text;
+const response = (provider, text, finish) => {text=fixtureDraft(text);return Response.json(provider === "gemini" ? { candidates: [{ finishReason: finish || "STOP", content: { parts: [{ text }] } }] } : { choices: [{ finish_reason: finish || "stop", message: { content: text } }] });};
 function recordingFetcher(seen, intercept) {
   return async (url, options) => {
     const payload = JSON.parse(options.body), provider = url.includes("groq.com") ? "groq" : "gemini";
@@ -16,7 +18,7 @@ function recordingFetcher(seen, intercept) {
     const structured = !!(payload.response_format || payload.generationConfig?.responseMimeType);
     const entry = { url, options, payload, input, provider, structured }; seen.push(entry);
     if (intercept) { const value = await intercept(entry, seen.length); if (value) return value; }
-    const output = input.claims ? JSON.stringify({items:input.claims.map(c=>({index:c.index,verdict:"supported",reason:"Fixture verdict"}))}) : structured ? JSON.stringify({ items: [{ reference: input.passages[0].reference, quote, topic: "cash" }] }) : `Management described cash generation, but delivery needs matching subsequent results. [${input.passages[0].reference}]`;
+    const output = input.claims ? JSON.stringify({items:input.claims.map(c=>({index:c.index,verdict:"supported",reason:"Fixture verdict"}))}) : input.outputFormat==="claims" ? JSON.stringify({claims:[{text:"Management described cash generation, but delivery needs matching subsequent results.",references:[input.passages[0].reference]}]}) : structured ? JSON.stringify({ items: [{ reference: input.passages[0].reference, quote, topic: "cash" }] }) : `Management described cash generation, but delivery needs matching subsequent results. [${input.passages[0].reference}]`;
     return response(provider, output);
   };
 }
@@ -44,6 +46,12 @@ test("configuration is server-only and excludes deprecated, unknown and paid-onl
   for (const bad of [{ GROQ_EXTRACT_MODEL: "llama-3.1-8b-instant" }, { GEMINI_REASON_MODEL: "gemini-3.1-pro-preview" }, { GEMINI_REASON_MODEL: "https://evil.example" }, { GROQ_API_KEY: "bad\nkey" }])
     assert.throws(() => configuredModels({ ...enabled, ...bad }));
 });
+test("structured analysis binds references as data and rejects malformed or oversized drafts",()=>{
+ for(let trial=0;trial<3;trial++) {
+  assert.equal(analysisDraft(JSON.stringify({claims:[{text:'Management described cash generation.',references:[1,1,3]}]})), 'Management described cash generation. [1] [3]');
+  for(const value of ['plain answer [1]', '{}', JSON.stringify({claims:[{text:'Claim [1]',references:[1]}]}),JSON.stringify({claims:[{text:'Claim',references:['1']}]}),JSON.stringify({claims:[{text:'Claim',references:[]}]}),JSON.stringify({claims:Array.from({length:5},()=>({text:'Claim',references:[1]}))})])assert.throws(()=>analysisDraft(value));
+ }
+});
 test("routine evidence extraction uses one small Groq call and quotes validated originals", async () => {
   const seen = [], result = await createResearchEngine({ fetcher: recordingFetcher(seen) }).research(query(), enabled);
   assert.equal(result.kind, "selected-evidence"); assert.match(result.answer, /\[1\]/); assert.ok(result.answer.includes(quote));
@@ -58,7 +66,7 @@ test("short complex research uses Gemini and an independent small-model verifier
 test("larger research reserves a call for independent verification", async () => {
   const seen = [], result = await createResearchEngine({ fetcher: recordingFetcher(seen) }).research(query("Compare the last four quarters", 8), enabled);
   assert.equal(result.kind, "analysis"); assert.equal(seen.length, 2);
-  assert.equal(seen[0].structured,false); assert.equal(seen[0].input.passages.length,8);
+  assert.equal(seen[0].structured,true); assert.equal(seen[0].input.passages.length,8);
   assert.equal(seen[1].structured,true); assert.ok(seen[1].input.claims.length);
   assert.ok(result.stats.calls <= 3);
 });
@@ -127,6 +135,69 @@ test("unsupported citations and invented numerical claims are withheld", () => {
   for (const value of ["Unsupported statement", "Claim [99]", "Revenue grew 999%. [1]"])
     assert.throws(() => checkedAnswer(value, sources));
   assert.ok(checkedAnswer("The original report discusses cash. [1]", sources));
+});
+test("citation diagnostics distinguish format failures without retaining answer text", async () => {
+  const sources = sourceInputs(passages());
+  for (const [answer, detail] of [["Unsupported statement", "missing_citation"], ["Claim [99]", "unknown_reference"], ["word ".repeat(221) + "[1]", "word_limit"]]) {
+    assert.throws(() => checkedAnswer(answer, sources), error => error.code === "citations" && error.detail === detail && !error.message.includes(answer));
+  }
+  const seen = [], result = await createResearchEngine({fetcher:recordingFetcher(seen, e => response(e.provider, "Claim [99]"))}).research(query("Compare guidance"), enabled);
+  assert.equal(result.stats.failureDetail, "invalid_structured_claims");
+  assert.equal(result.answer, undefined);
+  assert.equal(seen.length, 1);
+});
+test("fiscal labels use the cited document period without admitting invented financial numbers", () => {
+  const sources=[{reference:1,period:"FY2027-Q2",text:"Q2 operating margin was 21%."},{reference:2,period:"FY2026-Q2",text:"Q2 operating margin was 20%."}];
+  for (let trial=0;trial<3;trial++) {
+    for (const label of ["FY27", "FY2027", "FY '27"]) assert.ok(checkedAnswer(`In ${label}, Q2 operating margin was 21%. [1]`,sources));
+    for (const answer of ["In FY27 operating margin was 27%. [1]", "In FY26 operating margin was 21%. [1]", "In FY99 operating margin was 21%. [1]", "In FY27 operating margin was INR 27. [1]"]) assert.throws(()=>checkedAnswer(answer,sources));
+  }
+});
+test("a quarterly document cannot turn cumulative cash conversion into a quarterly actual", () => {
+  for (let trial=0;trial<3;trial++) for(const [months,words] of [[3,'three'],[6,'six'],[9,'nine'],[12,'twelve']]) {
+    const sources=[{reference:1,period:'FY2027-Q3',text:`Adjusted cash conversion for ${months} months stood at 117.8%. Operating margin for Q3 was 21%.`}];
+    assert.throws(()=>checkedAnswer('FY27 Q3 adjusted cash conversion was 117.8%. [1]',sources),e=>e.detail==='missing_duration_qualifier');
+    assert.ok(checkedAnswer(`For ${words} months, adjusted cash conversion was 117.8%. [1]`,sources));
+    assert.ok(checkedAnswer('Q3 operating margin was 21%. [1]',sources));
+    assert.throws(()=>checkedAnswer(`For ${months===3?6:3} months adjusted cash conversion was 117.8%. [1]`,sources));
+  }
+});
+test("generated numerical claims retain an explicit adjusted basis", () => {
+  const sources=[{reference:1,period:'FY2027-Q3',text:'Adjusted operating margin expanded to 21.2%. Reported operating margin was 18.4%.'}];
+  for(let trial=0;trial<3;trial++) {
+    assert.throws(()=>checkedAnswer('Operating margin expanded to 21.2%. [1]',sources),e=>e.detail==='missing_adjustment_qualifier');
+    assert.ok(checkedAnswer('Adjusted operating margin expanded to 21.2%. [1]',sources));
+    assert.ok(checkedAnswer('Reported operating margin was 18.4%. [1]',sources));
+  }
+});
+test("an invalid numerical claim is withheld while an independently checked claim remains usable", async () => {
+  for (let trial=0;trial<3;trial++) {
+    const seen=[];
+    const engine=createResearchEngine({fetcher:recordingFetcher(seen,e=>!e.input.claims ? response(e.provider,'Revenue grew 999%. [1]\nManagement described operating cash generation. [1]') : null)});
+    const result=await engine.research(query('Compare cash generation'),enabled);
+    assert.equal(result.kind,'analysis');
+    assert.equal(result.answer,'Management described operating cash generation. [1]');
+    assert.ok(!result.answer.includes('999')); assert.match(result.warning,/withheld/);
+    assert.equal(result.grounding.withheld,1);
+    assert.equal(seen.length,2); assert.equal(seen[1].input.claims.length,1);
+    assert.ok(!seen[1].input.claims[0].text.includes('999'));
+  }
+});
+test("composite causal narratives are withheld before verification while source-specific findings remain",async()=>{
+ for(let trial=0;trial<3;trial++) {
+  const seen=[];
+  const draft=JSON.stringify({claims:[{text:'Management attributed margin changes to currency, acquisitions and onsite mix.',references:[1,2]},{text:'Management described operating cash generation.',references:[1]}]});
+  const result=await createResearchEngine({fetcher:recordingFetcher(seen,e=>e.input.outputFormat==='claims'?response(e.provider,draft):null)}).research(query('Why did margins change?'),enabled);
+  assert.equal(result.answer,'Management described operating cash generation. [1]');assert.equal(result.grounding.withheld,1);assert.equal(seen[1].input.claims.length,1);assert.match(result.warning,/withheld/);
+ }
+});
+test("uncited conclusions and excess claims are withheld before independent verification", async () => {
+  for(let trial=0;trial<3;trial++) {
+    const seen=[];
+    const draft=Array.from({length:7},()=> 'Management described operating cash generation. [1]').join('\n')+' Uncited assertion: profit doubled.';
+    const result=await createResearchEngine({fetcher:recordingFetcher(seen,e=>!e.input.claims?response(e.provider,draft):null)}).research(query('Compare cash generation'),enabled);
+    assert.equal(result.answer,undefined);assert.equal(seen.length,1);assert.match(result.warning,/could not complete/);
+  }
 });
 test("empty and truncated completions are withheld without another model call", async () => {
   for (const [text, finish] of [["", "stop"], ["Incomplete", "length"]]) {

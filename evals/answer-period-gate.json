@@ -1,0 +1,135 @@
+{
+  "verdict": "PASS",
+  "gated_cases": 16,
+  "quarantined": [],
+  "mean_delta": 0.3125,
+  "ci95": [
+    0.0575,
+    0.5675
+  ],
+  "mcnemar": {
+    "pass_to_fail": 0,
+    "fail_to_pass": 5,
+    "p_value": 1.0
+  },
+  "cost_change": null,
+  "blocks": [],
+  "warnings": [],
+  "notes": [
+    "significant improvement: mean delta +0.312"
+  ],
+  "cases": [
+    {
+      "case_id": "adjusted-retained",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "cumulative-omitted",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "cumulative-retained",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "invented-currency",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "invented-percentage",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "literal-number",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "misbound-number",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "misbound-period",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "uncited",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "unknown-reference",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "wrong-year",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "adjusted-omitted",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": true
+    },
+    {
+      "case_id": "full-year",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": false
+    },
+    {
+      "case_id": "quoted-year",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": false
+    },
+    {
+      "case_id": "short-year",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": false
+    },
+    {
+      "case_id": "two-periods",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": false
+    }
+  ]
+}

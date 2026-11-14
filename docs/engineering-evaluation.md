@@ -28,7 +28,7 @@ node scripts/evaluate-review.mjs
 node scripts/evaluate-primary-tables.mjs
 ```
 
-The current suite has 122 passing tests. The built-Worker test exercises real financial endpoints, malformed input, frontend credential rejection, routing fixtures, asset handling and extraction from the two held-out statement layouts. It catches missing bundled dependencies, rather than only testing source imports.
+The current suite has 131 passing tests. The built-Worker test exercises real financial endpoints, malformed input, frontend credential rejection, routing fixtures, asset handling and extraction from the two held-out statement layouts. It catches missing bundled dependencies, rather than only testing source imports.
 
 The prior synthetic validator comparison remains 36/45 versus 45/45 checks over 15 cases repeated three times. Its scope is period/quotation contracts, not model quality.
 
@@ -49,7 +49,7 @@ Raw rows, repeated-trial stability, gate output and execution observations are u
 
 ## Model efficiency and failure handling
 
-Backend routing retains Groq GPT-OSS 20B for extraction, Gemini Flash for reasoning, and the existing Lite/120B fallbacks. Analytical answers now reserve a separate small-model verification call. Unsupported claims are omitted; incomplete verification withholds the analysis while original evidence remains usable. Explicitly tentative interpretations remain labelled as inference. No provider selection, model names or credentials are presented in the investor interface.
+Backend routing retains Groq GPT-OSS 20B for extraction, Gemini Flash for reasoning, and the existing Lite/120B fallbacks. Analytical answers now use a structured claims-and-reference-IDs schema and reserve a separate small-model verification call. The server renders citations; it does not depend on citation punctuation generated in free text. Unsupported claims are omitted; incomplete verification withholds the analysis while original evidence remains usable. Explicitly tentative interpretations remain labelled as inference. No provider selection, model names or credentials are presented in the investor interface.
 
 Research is capped at three attempts and thirty seconds, with individual reasoning attempts of ten seconds and extraction/verification attempts of seven seconds. Financial extraction has an eighteen-second budget. Timeouts and quota failures cool down routes. Calculations, annual-table extraction, source matching and network matching use no LLM. Source/configuration/user-scoped caches avoid repeated valid model work; quotas remain per isolate, not a durable account-wide scheduler.
 
@@ -59,7 +59,22 @@ With `AI_LOG_USAGE=true`, backend traces retain purpose, route, duration, report
 
 `node scripts/evaluate-live-research.mjs --live` supports twelve questions across five issuers and three trials using locally configured backend keys. It records answers, evidence, latency, calls and reported usage for manual review. The keys configured in hosting cannot be read back into local code.
 
-The hosted app currently stops at ChatGPT sign-in in the testing browser. Automatic approval review rejected opening that authentication flow because explicit sign-in authorization was required. No alternate credential route was attempted. Therefore live-model financial correctness, verifier precision/recall and hosted end-to-end model latency remain **unmeasured**, not passed. Existing fixtures test failure and verification mechanics only.
+The owner completed ChatGPT sign-in. Hosted checks on 14 November 2026 UTC reached both providers and exercised extraction, reasoning, fallback and verification. This was a diagnostic walkthrough across changing versions, not the full twelve-question, three-trial evaluation. It must not be presented as an accuracy or reliability percentage.
+
+| Hosted check | Observed result | Review |
+| --- | --- | --- |
+| Infosys operating-margin question | Three literal extracts with original passage links | Values/qualifiers match cited passages. Different periods should be more visible beside each extract; one later general query selected overlapping quotations. |
+| Persistent general research | Note withheld; original excerpts retained; financial extraction returned no comparable facts | A failed note, not a successful analytical answer. No missing financial figures were invented. |
+| Persistent cash-conversion question | Live analytical note citing transcript page 9 | Matches management's unbilled-revenue explanation and preserves its forward-looking normalization qualifier. Citation opened the exact passage. No numerical comparison was established. Causal attribution could be clearer, and the source period remains explicitly unresolved. |
+| Infosys combined margin/cash question | Earlier attempts were withheld for citation/numeric validation; a later attempt hit the conservative token reservation budget after another request | The source-linked comparisons remained usable. A subsequent note completed but failed human review on scope/basis; after adding those guards, an attempt again withheld the note before the structured-output change. The later structured run is assessed below. Availability remains unresolved. These failed attempts remain part of the record. |
+
+Gemini Flash returned a 503 and multiple ten-second timeouts. Groq 120B generated fallback text; Gemini Lite and Groq 20B generated evidence selections. Successful generation is not evidence that every generated claim was correct. The server's three-attempt cap and thirty-second research deadline remain in force.
+
+The walkthrough identified and fixed: free-text citation failures (replaced by structured claims), overlong/poorly formatted synthesis, fiscal labels mistaken for financial amounts, punctuation after citations mistaken for uncited content, and all-or-nothing numerical validation. Complete cited claims are now checked individually; only independently valid claims reach the separate verifier. Invalid claims are withheld and a partial-result warning is shown. Unknown references, unsupported periods and invented values remain rejected. Uncited trailing text and claims beyond a four-claim note budget are withheld; only complete cited claims can reach verification. A later Infosys note exposed verifier false acceptance: a nine-month conversion was presented as quarterly, and adjusted basis was omitted from a margin claim. These are recorded research-quality failures. Generic duration and adjusted-basis retention checks now guard such numerical claims before verification; semicolon fragments are normalized for display. This does not establish that all accounting qualifiers are covered.
+
+`node scripts/evaluate-answer-periods.mjs` reproduces sixteen synthetic answer-contract cases repeated three times: frozen previous validator **33/48**, candidate **48/48**, with no pass-to-fail cases. The paired gate passed. This small, correlated contract suite does not measure stochastic synthesis, verifier precision/recall, or broad company coverage.
+
+Sanitized observed traces and manually reviewed visible outcomes are retained in `evals/hosted-smoke-2026-11-14.json`. They contain no credentials or original conversation/session exports. A later structured-output Infosys run completed with two retained claims and a partial warning. The margin claim retained its adjusted basis. Human review still found an overbroad composite causal narrative. A conservative guard now withholds multi-source causal claims before verification; this sacrifices some analytical breadth while retaining source-specific findings. Its regression case reproduces the observed failure. The complete trace and earlier withheld attempts remain in the record. A successful earlier Persistent note and working extraction do not establish reliable multi-period synthesis. Full live quality evaluation remains unfinished; do not replace that limitation with deterministic test scores.
 
 ## Three-minute phone demonstration
 
@@ -68,7 +83,7 @@ The hosted app currently stops at ChatGPT sign-in in the testing browser. Automa
 3. Inspect an Infosys cash/margin change, management's attributed passage and the specific unresolved question.
 4. Open current/prior evidence and a synthetic contact; distinguish dated expertise from a known relationship.
 5. Enter DABUR without manually entering figures. Original-document recovery and supported annual columns feed the comparison. Open the row and original PDF page.
-6. Show the held-out extraction report and one rejected ambiguous/corrupt input. Distinguish it from the pending live AI evaluation.
+6. Show the held-out extraction report and one rejected ambiguous/corrupt input. Distinguish it from the limited hosted AI checks and the unfinished full live evaluation.
 
 ## Remaining product boundaries
 
@@ -80,4 +95,4 @@ Broad OCR/table-layout coverage, unattended refresh publication and durable mult
 - The required repository visibility and evaluator access decision, followed by a test outside the owner allowlist.
 - Final covering email after verifying these links. No email has been sent.
 
-Phone verification completed: a typed DABUR query recovered the issuer original, extracted the annual columns and displayed source-linked revenue/PBT/PAT comparisons without manual figures. Current/prior source navigation showed the original column dates and highlighted selected value. An Infosys margin question displayed the management passage and recurring-cost question. These were local functional checks; the live hosted model path remains blocked as described above.
+Phone verification completed: a typed DABUR query recovered the issuer original, extracted the annual columns and displayed source-linked revenue/PBT/PAT comparisons without manual figures. Current/prior source navigation showed the original column dates and highlighted selected value. An Infosys margin question displayed the management passage and recurring-cost question. These were local functional checks. The later signed-in hosted checks and their limitations are described above.

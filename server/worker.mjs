@@ -158,7 +158,7 @@ export default {
       if (env.AI_LOG_USAGE === "true") console.info(JSON.stringify({
         event: "research_usage", calls: result.stats.calls, cacheHits: result.stats.cacheHits,
         reservedTokens: result.stats.reservedTokens, task: result.stats.task, stages: result.stats.stages,
-        failureCode: result.stats.failureCode,
+        failureCode: result.stats.failureCode, failureDetail: result.stats.failureDetail, validationWithheld: result.stats.validationWithheld,
       }));
       // Only investor-facing output is returned. Keys, routes, models and budget traces stay on the server.
       return json({ ...base, ...(result.answer ? { mode: "model", answer: result.answer, answerKind: result.kind } : {}), ...(result.warning ? { warning: result.warning } : {}) });
