@@ -1315,10 +1315,11 @@ function App() {
                         question={research.question}
                         onSource={factEvidence}
                       />
+                      {research.answer && <ModelAnswer research={research} onSource={evidence} />}
                       <PersonStrip t={research.ticker} question={investigationQuestion(research.question)} />
                       {research.warning && <p className="notice" role="status">{research.warning}</p>}
                       {research.sourceWarning && <p className="notice">{research.sourceWarning}</p>}
-                      {research.answer && <ModelAnswer research={research} onSource={evidence} />}
+
                       <details
                         className="research-tools"
                         open={research.mode === "discovery"}
