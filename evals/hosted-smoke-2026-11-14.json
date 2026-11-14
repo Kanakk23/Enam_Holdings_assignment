@@ -77,6 +77,36 @@
       "sourceCommit": "f4657a0b07932002f7b85e1c3a12bc22db2c4000",
       "outcome": "final-deployment-note-withheld",
       "review": "Post-deployment repeat still withheld the research note. Do not claim reliable multi-period synthesis or a completed repeated live benchmark. Reviewed comparisons and original evidence remained usable."
+    },
+    {
+      "ticker": "INFY",
+      "question": "Did margins improve and did cash conversion keep up?",
+      "sourceCommit": "1b6051267e4334206ed758d18682fd27eb27f071",
+      "outcome": "bounded-structured-analysis-completed",
+      "claims": [
+        {
+          "text": "In FY2027 Q1, operating margin improved by 20 basis points to 21.1% sequentially.",
+          "reference": 5
+        },
+        {
+          "text": "In FY2027 Q2, operating margin was reported at 21%.",
+          "reference": 1
+        },
+        {
+          "text": "In FY2026 Q3, adjusted operating margin expanded by 20 basis points to 21.2% sequentially.",
+          "reference": 3
+        },
+        {
+          "text": "Adjusted free cash flow conversion for the nine months ending FY2026 Q3 stood at 118%.",
+          "reference": 3
+        }
+      ],
+      "review": {
+        "literalSupport": "All four findings match the cited retrieved passages and document-period metadata.",
+        "scope": "Adjusted basis and nine-month duration retained; no combined causal narrative displayed.",
+        "coverage": "Provides cited facts, but does not itself explain latest-period cash conversion. The reviewed financial comparison remains the quantitative change view.",
+        "limit": "One successful run, not the 12-question x 3-trial benchmark; no statistical reliability claim."
+      }
     }
   ],
   "traces": [
@@ -466,6 +496,53 @@
       "calls": 2,
       "cacheHits": 0,
       "reservedTokens": 12836
+    },
+    {
+      "timestamp": "2026-11-14T22:25:05.996Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "reason",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.8-flash",
+          "purpose": "reason",
+          "outcome": "failed",
+          "code": "timeout",
+          "startedAt": 1794695092010,
+          "durationMs": 10000
+        },
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "purpose": "reason",
+          "outcome": "completed",
+          "startedAt": 1794695102010,
+          "usage": {
+            "inputTokens": 2704,
+            "outputTokens": 369
+          },
+          "durationMs": 1419,
+          "outputCharacters": 548
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite",
+          "purpose": "verify",
+          "outcome": "completed",
+          "startedAt": 1794695103429,
+          "usage": {
+            "inputTokens": 1689,
+            "outputTokens": 224
+          },
+          "durationMs": 2567,
+          "outputCharacters": 696
+        }
+      ],
+      "calls": 3,
+      "cacheHits": 0,
+      "reservedTokens": 16949,
+      "validationWithheld": 0
     }
   ]
 }
