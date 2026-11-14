@@ -49,7 +49,8 @@ test("configuration is server-only and excludes deprecated, unknown and paid-onl
 test("structured analysis binds references as data and rejects malformed or oversized drafts",()=>{
  for(let trial=0;trial<3;trial++) {
   assert.equal(analysisDraft(JSON.stringify({claims:[{text:'Management described cash generation.',references:[1,1,3]}]})), 'Management described cash generation. [1] [3]');
-  for(const value of ['plain answer [1]', '{}', JSON.stringify({claims:[{text:'Claim [1]',references:[1]}]}),JSON.stringify({claims:[{text:'Claim',references:['1']}]}),JSON.stringify({claims:[{text:'Claim',references:[]}]}),JSON.stringify({claims:Array.from({length:5},()=>({text:'Claim',references:[1]}))})])assert.throws(()=>analysisDraft(value));
+  assert.equal(analysisDraft(JSON.stringify({claims:[{text:'Management described cash generation. [1]',references:[1]}]})), 'Management described cash generation. [1]');
+  for(const value of ['plain answer [1]', '{}', JSON.stringify({claims:[{text:'Claim [2]',references:[1]}]}),JSON.stringify({claims:[{text:'Claim',references:['1']}]}),JSON.stringify({claims:[{text:'Claim',references:[]}]}),JSON.stringify({claims:Array.from({length:5},()=>({text:'Claim',references:[1]}))})])assert.throws(()=>analysisDraft(value));
  }
 });
 test("routine evidence extraction uses one small Groq call and quotes validated originals", async () => {

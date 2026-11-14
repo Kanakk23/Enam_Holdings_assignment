@@ -70,6 +70,13 @@
         "mitigation": "A generic single-passage causal-claim boundary and its repeated regression case were added after this live run. Final guard is checked deterministically and in the packaged Worker; no stochastic accuracy claim.",
         "limitations": "The note did not fully answer the latest-period comparison. Original reviewed figures remain the main quantitative comparison."
       }
+    },
+    {
+      "ticker": "INFY",
+      "question": "Did margins improve and did cash conversion keep up?",
+      "sourceCommit": "f4657a0b07932002f7b85e1c3a12bc22db2c4000",
+      "outcome": "final-deployment-note-withheld",
+      "review": "Post-deployment repeat still withheld the research note. Do not claim reliable multi-period synthesis or a completed repeated live benchmark. Reviewed comparisons and original evidence remained usable."
     }
   ],
   "traces": [
@@ -424,6 +431,41 @@
       "cacheHits": 0,
       "reservedTokens": 16803,
       "validationWithheld": 2
+    },
+    {
+      "timestamp": "2026-11-14T22:19:32.090Z",
+      "level": "info",
+      "event": "research_usage",
+      "task": "reason",
+      "stages": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.8-flash",
+          "purpose": "reason",
+          "outcome": "failed",
+          "code": "timeout",
+          "startedAt": 1794694760611,
+          "durationMs": 10000
+        },
+        {
+          "provider": "groq",
+          "model": "openai/gpt-oss-120b",
+          "purpose": "reason",
+          "outcome": "completed",
+          "startedAt": 1794694770611,
+          "usage": {
+            "inputTokens": 2666,
+            "outputTokens": 461
+          },
+          "durationMs": 1479,
+          "outputCharacters": 984
+        }
+      ],
+      "failureCode": "citations",
+      "failureDetail": "invalid_structured_claims",
+      "calls": 2,
+      "cacheHits": 0,
+      "reservedTokens": 12836
     }
   ]
 }

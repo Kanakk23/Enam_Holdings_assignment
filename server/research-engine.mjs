@@ -2,7 +2,7 @@ import {tableActuals} from './table-financials.mjs';
 import {analysisDraft,analysisCandidates,verifiedClaims,renderVerified,verificationInstructions} from './grounding.mjs';
 import { financialInstructions, validateFinancialCandidates, proseCandidates } from "./financial-extraction.mjs";
 import { ModelError, configuredModels, modelCompletion, researchInstructions, extractionInstructions } from "./models.mjs";
-const engineVersion = "grounded-investigation-v10";
+const engineVersion = "grounded-investigation-v11";
 export function researchTask(question) {
   const q = String(question).toLowerCase();
   if (/\b(calculate|compute|work out)\b/.test(q) && /\b(growth|yoy|qoq|ratio|conversion|change|percentage)\b/.test(q)) return "calculation";
