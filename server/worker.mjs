@@ -1,6 +1,6 @@
 import { passagesFor } from "../src/retrieval.mjs";
 import { discover, download, refreshTicker, publicUrl } from "./sources.mjs";
-import { ModelError } from "./models.mjs";
+import { ModelError, probeConfiguredAccess } from "./models.mjs";
 import { createResearchEngine, researchTask } from "./research-engine.mjs";
 const researchEngine = createResearchEngine();
 const json = (data, status = 200) =>
@@ -68,7 +68,13 @@ export default {
       if (!valid(t)) return json({ error: "Invalid ticker" }, 400);
       return json(await refreshTicker(t));
     }
-    if (url.pathname === "/api/health") return json({ ok: true });
+    if (url.pathname === "/api/health") {
+      if (env.AI_CONNECTION_DIAGNOSTICS === "true") {
+        try { console.info(JSON.stringify({ event: "model_access_probe", checks: await probeConfiguredAccess(env) })); }
+        catch { console.info(JSON.stringify({ event: "model_access_probe", failure: "configuration" })); }
+      }
+      return json({ ok: true });
+    }
     if (url.pathname.startsWith("/api/model/")) return json({ error: "Not found" }, 404);
     if (url.pathname === "/api/discover" || url.pathname === "/api/document") {
       const ticker = (url.searchParams.get("ticker") || "").toUpperCase();
@@ -145,6 +151,7 @@ export default {
       if (env.AI_LOG_USAGE === "true") console.info(JSON.stringify({
         event: "research_usage", calls: result.stats.calls, cacheHits: result.stats.cacheHits,
         reservedTokens: result.stats.reservedTokens, task: result.stats.task, stages: result.stats.stages,
+        failureCode: result.stats.failureCode,
       }));
       // Only investor-facing output is returned. Keys, routes, models and budget traces stay on the server.
       return json({ ...base, ...(result.answer ? { mode: "model", answer: result.answer, answerKind: result.kind } : {}), ...(result.warning ? { warning: result.warning } : {}) });

@@ -40,7 +40,9 @@ const evidenceSchema = {
   },
 };
 function providerFailure(status) {
-  return new ModelError(status === 401 || status === 403 ? "authentication" : status === 429 || status === 402 ? "quota" : status === 400 || status === 404 ? "model" : "unavailable");
+  const error = new ModelError(status === 401 || status === 403 ? "authentication" : status === 429 || status === 402 ? "quota" : status === 400 || status === 404 ? "model" : "unavailable");
+  error.upstreamStatus = status;
+  return error;
 }
 export async function modelCompletion(config, system, input, { structured = false, fetcher = fetch, timeoutMs = 25000 } = {}) {
   const supported = config.provider === "groq"
@@ -77,10 +79,43 @@ export async function modelCompletion(config, system, input, { structured = fals
   if (output?.error) throw providerFailure(Number(output.error.code) || 503);
   const candidate = config.provider === "gemini" ? output?.candidates?.[0] : output?.choices?.[0];
   const finish = candidate?.finishReason || candidate?.finish_reason;
-  if (["length", "MAX_TOKENS", "content_filter", "SAFETY", "RECITATION"].includes(finish)) throw new ModelError("incomplete");
+  if (["length", "MAX_TOKENS", "content_filter", "SAFETY", "RECITATION"].includes(finish)) {
+    const error = new ModelError("incomplete");
+    error.detail = ["length", "MAX_TOKENS"].includes(finish) ? "output_limit" : "filtered";
+    throw error;
+  }
   const answer = config.provider === "gemini"
     ? candidate?.content?.parts?.filter(p => !p.thought).map(p => p.text || "").join("")
     : candidate?.message?.content;
-  if (typeof answer !== "string" || !answer.trim() || answer.length > 16000 || answer.includes(config.apiKey)) throw new ModelError("incomplete");
+  if (typeof answer !== "string" || !answer.trim() || answer.length > 16000 || answer.includes(config.apiKey)) {
+    const error = new ModelError("incomplete"); error.detail = "unusable_text"; throw error;
+  }
   return answer.trim();
+}
+
+// Operator-only diagnostic mode uses authenticated model-list endpoints, not completions.
+// It reports only configured model availability and HTTP status; no key/body is logged.
+export async function probeModelAccess(config, configured, { fetcher = fetch } = {}) {
+  const groq = config.provider === "groq";
+  const endpoint = groq ? "https://api.groq.com/openai/v1/models" : "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000";
+  try {
+    const response = await fetcher(endpoint, { method: "GET", headers: groq ? { Authorization: `Bearer ${config.apiKey}` } : { "x-goog-api-key": config.apiKey }, redirect: "manual", signal: AbortSignal.timeout(8000) });
+    if (!response.ok) return { provider: config.provider, httpStatus: response.status, authenticated: false };
+    const body = await response.json();
+    const names = new Set((groq ? body.data || [] : body.models || []).map(m => String(m.id || m.name || "").replace(/^models\//, "")));
+    return { provider: config.provider, httpStatus: response.status, authenticated: true, configuredModels: configured.map(model => ({ model, listed: names.has(model) })) };
+  } catch { return { provider: config.provider, authenticated: false, failure: "connection_unavailable" }; }
+}
+const accessProbeCache = new Map();
+export async function probeConfiguredAccess(env) {
+  const configs = Object.values(configuredModels(env));
+  const fingerprint = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(configs.map(c => [c.provider, c.model, c.apiKey]))));
+  const key = [...new Uint8Array(fingerprint)].map(b => b.toString(16).padStart(2, "0")).join("");
+  const hit = accessProbeCache.get(key);
+  if (hit?.expires > Date.now()) return hit.result;
+  const unique = [...new Map(configs.map(c => [c.provider, c])).values()];
+  const result = await Promise.all(unique.map(c => probeModelAccess(c, configs.filter(other => other.provider === c.provider).map(other => other.model))));
+  accessProbeCache.set(key, { result, expires: Date.now() + 300000 });
+  while (accessProbeCache.size > 8) accessProbeCache.delete(accessProbeCache.keys().next().value);
+  return result;
 }

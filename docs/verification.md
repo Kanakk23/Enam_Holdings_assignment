@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-`npm test`: 73 checks pass, including 3,300 generated property cases. The original 17 checks cover missing/negative growth bases, volume baselines, timestamp windows, preserved routine disclosures, threshold changes, synthetic colleague overlap constraints, ticker validation, discovery excluding summaries, proxy URL restrictions, API malformed/missing inputs, exact-passage provenance, and strict finite snapshot JSON.
+`npm test`: 76 checks pass, including 3,300 generated property cases. The original 17 checks cover missing/negative growth bases, volume baselines, timestamp windows, preserved routine disclosures, threshold changes, synthetic colleague overlap constraints, ticker validation, discovery excluding summaries, proxy URL restrictions, API malformed/missing inputs, exact-passage provenance, and strict finite snapshot JSON.
 
 `npm run build`: Vite production client and a standalone Worker ESM build. PDF.js is a lazy chunk; IBM Plex is self-hosted. The PDF worker is fetched only for PDF indexing.
 
@@ -19,7 +19,7 @@ Python ingestion was run against real issuer PDFs and all 18 EOD symbols. BSE-li
 - Generic discovery for an unseeded HCLTECH symbol returned original report/transcript choices. Those BSE-hosted documents are subject to publisher access limits; no unsupported company answer was filled in.
 - Original Coforge October transcript downloaded and indexed through PDF.js in the browser, then appeared as page-specific exact excerpts. This verifies actual client PDF parsing, not a simulated progress state.
 
-No physical iPhone/Android, assistive-technology user study or exhaustive accessibility certification was performed. No live model call or statistical model regression verdict is claimed. The original synthesis adapter was disabled because no user-provided free-tier key or model-evaluation baseline was available. See the API connection update below for the current setup.
+No physical iPhone/Android, assistive-technology user study or exhaustive accessibility certification was performed. No statistical model regression verdict is claimed. The original synthesis adapter was disabled because no user-provided free-tier key or model-evaluation baseline was available. See the backend routing and live API verification sections below for the current setup.
 
 ## Three-minute phone demo
 
@@ -72,8 +72,27 @@ The live portfolio refresh completed all 18 market and filing checks in this bro
 
 The earlier tab-key setup has been removed. No client credential field, provider control or model identifier remains in application source or client bundles. `/api/model/test` now returns 404, client credential/routing fields are rejected, and health returns only `{ok:true}`. Research responses contain answer/provenance output without internal routing or usage metadata.
 
-The full suite contains 73 checks, including 3,300 generated financial cases. Routing checks repeat 30 ordinary, analytical and arithmetic queries across three trials. Integration fixtures cover cheap extraction versus stronger analysis, two-chunk reduction, exact-quote validation, invalid citations/numbers, zero-call arithmetic, cache hits and simultaneous deduplication, scope/source/credential invalidation, cache expiry, both provider fallback paths, cooldowns, preflight token reservations, request bounds and private configuration boundaries. Controlled provider responses verify the orchestration contract; they do not measure real model quality.
+The full suite contains 76 checks, including 3,300 generated financial cases. Routing checks repeat 30 ordinary, analytical and arithmetic queries across three trials. Integration fixtures cover cheap extraction versus stronger analysis, two-chunk reduction, exact-quote validation, invalid citations/numbers, zero-call arithmetic, cache hits and simultaneous deduplication, scope/source/credential invalidation, cache expiry, both provider fallback paths, cooldowns, preflight token reservations, request bounds and private configuration boundaries. Controlled provider responses verify the orchestration contract; they do not measure real model quality.
 
 `verify-build.mjs` exercises the actual standalone Worker, including server-secret routing and removal of the client-key endpoint. `verify-model-render.mjs` checks source-reference markup and scans every client script for provider names, model IDs, secret names and the removed setup controls. `verify-finance-render.mjs` protects existing financial presentation. Interactive browser verification remains blocked by the previously observed browser URL security policy; no alternate browser path was used.
 
-No valid provider key is configured, so authenticated live synthesis, quality comparisons and measured cost/latency are unverified. The model choices are engineering hypotheses based on current documented capabilities, not a claim that a benchmark established the best possible model. Free-tier account limits differ; the local budget guard is per isolate rather than an account-wide guarantee.
+At the initial routing revision, no valid provider key was configured. Subsequent authenticated integration checks are recorded below; financial-analysis quality comparisons remain unverified. The model choices are engineering hypotheses based on current documented capabilities, not a claim that a benchmark established the best possible model. Free-tier account limits differ; the local budget guard is per isolate rather than an account-wide guarantee.
+
+
+## Live API verification — 14 November 2026
+
+The owner saved both keys as hosted server secrets. Their values were not displayed, read into source files or returned to the browser. The environment revision was deployed before testing.
+
+| Check | Observed result |
+| --- | --- |
+| Groq authenticated model list | HTTP 200; configured GPT-OSS 20B and 120B models listed |
+| Gemini authenticated model list | HTTP 200; configured Gemini 3.5 Flash-Lite and 3.8 Flash models listed |
+| Groq extraction completion | Provider returned structured output; the original cash-generation test was withheld by evidence validation |
+| Gemini 3.8 Flash generation | Hit the configured timeout; a successful Gemini answer is not claimed |
+| Stronger Groq fallback | Returned a cited response on the explicitly synthetic connection-test passage |
+
+The synthetic diagnostic passage was sent only in a private API request and was not added to the shared source index. Its result is a connection/citation test, not a real company finding or financial-accuracy benchmark.
+
+The live test exposed two source-handling limitations: selecting the beginning of a long page could omit the retrieved passage, and PDF whitespace could make a valid quotation fail a byte-for-byte comparison. Context now centres the matched passage, or selects a question-relevant window of original text when a reviewed table label is not contiguous prose. Quote validation can recover the exact original source span across whitespace changes; changed numbers and punctuation remain rejected. Three regressions cover focused context, metadata-only access checks and quote recovery. The full suite now contains 76 tests.
+
+Backend diagnostics record only fixed status/error categories, model identifiers and counts. They do not log keys, questions, source text or full provider responses. Temporary connection diagnostics are disabled after verification. No reliable Gemini generation latency or broad financial-quality evaluation is claimed; source-preserving fallback remains necessary.

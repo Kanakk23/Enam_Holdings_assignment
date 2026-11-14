@@ -187,3 +187,35 @@ test("browser-indexed unseen originals use the same engine and retain verificati
   for (const bad of [{ ...doc, type: "Broker research" }, { ...doc, ticker: "OTHER" }, { ...doc, url: "https://localhost/private" }, { ...doc, passages: [{ page: -1, text: quote }] }])
     assert.equal((await worker.fetch(request({ ticker: "NEWCO", documents: [bad] }), assetEnv)).status, 400);
 });
+
+test("long-page context retains the matched quotation instead of truncating it away", () => {
+  const original = "Unrelated introductory text. ".repeat(100) + quote + " Surrounding source explanation.";
+  const p = passages(1)[0]; p.context = original;
+  const selected = sourceInputs([p], 1800, "cash generation");
+  assert.ok(selected[0].text.includes(quote)); assert.ok(selected[0].text.length <= 1800);
+  const table = { ...p, text: "A reviewed table-cell label", context: "Introduction. ".repeat(200) + "Cash generation and cash flow are explicitly discussed in this original passage." };
+  const result = sourceInputs([table], 1800, "cash generation");
+  assert.match(result[0].text, /Cash generation/); assert.ok(!result[0].text.includes(table.text));
+});
+test("authenticated metadata probes never generate tokens or put keys in URLs or results", async () => {
+  const { probeModelAccess } = await import("../server/models.mjs");
+  for (const config of [configuredModels(enabled).extract, configuredModels(enabled).reason]) {
+    let count = 0;
+    const result = await probeModelAccess(config, [config.model], { fetcher: async (url, options) => {
+      count++; assert.equal(options.method, "GET"); assert.equal(options.redirect, "manual");
+      assert.ok(!url.includes(fakeKey)); assert.equal(options.body, undefined);
+      return Response.json(config.provider === "groq" ? { data: [{ id: config.model }] } : { models: [{ name: "models/" + config.model }] });
+    } });
+    assert.equal(result.authenticated, true); assert.equal(result.configuredModels[0].listed, true); assert.equal(count, 1);
+    assert.ok(!JSON.stringify(result).includes(fakeKey));
+  }
+});
+
+test("PDF whitespace differences recover original quote bytes without changing numbers or punctuation", () => {
+  const text = "Operating cash\n\nflow was 100 million, as reported for this period.";
+  const normalized = "Operating cash flow was 100 million, as reported for this period.";
+  const sources = [{ reference: 1, text }];
+  const records = checkedExtraction(JSON.stringify({ items: [{ reference: 1, quote: normalized, topic: "cash" }] }), sources);
+  assert.equal(records[0].quote, text);
+  assert.throws(() => checkedExtraction(JSON.stringify({ items: [{ reference: 1, quote: normalized.replace("100", "200"), topic: "cash" }] }), sources));
+});

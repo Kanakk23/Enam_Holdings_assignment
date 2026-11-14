@@ -35,3 +35,8 @@ The production API smoke check exposed a Worker-specific unsupported redirect mo
 ## Backend-only model routing revision
 
 Reread the supplied complete challenge, especially the efficiency examples on page 4. Removed the prior investor-facing key and provider setup. Moved configuration to server-only environment secrets and added hidden terminal entry for local development. Introduced task-specific Groq/Gemini routes, exact-quote extraction, bounded stronger reasoning, deterministic arithmetic bypass, source/query caches, pending-request coalescing, token reservations and failure cooldowns. Updated tests and submission documentation. Older setup descriptions in this history describe superseded work, not the current product. Live accuracy remains untested without valid keys.
+
+
+## Live provider access verification
+
+Applied owner-supplied hosted secrets without exposing their values. Both authenticated model-list endpoints returned HTTP 200 and listed the configured models. Groq returned structured completions and a cited reasoning fallback; Gemini generation timed out in the observed test. Added backend-only status categories and zero-generation-token access probes, then disabled temporary diagnostics. Fixed focused source context and recovery of original quote bytes across PDF whitespace. The suite now has 76 tests. These observations establish access and selected integration behaviours, not broad financial-analysis accuracy.

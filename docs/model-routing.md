@@ -51,4 +51,11 @@ Optional server logs show task, model, number of calls, cache hits and estimated
 
 ## Validation boundary
 
-The tests repeat 30 task-routing cases three times and exercise both provider fallbacks, cache/deduplication, scope separation, source invalidation, bounds and source-preserving failures using controlled responses. The production build checks backend-only credentials and scans client bundles for provider/model identifiers and removed setup controls. This validates orchestration and data boundaries, not real model accuracy, measured latency or dollar savings. Valid free-tier keys are still needed for a live paired evaluation on unseen issuers, missing evidence and conflicting periods.
+The tests repeat 30 task-routing cases three times and exercise both provider fallbacks, cache/deduplication, scope separation, source invalidation, bounds and source-preserving failures using controlled responses. The production build checks backend-only credentials and scans client bundles for provider/model identifiers and removed setup controls. This validates orchestration and data boundaries, not real model accuracy, measured latency or dollar savings. Both hosted keys have since passed authenticated model-list checks. A live paired quality evaluation on unseen issuers, missing evidence and conflicting periods is still needed; Gemini generation timed out in the tested request.
+
+
+## Live access diagnostics
+
+`AI_CONNECTION_DIAGNOSTICS=true` temporarily makes the private deployment's health handler query authenticated model-list endpoints and write redacted results to backend logs. The health response itself remains `{ok:true}`. Metadata checks do not generate model tokens. Results are cached for five minutes per backend credential configuration, and the flag is disabled after checking. `AI_LOG_USAGE` separately enables safe outcome categories, upstream HTTP statuses and counts; full prompts, response text and credentials are excluded.
+
+Long-page context is centred on the matched source passage rather than always taking the first 1,800 characters. If a reviewed table label is not contiguous original prose, query terms select a bounded window of original page text. Whitespace-only quotation differences are resolved to the original source bytes; numerical or punctuation changes still fail validation.

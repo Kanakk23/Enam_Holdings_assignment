@@ -1,17 +1,44 @@
 import { ModelError, configuredModels, modelCompletion, researchInstructions, extractionInstructions } from "./models.mjs";
-const engineVersion = "source-routing-v1";
+const engineVersion = "source-routing-v2";
 export function researchTask(question) {
   const q = String(question).toLowerCase();
   if (/\b(calculate|compute|work out)\b/.test(q) && /\b(growth|yoy|qoq|ratio|conversion|change|percentage)\b/.test(q)) return "calculation";
   return /\b(compare|versus|vs\.?|promis\w*|deliver\w*|guidance|narrative|contradict\w*|conflict\w*|trajectory|multi.year|bull|bear|why|risk\w*|leverage|cash quality|cash conversion|balance sheet)\b|what (?:has )?changed|four quarters|4 quarters|year.over.year|quarter.over.quarter/.test(q) ? "reason" : "extract";
 }
 const modelLimit = (value, fallback, max) => Number.isFinite(Number(value)) && Number(value) > 0 ? Math.min(max, Math.floor(Number(value))) : fallback;
-export function sourceInputs(passages, maxChars = 1800) {
+function focusedContext(passage, maxChars, question) {
+  const quote = String(passage.text || "").trim();
+  const original = String(passage.context || quote).trim();
+  if (original.length <= maxChars) return original;
+  const exact = quote ? original.indexOf(quote) : -1;
+  if (exact >= 0 && quote.length <= maxChars) {
+    const start = Math.max(0, Math.min(exact - Math.min(250, maxChars - quote.length), original.length - maxChars));
+    return original.slice(start, start + maxChars);
+  }
+  // Some reviewed table-cell labels are not contiguous original prose. Keep original
+  // page text and select its relevant window instead of treating a label as a quote.
+  const ignored = new Set(["what", "when", "where", "company", "management", "select", "short", "original", "quotation", "documents", "about", "state", "available", "evidence", "compare", "across", "please", "return", "say"]);
+  const terms = [...new Set((String(question || quote).toLowerCase().match(/[a-z]{4,}/g) || []).filter(word => !ignored.has(word)))];
+  const lower = original.toLowerCase(), starts = new Set([0]);
+  for (let start = 0; start < original.length; start += Math.floor(maxChars / 2)) starts.add(Math.min(start, original.length - maxChars));
+  for (const term of terms) {
+    let index = lower.indexOf(term);
+    for (let count = 0; index >= 0 && count < 30; count++, index = lower.indexOf(term, index + term.length)) starts.add(Math.max(0, Math.min(index - 200, original.length - maxChars)));
+  }
+  let best = 0, bestScore = -1;
+  for (const start of starts) {
+    const window = lower.slice(start, start + maxChars);
+    const score = terms.reduce((sum, term) => sum + (window.split(term).length - 1), 0);
+    if (score > bestScore) { best = start; bestScore = score; }
+  }
+  return original.slice(best, best + maxChars);
+}
+export function sourceInputs(passages, maxChars = 1800, question = "") {
   const seen = new Set();
   return passages.slice(0, 8).flatMap((p, i) => {
-    const text = String(p.context || p.text || "").trim().slice(0, maxChars);
+    const text = focusedContext(p, maxChars, question);
     if (!text || !["Annual report", "Earnings-call transcript"].includes(p.document?.type)) return [];
-    const fingerprint = `${p.document.id}:${p.page}:${text}`;
+    const fingerprint = `${p.document.id}:${p.page}:${p.context || text}`;
     if (seen.has(fingerprint)) return [];
     seen.add(fingerprint);
     return [{ reference: i + 1, documentId: p.document.id, title: String(p.document.title).slice(0, 200), page: p.page,
@@ -25,8 +52,13 @@ export function checkedExtraction(text, sources) {
   const seen = new Set();
   return output.items.map(item => {
     const source = sources.find(p => p.reference === item?.reference);
-    if (!source || typeof item.quote !== "string" || item.quote.length < 30 || item.quote.length > 700 || !source.text.includes(item.quote) || !["revenue", "margin", "cash", "guidance", "business", "other"].includes(item.topic)) throw new ModelError("evidence");
-    return { reference: item.reference, quote: item.quote, topic: item.topic };
+    if (!source || typeof item.quote !== "string" || item.quote.length < 30 || item.quote.length > 700 || !["revenue", "margin", "cash", "guidance", "business", "other"].includes(item.topic)) throw new ModelError("evidence");
+    // PDF line wrapping can differ from the model's spacing. Match only literal
+    // tokens with flexible whitespace, then return the original source bytes.
+    const pattern = item.quote.trim().split(/\s+/).map(token => token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s+");
+    const literal = source.text.includes(item.quote) ? item.quote : source.text.match(new RegExp(pattern, "u"))?.[0];
+    if (!literal || literal.length > 700) throw new ModelError("evidence");
+    return { reference: item.reference, quote: literal, topic: item.topic };
   }).filter(item => { const key = `${item.reference}:${item.quote}`; if (seen.has(key)) return false; seen.add(key); return true; });
 }
 const numericTokens = text => (text.match(/\d[\d,]*(?:\.\d+)?/g) || []).map(n => n.replaceAll(",", "").replace(/\.0+$/, ""));
@@ -70,9 +102,17 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
     const tokenCap = config.provider === "groq" ? modelLimit(env.GROQ_TOKENS_PER_MINUTE, 7000, 8000) : modelLimit(env.GEMINI_TOKENS_PER_MINUTE, 18000, 50000);
     if (bucket.calls >= rpm || bucket.tokens + estimate > tokenCap) throw new ModelError("budget");
     bucket.calls++; bucket.tokens += estimate; stats.calls++; stats.reservedTokens += estimate;
-    stats.stages.push({ provider: config.provider, model: config.model, purpose: structured ? "extract" : "reason" });
-    try { return await modelCompletion(config, system, input, { structured, fetcher, timeoutMs: Math.max(1, Math.min(25000, stats.deadline - now())) }); }
+    const stage = { provider: config.provider, model: config.model, purpose: structured ? "extract" : "reason" };
+    stats.stages.push(stage);
+    try {
+      const answer = await modelCompletion(config, system, input, { structured, fetcher, timeoutMs: Math.max(1, Math.min(25000, stats.deadline - now())) });
+      stage.outcome = "completed"; stage.outputCharacters = answer.length;
+      return answer;
+    }
     catch (error) {
+      stage.outcome = "failed"; stage.code = error.code || "unavailable";
+      if (error.detail) stage.detail = error.detail;
+      if (error.upstreamStatus) stage.upstreamStatus = error.upstreamStatus;
       const duration = error.code === "quota" ? 60000 : ["authentication", "model"].includes(error.code) ? 10 * 60000 : error.code === "unavailable" ? 15000 : 0;
       if (duration) cooldown.set(bucketKey, now() + duration);
       throw error;
@@ -97,7 +137,7 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
       let configs;
       try { configs = configuredModels(env); } catch { return { stats, warning: "The research note is unavailable. Original source passages remain accessible." }; }
       if (!Object.keys(configs).length) return { stats };
-      const sources = sourceInputs(passages);
+      const sources = sourceInputs(passages, 1800, question);
       if (!sources.length) return { stats, warning: "No matching primary-source passages were found. Try a more specific question." };
       const namespace = await engineHash([engineVersion, scope, Object.entries(configs).map(([role, c]) => [role, c.model, c.apiKey])]);
       const normalizedQuestion = question.trim().replace(/\s+/g, " ").toLowerCase();
@@ -146,7 +186,8 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
           return { answer, kind: "analysis" };
         }, stats);
         return { ...result, stats };
-      } catch {
+      } catch (error) {
+        stats.failureCode = error.code || "unavailable";
         return { stats, warning: "The research note could not complete. Original source passages remain accessible." };
       }
     },

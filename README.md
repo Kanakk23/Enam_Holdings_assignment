@@ -80,7 +80,7 @@ npm run dev
 
 The terminal prompts for both keys without echo and writes the ignored `.env.local` with restricted file permissions. It makes no API request. Alternatively, copy `.env.example` to `.env.local`, add `GROQ_API_KEY` and `GEMINI_API_KEY`, and set `ENABLE_FREE_MODEL=true`. Never use a `VITE_` prefix for secrets.
 
-For the hosted app, set those same values in **server runtime secrets/environment variables**, then redeploy. The local setup command does not configure hosted secrets. No real provider key was supplied or installed during this change, so an authenticated live model-quality evaluation remains outstanding.
+For the hosted app, open **ChatGPT → Sites → FINN → More actions → Settings** and add `GROQ_API_KEY` and `GEMINI_API_KEY` as secrets in the runtime environment controls. Keep `ENABLE_FREE_MODEL=true`, save, then redeploy to apply the environment revision. The local setup command does not configure hosted secrets. Both hosted keys have now passed authenticated model-list checks. Groq generation has run successfully; Gemini generation timed out in the tested request, so a full model-quality evaluation remains outstanding.
 
 Only the question and retrieved annual-report/transcript passages reach the models; network profiles and relationship data stay out. Gemini free-tier inputs may be used to improve Google's products, so this prototype sends public document evidence only. Private investor notes and real network data need a different data-processing arrangement. Optional `AI_LOG_USAGE=true` logs only task/model/call-count/token-reservation metadata on the backend, never keys, source text, identities or questions.
 
