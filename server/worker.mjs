@@ -53,7 +53,8 @@ function browserDocuments(input, ticker, seed) {
       passages: d.passages.map(p => {
         if (!p || !Number.isInteger(p.page) || p.page < 1 || p.page > 10000 || typeof p.text !== "string" || p.text.length > 6000)
           throw new ModelError("evidence", "An indexed passage is invalid. Re-import its original document.", 400);
-        return { page: p.page, text: p.text, id: String(p.id || "").slice(0, 100) };
+        if(p.table && (JSON.stringify(p.table).length>7000 || typeof p.table!=="object"))throw new ModelError("evidence","Invalid table evidence.",400);
+        return { ...(p.table?{table:p.table}:{}), page: p.page, text: p.text, id: String(p.id || "").slice(0, 100) };
       }),
     };
   });
@@ -83,9 +84,9 @@ export default {
       try {
         const source = url.searchParams.get("url");
         const recovery = url.pathname === "/api/document" && officialRecoveryUrl(source,ticker);
-        const sources = recovery ? [] : await discover(ticker);
+        const sources = recovery ? [] : await discover(ticker,{recover:url.searchParams.get("recover")==="1"});
         if (url.pathname === "/api/discover") return json({ ticker, sources });
-        if (!recovery && !sources.some((s) => s.url === source))
+        if (!recovery && !sources.some((s) => s.url === source) && !(await discover(ticker,{recover:true})).some(s=>s.url===source))
           return json(
             {
               error:
@@ -136,7 +137,7 @@ export default {
           422,
         );
       if (url.pathname === "/api/financials") {
-        const result = await researchEngine.financial({ticker, passages:passagesFor(documents,"revenue operating margin free cash flow consolidated standalone",{limit:8}), scope:request.headers.get("oai-authenticated-user-id")||"owner-private-service"},env);
+        const result = await researchEngine.financial({ticker, passages:[...documents.flatMap(document=>document.passages.filter(p=>p.table).map(p=>({...p,document}))),...passagesFor(documents,"revenue operating margin free cash flow consolidated standalone",{limit:8})].slice(0,8), scope:request.headers.get("oai-authenticated-user-id")||"owner-private-service"},env);
         if(env.AI_LOG_USAGE === "true") console.info(JSON.stringify({event:"financial_usage",...result.stats,rejections:result.rejections}));
         return json({facts:result.facts, message:result.facts.length ? "Automatically extracted; literal evidence checks passed. Verify accounting interpretation in the original." : "No unambiguous financial actuals could be extracted. Original evidence remains available."});
       }

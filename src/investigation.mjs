@@ -22,8 +22,9 @@ export function findings(ticker, facts, documents, question = "") {
     .sort(
       (a, b) => periodEnd(b).localeCompare(periodEnd(a)) || b.localeCompare(a),
     )[0];
-  const topics = /margin|cash|conversion/i.test(question)
-    ? ["operating_margin", "free_cash_flow", "fcf_conversion", "revenue"]
+  const topics = /cash|conversion/i.test(question)
+    ? ["fcf_conversion", "free_cash_flow", "operating_margin", "revenue"]
+    : /margin/i.test(question) ? ["operating_margin", "free_cash_flow", "fcf_conversion", "revenue"]
     : ["revenue", "operating_margin", "free_cash_flow", "fcf_conversion"];
   return topics
     .flatMap((metric) => {
@@ -153,4 +154,15 @@ export function investigationQuestion(question="") {
  if(/margin/i.test(question))return "Which disclosed costs, pricing or utilisation movements explain the margin change, and which are recurring?";
  if(/guidance|deliver|promis/i.test(question))return "What changed in management’s target, and what comparable actuals can establish delivery for a completed period?";
  return question || "Which public operating evidence would test this disclosure’s assumptions?";
+}
+
+export function investigationBrief(ticker,facts,documents,question='') {
+ const rows=findings(ticker,facts,documents,question);if(!rows.length)return {rows,question:investigationQuestion(question),explanation:null};
+ const topic=rows[0], period=topic.period;
+ const query=topic.metric==='operating_margin'?/margin|cost|utili[sz]ation|pricing/i:/cash|working.capital|receivable|inventor/i;
+ const candidates=documents.filter(d=>d.ticker===ticker&&d.period===period).flatMap(document=>document.passages.map(p=>({...p,document})));
+ let explanation=null;
+ for(const p of candidates){const text=String(p.context||p.text).replace(/\s+/g,' ').trim();const sentences=text.split(/(?<=[.!?])\s+/);const i=sentences.findIndex(s=>query.test(s)&&/due to|driven by|reflect|headwind|tailwind|contribut|because|impact|improv|declin/i.test(s)&&!/\?|analyst\s*:/i.test(s));if(i>=0){const quote=sentences.slice(Math.max(0,i-1),i+2).join(' ');if(quote.length<=1200){explanation={...p,text:quote};break;}}}
+ const next=/guidance|deliver|promis/i.test(question)?investigationQuestion(question):topic.metric==='revenue'?`What explains the revenue movement in ${period}, and what evidence do pricing, customer demand and product mix provide?`:topic.metric==='operating_margin'?`What explains ${topic.text}, and which disclosed cost or pricing effects are recurring?`:`What explains ${topic.text}, and which working-capital movements should be tested in the next report?`;
+ return {rows,question:next,explanation};
 }

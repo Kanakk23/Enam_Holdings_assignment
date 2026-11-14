@@ -110,7 +110,7 @@ export function matchPeople(ticker, sector, all = people, question = "") {
         (p.sector === sector ? 2 : 0) +
         (p.relationship === "Known demo contact" ? 1 : 0) +
         ((p.company === ticker || p.sector === sector) &&
-        /cash|margin|conversion|profit/i.test(question) &&
+        /cash|margin|conversion|profit|guidance|deliver/i.test(question) &&
         /finance/i.test(p.role)
           ? 5
           : 0),

@@ -1,0 +1,659 @@
+{
+  "kind": "held-out-real-statement-deterministic-extraction",
+  "date": "2026-11-14T17:13:55.948Z",
+  "scope": "Two manually inspected annual-statement pages, twelve facts, six changes. Not live-model quality or universal table support.",
+  "runs": [
+    {
+      "ticker": "DABUR",
+      "trial": 1,
+      "extracted": 6,
+      "providerCalls": 0,
+      "latencyMs": 20,
+      "changes": {
+        "revenue": "+5.01%",
+        "pbt": "+7.20%",
+        "pat": "+7.37%"
+      }
+    },
+    {
+      "ticker": "VGUARD",
+      "trial": 1,
+      "extracted": 6,
+      "providerCalls": 0,
+      "latencyMs": 6,
+      "changes": {
+        "revenue": "+17.67%",
+        "pbt": "+33.07%",
+        "pat": "+36.25%"
+      }
+    },
+    {
+      "ticker": "DABUR",
+      "trial": 2,
+      "extracted": 6,
+      "providerCalls": 0,
+      "latencyMs": 6,
+      "changes": {
+        "revenue": "+5.01%",
+        "pbt": "+7.20%",
+        "pat": "+7.37%"
+      }
+    },
+    {
+      "ticker": "VGUARD",
+      "trial": 2,
+      "extracted": 6,
+      "providerCalls": 0,
+      "latencyMs": 4,
+      "changes": {
+        "revenue": "+17.67%",
+        "pbt": "+33.07%",
+        "pat": "+36.25%"
+      }
+    },
+    {
+      "ticker": "DABUR",
+      "trial": 3,
+      "extracted": 6,
+      "providerCalls": 0,
+      "latencyMs": 13,
+      "changes": {
+        "revenue": "+5.01%",
+        "pbt": "+7.20%",
+        "pat": "+7.37%"
+      }
+    },
+    {
+      "ticker": "VGUARD",
+      "trial": 3,
+      "extracted": 6,
+      "providerCalls": 0,
+      "latencyMs": 4,
+      "changes": {
+        "revenue": "+17.67%",
+        "pbt": "+33.07%",
+        "pat": "+36.25%"
+      }
+    }
+  ],
+  "checks": 72,
+  "passed": 72,
+  "rows": [
+    {
+      "case_id": "DABUR-revenue-FY2026",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-revenue-FY2025",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pbt-FY2026",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pbt-FY2025",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pat-FY2026",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pat-FY2025",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-0",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-1",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-2",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-3",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-4",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-5",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-revenue-FY2024",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-revenue-FY2023",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pbt-FY2024",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pbt-FY2023",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pat-FY2024",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pat-FY2023",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-0",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-1",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-2",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-3",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-4",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-5",
+      "trial": 1,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-revenue-FY2026",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-revenue-FY2025",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pbt-FY2026",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pbt-FY2025",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pat-FY2026",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pat-FY2025",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-0",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-1",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-2",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-3",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-4",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-5",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-revenue-FY2024",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-revenue-FY2023",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pbt-FY2024",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pbt-FY2023",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pat-FY2024",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pat-FY2023",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-0",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-1",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-2",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-3",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-4",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-5",
+      "trial": 2,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-revenue-FY2026",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-revenue-FY2025",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pbt-FY2026",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pbt-FY2025",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pat-FY2026",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-pat-FY2025",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-0",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-1",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-2",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-3",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-4",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "DABUR-corrupt-5",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-revenue-FY2024",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-revenue-FY2023",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pbt-FY2024",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pbt-FY2023",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pat-FY2024",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-pat-FY2023",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-0",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-1",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-2",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-3",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-4",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    },
+    {
+      "case_id": "VGUARD-corrupt-5",
+      "trial": 3,
+      "passed": true,
+      "critical": true,
+      "cost_usd": 0,
+      "trajectory": []
+    }
+  ]
+}

@@ -1,6 +1,8 @@
+import {tableActuals} from './table-financials.mjs';
+import {citedClaims,verifiedClaims,renderVerified,verificationInstructions} from './grounding.mjs';
 import { financialInstructions, validateFinancialCandidates, proseCandidates } from "./financial-extraction.mjs";
 import { ModelError, configuredModels, modelCompletion, researchInstructions, extractionInstructions } from "./models.mjs";
-const engineVersion = "source-routing-v3";
+const engineVersion = "grounded-investigation-v4";
 export function researchTask(question) {
   const q = String(question).toLowerCase();
   if (/\b(calculate|compute|work out)\b/.test(q) && /\b(growth|yoy|qoq|ratio|conversion|change|percentage)\b/.test(q)) return "calculation";
@@ -43,7 +45,7 @@ export function sourceInputs(passages, maxChars = 1800, question = "") {
     if (seen.has(fingerprint)) return [];
     seen.add(fingerprint);
     return [{ reference: i + 1, documentId: p.document.id, passageId: p.id, title: String(p.document.title).slice(0, 200), page: p.page,
-      period: p.document.reportPeriod || p.document.period || "See original", text }];
+      period: p.document.reportPeriod || p.document.period || "See original", text, ...(p.table ? {table:p.table} : {}) }];
   });
 }
 export function checkedExtraction(text, sources) {
@@ -112,7 +114,7 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
     const tokenCap = config.provider === "groq" ? modelLimit(env.GROQ_TOKENS_PER_MINUTE, 7000, 8000) : modelLimit(env.GEMINI_TOKENS_PER_MINUTE, 18000, 50000);
     if (bucket.calls >= rpm || bucket.tokens + estimate > tokenCap) throw new ModelError("budget");
     bucket.calls++; bucket.tokens += estimate; stats.calls++; stats.reservedTokens += estimate;
-    const stage = { provider: config.provider, model: config.model, purpose: structured === "financial" ? "financial" : structured ? "extract" : "reason" };
+    const stage = { provider: config.provider, model: config.model, purpose: structured === "financial" ? "financial" : structured === "verify" ? "verify" : structured ? "extract" : "reason" };
     stage.startedAt = now(); stats.stages.push(stage);
     try {
       const answer = await modelCompletion(config, system, input, { structured, fetcher, onUsage: usage => { stage.usage = usage; }, timeoutMs: Math.max(1, Math.min(structured ? 7000 : 10000, stats.deadline - now())) });
@@ -145,6 +147,8 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
       const stats={calls:0,cacheHits:0,reservedTokens:0,stages:[],deadline:now()+18000,task:"financial"};
       const sources=sourceInputs(passages,1800,"revenue operating margin free cash flow").map(s=>({...s,type:passages.find(p=>p.document?.id===s.documentId)?.document?.type}));
       const literal=validateFinancialCandidates(proseCandidates(sources),sources,ticker);
+      const tables=passages.filter(p=>p.table).map(p=>({reference:0,documentId:p.document.id,passageId:p.id,page:p.page,type:p.document.type,text:p.text,table:p.table}));
+      literal.facts.push(...tableActuals(tables,ticker));
       if(literal.facts.length>=2)return {...literal,stats};
       let configs;try {configs=configuredModels(env);}catch{return {...literal,stats};}
       if(!configs.extract&&!configs.extractFallback)return {...literal,stats};
@@ -165,7 +169,7 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
       let configs;
       try { configs = configuredModels(env); } catch { return { stats, warning: "The research note is unavailable. Original source passages remain accessible." }; }
       if (!Object.keys(configs).length) return { stats };
-      const sources = sourceInputs(passages, 1800, question);
+      const sources = sourceInputs(passages, stats.task === "reason" ? 1200 : 1800, question);
       if (!sources.length) return { stats, warning: "No matching primary-source passages were found. Try a more specific question." };
       const namespace = await engineHash([engineVersion, scope, Object.entries(configs).map(([role, c]) => [role, c.model, c.apiKey])]);
       const normalizedQuestion = question.trim().replace(/\s+/g, " ").toLowerCase();
@@ -175,7 +179,7 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
           let records = [];
           // Simple questions use one small extraction call and no writer model.
           // Large reasoning contexts are reduced in at most two independent chunks.
-          const mapFirst = stats.task === "extract" || sources.length > 4;
+          const mapFirst = stats.task === "extract";
           if (mapFirst) {
             const chunks = stats.task === "extract" ? [sources.slice(0, 4)] : [sources.slice(0, 4), sources.slice(4, 8)];
             for (const chunk of chunks) {
@@ -211,7 +215,15 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
             const raw = await invoke(config, researchInstructions, JSON.stringify({ question, passages: selected }), false, env, stats);
             return checkedAnswer(raw, selected);
           });
-          return { answer, kind: "analysis" };
+          const claims=citedClaims(answer,selected);
+          let verification;
+          try {
+            const raw=await withFallback([configs.extract,configs.extractFallback],config=>invoke({...config,maxTokens:800},verificationInstructions,JSON.stringify({claims}),"verify",env,stats));
+            verification=verifiedClaims(raw,claims);
+          }catch(error){throw new ModelError("evidence");}
+          const grounded=renderVerified(verification);
+          if(!grounded)throw new ModelError("evidence");
+          return {answer:grounded,kind:"analysis",...(verification.some(v=>v.verdict==="unsupported")?{warning:"Some proposed claims were withheld because their cited evidence did not support them."}:{}),grounding:{checked:claims.length,withheld:verification.filter(v=>v.verdict==="unsupported").length}};
         }, stats);
         return { ...result, stats };
       } catch (error) {

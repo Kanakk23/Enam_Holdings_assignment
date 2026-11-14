@@ -59,3 +59,13 @@ const literalDoc={id:'build-literal',ticker:'UNSEEN',title:'Clearly synthetic bu
 const literalResult=await (await call('/api/financials',{method:'POST',body:JSON.stringify({ticker:'UNSEEN',documents:[literalDoc]})})).json();assert.equal(literalResult.facts.length,2);
 const invalidFinancial=await call('/api/financials',{method:'POST',body:'{bad'});assert.equal(invalidFinancial.status,400);
 console.log('Packaged financial endpoint: seeded, unseen literal extraction and invalid input verified.');
+
+const {readFileSync}=await import('node:fs');
+const {pdfRows,tablePassages}=await import('../src/financial-tables.mjs');
+for(const c of JSON.parse(readFileSync('evals/annual-table-cases.json')).cases){
+ const doc={id:c.sha256,ticker:c.ticker,title:'Held-out real primary statement',type:c.type,url:c.url,period:c.expected[0].period,passages:tablePassages(pdfRows(c.items),c.page)};
+ const result=await(await call('/api/financials',{method:'POST',body:JSON.stringify({ticker:c.ticker,documents:[doc]})})).json();
+ assert.equal(result.facts.length,c.expected.length,c.ticker+' packaged real-table extraction');
+ for(const e of c.expected)assert.ok(result.facts.some(f=>f.metric===e.metric&&f.period===e.period&&f.value===e.value&&f.unit===e.unit));
+}
+console.log('Packaged real-table extraction: DABUR and VGUARD facts, periods and units verified.');

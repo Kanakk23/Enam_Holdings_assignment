@@ -1,3 +1,4 @@
+import {verificationSchema} from './grounding.mjs';
 import { financialSchema } from "./financial-extraction.mjs";
 // Server-only provider adapter. This module must never be imported by src/.
 export class ModelError extends Error {
@@ -65,7 +66,7 @@ export async function modelCompletion(config, system, input, { structured = fals
     payload = {
       model: config.model, messages: [{ role: "system", content: system }, { role: "user", content: input }],
       temperature: 0, max_completion_tokens: config.maxTokens, reasoning_effort: "low", include_reasoning: false, stream: false,
-      ...(structured ? { response_format: { type: "json_schema", json_schema: { name: "evidence_records", strict: true, schema: structured === "financial" ? financialSchema : evidenceSchema } } } : {}),
+      ...(structured ? { response_format: { type: "json_schema", json_schema: { name: "evidence_records", strict: true, schema: structured === "financial" ? financialSchema : structured === "verify" ? verificationSchema : evidenceSchema } } } : {}),
     };
   }
   let response, output;

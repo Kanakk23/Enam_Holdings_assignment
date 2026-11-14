@@ -18,6 +18,7 @@ export const percentageMetrics = new Set([
   "fcf_conversion",
 ]);
 export const units = {
+  "INR lakh": { currency: "INR", factor: "0.01", canonical: "INR crore" },
   "INR crore": { currency: "INR", factor: "1", canonical: "INR crore" },
   "INR million": { currency: "INR", factor: "0.1", canonical: "INR crore" },
   "INR billion": { currency: "INR", factor: "100", canonical: "INR crore" },
@@ -30,6 +31,7 @@ export const accountingBases = [
   "Ind AS",
   "US GAAP",
   "Issuer commentary",
+  "Unspecified framework",
 ];
 export function number(value) {
   if (typeof value !== "string" && typeof value !== "number") return null;
@@ -110,7 +112,7 @@ export function sourcePassage(record, documents) {
 }
 export function sourceProof(record, documents) {
   const p = sourcePassage(record, documents);
-  return !!p && p.text.trim().length > 0 && (record.review !== "machine_checked" || (typeof record.quote === "string" && (p.context || p.text).replace(/\s+/g, " ").includes(record.quote.replace(/\s+/g, " ")) && quoteContainsNumber(record.quote, record.value)));
+  return !!p && p.text.trim().length > 0 && (record.review !== "machine_checked" || (typeof record.quote === "string" && (p.context || p.text).replace(/\s+/g, " ").includes(record.quote.replace(/\s+/g, " ")) && quoteContainsNumber(record.quote, record.value) && (!record.contextQuote || (p.context||p.text).replace(/\s+/g," ").includes(record.contextQuote.replace(/\s+/g," ")))));
 }
 export function compareFacts(current, previous, relation = "yoy") {
   if (!accepted(current) || !accepted(previous))

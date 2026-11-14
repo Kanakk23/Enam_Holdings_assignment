@@ -16,7 +16,7 @@ function recordingFetcher(seen, intercept) {
     const structured = !!(payload.response_format || payload.generationConfig?.responseMimeType);
     const entry = { url, options, payload, input, provider, structured }; seen.push(entry);
     if (intercept) { const value = await intercept(entry, seen.length); if (value) return value; }
-    const output = structured ? JSON.stringify({ items: [{ reference: input.passages[0].reference, quote, topic: "cash" }] }) : `Management described cash generation, but delivery needs matching subsequent results. [${input.passages[0].reference}]`;
+    const output = input.claims ? JSON.stringify({items:input.claims.map(c=>({index:c.index,verdict:"supported",reason:"Fixture verdict"}))}) : structured ? JSON.stringify({ items: [{ reference: input.passages[0].reference, quote, topic: "cash" }] }) : `Management described cash generation, but delivery needs matching subsequent results. [${input.passages[0].reference}]`;
     return response(provider, output);
   };
 }
@@ -50,16 +50,16 @@ test("routine evidence extraction uses one small Groq call and quotes validated 
   assert.equal(seen.length, 1); assert.equal(seen[0].payload.model, "openai/gpt-oss-20b");
   assert.equal(seen[0].payload.response_format.json_schema.strict, true);
 });
-test("short complex research goes directly to Gemini without an unnecessary extraction call", async () => {
+test("short complex research uses Gemini and an independent small-model verifier", async () => {
   const seen = [], result = await createResearchEngine({ fetcher: recordingFetcher(seen) }).research(query("Compare guidance and delivery"), enabled);
-  assert.equal(result.kind, "analysis"); assert.equal(seen.length, 1);
+  assert.equal(result.kind, "analysis"); assert.equal(seen.length, 2);
   assert.ok(seen[0].url.includes("gemini-3.8-flash:generateContent"));
 });
-test("larger research context is chunked, quote-checked and reduced before the stronger call", async () => {
+test("larger research reserves a call for independent verification", async () => {
   const seen = [], result = await createResearchEngine({ fetcher: recordingFetcher(seen) }).research(query("Compare the last four quarters", 8), enabled);
-  assert.equal(result.kind, "analysis"); assert.equal(seen.length, 3);
-  assert.ok(seen.slice(0, 2).every(s => s.structured && s.input.passages.length <= 4));
-  assert.equal(seen[2].structured, false); assert.equal(seen[2].input.passages.length, 2);
+  assert.equal(result.kind, "analysis"); assert.equal(seen.length, 2);
+  assert.equal(seen[0].structured,false); assert.equal(seen[0].input.passages.length,8);
+  assert.equal(seen[1].structured,true); assert.ok(seen[1].input.claims.length);
   assert.ok(result.stats.calls <= 3);
 });
 test("arithmetic, missing keys and empty evidence make zero provider requests", async () => {
@@ -88,7 +88,7 @@ test("cache invalidates across identity, source content, model configuration and
 test("complex fallback uses the stronger Groq model after Gemini quota failure", async () => {
   const seen = [], engine = createResearchEngine({ fetcher: recordingFetcher(seen, entry => entry.provider === "gemini" ? new Response(fakeKey, { status: 429 }) : null) });
   const result = await engine.research(query("Compare guidance"), enabled);
-  assert.equal(result.kind, "analysis"); assert.equal(seen.length, 2);
+  assert.equal(result.kind, "analysis"); assert.equal(seen.length, 3);
   assert.equal(seen[1].payload.model, "openai/gpt-oss-120b");
 });
 test("routine fallback uses Gemini Lite and a quota cooldown prevents repeated failing calls", async () => {
@@ -103,11 +103,11 @@ test("local token reservations stop calls before the provider limit is consumed"
   const result = await engine.research(query(), { ENABLE_FREE_MODEL: "true", GROQ_API_KEY: fakeKey, GROQ_TOKENS_PER_MINUTE: "1" });
   assert.equal(seen.length, 0); assert.equal(result.answer, undefined); assert.ok(result.warning);
 });
-test("map-stage fallback preserves a final reasoning attempt within the three-call cap", async () => {
+test("verification fallback preserves the three-call cap", async () => {
   const seen = [], engine = createResearchEngine({ fetcher: recordingFetcher(seen, entry => entry.provider === "groq" ? new Response("quota", { status: 429 }) : null) });
   const result = await engine.research(query("Compare guidance across four quarters", 8), enabled);
   assert.equal(seen.length, 3); assert.equal(result.kind, "analysis");
-  assert.equal(seen[2].structured, false); assert.ok(seen[2].url.includes("gemini-3.8-flash"));
+  assert.equal(seen[2].structured, true); assert.ok(seen[2].url.includes("gemini-3.5-flash-lite"));
 });
 test("the investigation deadline prevents further calls after a slow extraction", async () => {
   let time = 0;
@@ -150,7 +150,7 @@ test("model request contracts stay bounded and exclude searches, tools, network 
     assert.ok(s.options.signal); assert.ok(!s.options.body.includes(fakeKey));
     assert.equal(s.payload.tools, undefined); assert.equal(s.payload.plugins, undefined);
     assert.ok((s.payload.max_completion_tokens || s.payload.generationConfig.maxOutputTokens) <= 1600);
-    assert.ok(s.input.passages.every(p => p.text.length <= 1800));
+    assert.ok((s.input.passages||s.input.claims.flatMap(c=>c.evidence)).every(p => p.text.length <= 1800));
   }
 });
 test("unsupported document types are not sent to providers", async () => {

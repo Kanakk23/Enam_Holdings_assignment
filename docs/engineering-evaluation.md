@@ -1,64 +1,83 @@
 # FINN engineering evaluation
 
-The executable evaluation separates deterministic contract correctness from live model quality. Do not describe fixture results as real-company AI accuracy.
+FINN separates source-linked arithmetic, extraction quality and live-model quality. Passing deterministic checks is not a live AI accuracy score.
 
-## Reproduce
+## Current implementation
 
-- `npm test` runs financial calculation, extraction, routing, network, provenance, security and recovery contracts.
-- `node scripts/evaluate-financials.mjs` runs twelve synthetic cases three times. The cases use fictional issuers in three sectors; their figures are illustrative, never displayed as company research.
-- Results: `evals/contract-results.json` and JSONL. The baseline represents the previous absence of automatic extraction. Three positive fixtures now produce accepted records; the negative fixtures remain rejected. Twelve cases are too small to establish population-level accuracy or a statistically demonstrated improvement.
-- `npm run build && node scripts/verify-build.mjs` verifies the shipped Worker and investor-facing API boundaries.
+| Capability | Behaviour | Boundary |
+| --- | --- | --- |
+| Primary-source discovery | Locate original annual reports/raw call transcripts through a directory, then crawl the issuer website for permitted originals. | Directory prose is never financial evidence. Eight issuer pages, four waves, a 42-second recovery budget and an hour of cached links. Dynamic websites can return no usable links. |
+| PDF indexing | PDF.js extracts exact passages and uses text coordinates to preserve annual-statement columns. Adjacent small-cap/font fragments are joined by their physical spacing. | Text PDFs only; 25 MB and 300 pages. Older browser indexes are invalidated after parser changes. Scanned pages require OCR and remain unsupported. |
+| Automatic actuals | Extract explicit prose plus aligned annual profit-and-loss rows for revenue, PBT and group PAT. Keep value, units, period, consolidation, page, quotation and header evidence. | Table support requires two or three explicit 31 March columns, explicit INR units, one consolidation basis, and an unambiguous row. Restated/adjusted/segment layouts abstain. Framework is labelled unspecified when it is not extracted. |
+| Arithmetic | Decimal calculations compare compatible periods, units, basis and scope. INR lakh/crore/million conversions are deterministic. | No currency conversion or invented missing inputs; PAT is the total group result, not silently the parent-attributable result. |
+| Research | Simple questions select literal evidence. Analytical questions use a reasoning model followed by a separate small-model claim check. | The verifier checks entailment, direction, period, subject, negation, certainty and forecast versus actual. Model verification is fallible; live quality must be measured. |
+| Connected investigation | Preserve the originating event, show a verified change, expose management's stated explanation, formulate a question and carry it into contact preparation. | Management's explanation is an attributed passage, not independently proven causality. Filing terms remain in the original announcement; Pull uses only annual reports/raw transcripts. |
+| Network | Known versus inferred relationships, overlap dates, role-specific expertise, dated experience and question-specific prompts. | Profiles are synthetic. An unfamiliar issuer can produce explicitly labelled functional matches; company/sector fit is not fabricated. |
 
-## Automatic actuals
+Issuer recovery prefers a compact consolidated statement where available. One original containing a usable comparison is sufficient to continue; the investor does not wait for a second large download. Redirects share an 18-second download deadline. Unsupported documents remain available externally.
 
-`POST /api/financials` accepts the same ticker and primary-document envelope as research. It first extracts explicit prose without an LLM. If fewer than two actuals are available, a bounded structured extraction uses the existing small-model route with fallback. The model proposes at most six records. Validation independently checks literal quotation, local metric/value/unit binding, one reporting period, explicit consolidation and adjustment scope. Guidance, YTD, mixed-period quotations, and ambiguous table columns are withheld. Accepted records are labelled machine-checked rather than manually reviewed. Generic numerical code performs comparisons; incompatible records remain separate.
+## Reproduce the checks
 
-The endpoint has an 18-second total budget, seven-second individual extraction attempts, the same provider reservations/cooldowns, and a source/configuration/user-keyed cache. The investor can read passages while extraction runs. Research synthesis remains a separate, user-scoped request, capped at three provider attempts and thirty seconds; extraction attempts get seven seconds and reasoning ten, preserving fallback time. Timeouts trigger a thirty-second cooldown. Provider limits are per Worker isolate, not a durable global quota.
+```sh
+npm test
+npm run build
+node scripts/verify-build.mjs
+node scripts/verify-finance-render.mjs
+node scripts/verify-model-render.mjs
+node scripts/evaluate-review.mjs
+node scripts/evaluate-primary-tables.mjs
+```
 
-When `AI_LOG_USAGE=true`, backend logs include purpose, route, duration, provider-reported token usage when supplied, cache hits, approximate reservations, rejection reasons and failure codes. They exclude keys, original passages and private network records. Token reservations are estimates, not a dollar-cost bill. Provider/model details are not returned to the investor UI.
+The current suite has 122 passing tests. The built-Worker test exercises real financial endpoints, malformed input, frontend credential rejection, routing fixtures, asset handling and extraction from the two held-out statement layouts. It catches missing bundled dependencies, rather than only testing source imports.
 
-## Remaining limits
+The prior synthetic validator comparison remains 36/45 versus 45/45 checks over 15 cases repeated three times. Its scope is period/quotation contracts, not model quality.
 
-The parser intentionally supports a narrow explicit-prose contract. It is not a general table-layout or OCR solution. Source discovery and indexing are generic but publisher restrictions, missing period context and partial excerpts may prevent extraction. Live model financial quality requires separately reviewed held-out real documents. The synthetic suite does not establish citation entailment for free-form analysis. The current UI explains data gaps rather than inventing figures.
+## Held-out real annual statements
+
+No DABUR or VGUARD financial answers are in the application seed. Evaluation inputs and manually checked expected values live only in `evals/annual-table-cases.json`. The layouts were extracted using the same PDF.js version as the browser. Original URLs, PDF hashes, physical/printed pages and periods are retained.
+
+| Document | Physical PDF page | Printed page | Periods | Checked actuals |
+| --- | --- | --- | --- | --- |
+| Dabur consolidated financial-statements component of its 2025–26 annual report | 12 | 411 | FY2026 / FY2025 | Revenue, PBT and group PAT, both years |
+| V-Guard annual report 2023–24 | 259 | 257 | FY2024 / FY2023 | Revenue, PBT and group PAT, both years |
+
+V-Guard is an explicitly historical source. It demonstrates a second layout and industry, not current 2026 coverage.
+
+`evaluate-primary-tables` runs 24 cases three times: twelve expected facts and twelve corrupt unit/basis/column/header/period cases. Candidate: **72/72**. The frozen previous prose-only validator passed **36/72** by withholding every table, including the negative cases. All twelve facts and six annual changes match the manually checked values; extraction used **zero provider calls**. Measured local processing is milliseconds and excludes download and PDF parsing.
+
+Raw rows, repeated-trial stability, gate output and execution observations are under `evals/primary-table-*`. The gate passed without a regression. These are two source documents with correlated facts; the statistics do not establish performance across all companies or document layouts.
+
+## Model efficiency and failure handling
+
+Backend routing retains Groq GPT-OSS 20B for extraction, Gemini Flash for reasoning, and the existing Lite/120B fallbacks. Analytical answers now reserve a separate small-model verification call. Unsupported claims are omitted; incomplete verification withholds the analysis while original evidence remains usable. Explicitly tentative interpretations remain labelled as inference. No provider selection, model names or credentials are presented in the investor interface.
+
+Research is capped at three attempts and thirty seconds, with individual reasoning attempts of ten seconds and extraction/verification attempts of seven seconds. Financial extraction has an eighteen-second budget. Timeouts and quota failures cool down routes. Calculations, annual-table extraction, source matching and network matching use no LLM. Source/configuration/user-scoped caches avoid repeated valid model work; quotas remain per isolate, not a durable account-wide scheduler.
+
+With `AI_LOG_USAGE=true`, backend traces retain purpose, route, duration, reported input/output tokens, cache hits, reservations, rejection reasons and failure codes. They exclude credentials, private network records and original source passages. Reservations are estimates, not a cost invoice.
+
+## Live evaluation status
+
+`node scripts/evaluate-live-research.mjs --live` supports twelve questions across five issuers and three trials using locally configured backend keys. It records answers, evidence, latency, calls and reported usage for manual review. The keys configured in hosting cannot be read back into local code.
+
+The hosted app currently stops at ChatGPT sign-in in the testing browser. Automatic approval review rejected opening that authentication flow because explicit sign-in authorization was required. No alternate credential route was attempted. Therefore live-model financial correctness, verifier precision/recall and hosted end-to-end model latency remain **unmeasured**, not passed. Existing fixtures test failure and verification mechanics only.
 
 ## Three-minute phone demonstration
 
-1. Brief: open the archived shortlist. Explain the selection reason, dates and coverage limits; routine disclosures remain available.
-2. Open one event. Inspect the original exchange wording, then open company fundamentals. Filing-specific terms remain in the original exchange filing; Pull uses annual reports and raw transcripts.
-3. INFY: inspect the current/prior evidence pair, deterministic change, and the completed-commitments filter. Open FY27 targets remain open.
-4. Open evidence: the supporting passage is first; expand surrounding context and open the original page.
-5. Open a synthetic contact: distinguish role relevance, dated experience, known contact and inferred overlap.
-6. Enter an unseeded ticker with accessible originals. Let discovery/indexing/research/automatic actual extraction run; inspect missing evidence honestly.
-7. Show evaluation results and a recovery contract, distinguishing fixtures from production observations.
+1. Brief: inspect a leading archived event and its priority reason/date. Routine disclosures remain in the archive.
+2. Open company fundamentals; the originating event remains available from research.
+3. Inspect an Infosys cash/margin change, management's attributed passage and the specific unresolved question.
+4. Open current/prior evidence and a synthetic contact; distinguish dated expertise from a known relationship.
+5. Enter DABUR without manually entering figures. Original-document recovery and supported annual columns feed the comparison. Open the row and original PDF page.
+6. Show the held-out extraction report and one rejected ambiguous/corrupt input. Distinguish it from the pending live AI evaluation.
 
-## Submission steps requiring original material or an audience decision
+## Remaining product boundaries
 
-- Export original coding-agent/LLM conversations and replace the placeholder in `docs/submission-email.md`. A reconstruction of this work is not an original export.
-- Review source/history for secrets before changing the GitHub repository to public as required by the brief.
-- Arrange evaluator access and test from an account outside the owner allowlist. Publishing an updated private build does not grant evaluator access.
-- Send the covering email only after checking the links and attaching original sessions. No email has been sent by this workflow.
+Broad OCR/table-layout coverage, unattended refresh publication and durable multi-user storage are later capabilities. User-provided browser text has a visible authenticity warning; the server does not certify an uploaded PDF's identity. Non-March fiscal calendars require explicit configuration.
 
-## Real primary-source checks, 14 November
+## Submission material requiring the owner
 
-Generic discovery found both HAVELLS and DABUR originals. Both first-choice BSE transcript downloads returned HTTP 403. Independently retrieved NSE archives of the actual issuer transcripts returned HTTP 200. Neither issuer had financial records in the application seed. The two inspected excerpts and their source/page metadata are in `evals/primary-cases.json`.
+- Original coding-agent/LLM conversation exports or original share links; reconstructed logs do not qualify.
+- The required repository visibility and evaluator access decision, followed by a test outside the owner allowlist.
+- Final covering email after verifying these links. No email has been sent.
 
-The literal parser extracted DABUR's explicitly consolidated revenue YoY growth from its quarter-ended-March header and management passage. It abstained on HAVELLS because consolidation was absent from the chosen quotation. Reported revenue growth is its own percentage metric; it is never substituted for revenue or constant-currency growth. These two cases establish a narrow real-source extraction/abstention behaviour, not general financial-table accuracy, a complete unseen-company comparison, or live LLM quality. The application now offers a separate, explicit recovery input for an HTTPS PDF on the exact NSE archive host with a filename bound to the selected ticker. Both example transcripts downloaded through the packaged `/api/document` endpoint with HTTP 200 (HAVELLS: 981,998 bytes, 9.26 s; DABUR: 339,900 bytes, 9.17 s). This is user-supplied recovery, not automatic alternate-source discovery, and downloaded identity/type still requires checking.
-
-## Live model evaluation runner
-
-`node scripts/evaluate-live-research.mjs` makes no calls. With locally configured backend keys, `node scripts/evaluate-live-research.mjs --live` runs twelve questions across five issuers, three independent trials, with at most one request per minute. It saves public evidence and answers plus latency, provider calls, reported tokens where available, and failure categories to `evals/live-review.json`. Credentials are never included. Review claim correctness, citation support and abstention before computing any accuracy score. This runner has been syntax-checked but its authenticated network run has not been completed here. Automatic approval review blocked the hosted authenticated smoke-check attempt because it contained a temporary site credential and document payloads; no successful hosted AI result is claimed for this revision.
-
-The final local suite has 110 passing tests. The production Worker, finance renderer and frontend secret/provider scan also pass. The phone brief, research navigation and highlighted evidence screen were checked in the local preview. The deployment retains its owner-only audience; evaluator access and original session links remain submission steps.
-
-
-## Review fixes and reproducible regression comparison
-
-The production packaging bug was caused by manually concatenating modules and stripping imports. Vite now bundles the real Worker dependency graph. The packaged-artifact smoke test calls `/api/financials` for the reviewed seed, explicit prose from an unfamiliar synthetic ticker, and malformed input; it checks status and records rather than merely importing source modules.
-
-`node scripts/evaluate-review.mjs` compares a frozen copy of the actual prior validator (`evals/review-baseline-validator.mjs`, copied unchanged from source commit `76207e11704da1a102343391a018971b10ea1113`) with the candidate on 15 synthetic cases, three repetitions each. The baseline passed 36/45 checks; the candidate passed 45/45. Three cases improved and none regressed: analyst-question rejection, explicit-quarter conflicts, and fiscal-year ranges. Raw rows and the gate result are in `evals/review-{baseline,candidate}.jsonl` and `evals/review-gate.json`. The gate passed, but the paired confidence interval includes zero; this small repeated deterministic suite is regression evidence, not statistically established population improvement or a live-model score.
-
-Period parsing is shared between document indexing and extraction. Explicit quarter-ended dates take precedence over comparative quarter mentions. Bare quarter references cannot silently inherit a different document quarter. Fiscal ranges are normalised to the ending year. March year-end remains the assumption; non-March issuers need a fiscal-calendar configuration.
-
-Research validation binds numerical claims to their local citation group and rejects some unsupported certainty. It does not prove semantic entailment, speaker identity outside the quoted span, or causality. Annual-report table/OCR extraction remains outside the reliable scope.
-
-Critical event rules now take precedence over routine wording. Exact duplicate URLs are collapsed in the leading list, while distinct critical events at one issuer remain visible. A saved browser-local investigation appears before the filters. Contacts include role-specific synthetic expertise and the age/limits of their experience. Evidence focus matches the selected value and reporting period; when no supporting sentence can be isolated, the interface asks the user to inspect the original instead of highlighting a misleading fragment.
+Phone verification completed: a typed DABUR query recovered the issuer original, extracted the annual columns and displayed source-linked revenue/PBT/PAT comparisons without manual figures. Current/prior source navigation showed the original column dates and highlighted selected value. An Infosys margin question displayed the management passage and recurring-cost question. These were local functional checks; the live hosted model path remains blocked as described above.

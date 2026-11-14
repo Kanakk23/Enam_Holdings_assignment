@@ -63,7 +63,7 @@ API keys, provider selection and model routing are backend concerns. The investo
 | Reasoning when Gemini is unavailable | Groq `openai/gpt-oss-120b` | A stronger alternative within the same free-plan account |
 | Arithmetic, filing priority and contact/relationship matching | Code | Reproducible results and zero model calls |
 
-Small analytical contexts go directly to the reasoning model. Larger contexts use at most two extraction chunks first; each extracted quote must occur literally in the numbered source. Straightforward research returns selected original evidence without another model rewrite. Generated analysis rejects invalid references and unsupported numerical tokens. These checks do not prove semantic entailment.
+Analytical contexts go to the reasoning model and then to a separate small-model claim verifier. Straightforward research returns selected original evidence without another model rewrite. Generated analysis rejects invalid references and unsupported numerical tokens. These checks do not prove semantic entailment.
 
 The engine retrieves up to eight relevant passages, caps each context at 1,800 characters, and limits each uncached investigation to three provider attempts, including fallback attempts. Successful extraction/results are cached for 30 minutes in a bounded in-memory cache, keyed by evidence, query, model configuration and authenticated scope. Simultaneous identical requests share work. Source or credential changes invalidate the cache. Quota/authentication failures create short cooldowns instead of repeated retries. The cache and reservations are per Worker isolate; they are not a durable cache or a global account quota manager.
 
@@ -91,7 +91,7 @@ No paid plan or service was purchased. Hosting availability is subject to the ac
 ## Deliberate limits
 
 - The filing directory snapshot contains up to five recent links per portfolio company, not an exhaustive exchange feed. Some BSE PDF requests returned HTTP 403 in this environment. FINN retains the original link and reports download failures.
-- The initial financial comparison cache contains 37 manually reviewed Infosys records and eight explicit guidance statements. The generic evidence form supports additional companies; automatic extraction now supports explicitly bound prose actuals, with a bounded model proposal and deterministic validation. Ambiguous tables remain unsupported. Missing EBITDA/PBT/PAT figures remain gaps. There is no investment verdict or composite management score.
+- The initial financial comparison cache contains 37 manually reviewed Infosys records and eight explicit guidance statements. The generic evidence form supports additional companies; automatic extraction now supports explicitly bound prose actuals, with a bounded model proposal and deterministic validation. Aligned annual statement rows can now be extracted without model credits; ambiguous layouts remain unsupported. Missing EBITDA/PBT/PAT figures remain gaps. There is no investment verdict or composite management score.
 - Infosys includes its 2025–26 annual report and five earnings-call transcripts covering Q2 FY26 through Q2 FY27. Older 2024–25 Infosys/TCS reports remain clearly dated. Source coverage is historical and bounded.
 - Browser PDF indexing accepts up to 25 MB and reads at most 300 pages. Python ingestion also limits downloads to 25 MB. Scanned PDFs need a later OCR step. Retrieval is lexical and can miss relevant passages.
 - Network records are fictional; sector experience is a reason to investigate, not evidence that a contact knows current company facts or unpublished information.
@@ -123,7 +123,7 @@ Start at Brief → Continue an investigation for an explicitly archived Infosys 
 
 Open Coverage and freshness → Refresh portfolio sources for on-demand Yahoo EOD and filing-directory checks. Partial failures retain previous data and expose per-company errors. Successful results persist in that browser. This refresh does not require a Git commit or deployment; scheduled unattended publication is not implemented. Source coverage remains bounded.
 
-Unseen-symbol discovery now attempts two listed original PDFs automatically. Publisher restrictions can still prevent extraction. Choose another original, or use the per-source downloaded-PDF input after checking its identity. The fallback is browser-local and does not certify publisher authenticity. Automatic financial extraction is deliberately limited to explicit prose. Broad table extraction and reviewed live model evaluation remain unfinished.
+Unseen-symbol discovery now attempts two listed original PDFs automatically. Publisher restrictions can still prevent extraction. Choose another original, or use the per-source downloaded-PDF input after checking its identity. The fallback is browser-local and does not certify publisher authenticity. Automatic financial extraction supports explicit prose and a bounded annual-statement table contract. Aligned annual profit-and-loss tables are now supported when their dates, units and consolidation are explicit. OCR, arbitrary table layouts and reviewed live model quality remain outside the verified scope.
 
 A covering-email draft is in docs/submission-email.md. Repository visibility, evaluator access and original AI-session export links must be resolved before submitting; no email has been sent.
 
@@ -132,3 +132,12 @@ A covering-email draft is in docs/submission-email.md. Repository visibility, ev
 Automatic actual extraction runs in the backend and feeds source-linked comparisons without manual entry when the evidence contract passes. Research attempts now reserve fallback time and cool down timed-out routes. The brief leads with up to five selected events while retaining every distinct critical event, including multiple events at one issuer. Routine disclosures remain in the archive. See [engineering evaluation](docs/engineering-evaluation.md) for commands, measured synthetic contract results, failure boundaries, and the phone demo. Fixture passes are not live financial accuracy.
 
 The Worker is bundled through Vite from its ESM dependency graph. Build smoke checks exercise `/api/financials`, including an unseeded synthetic symbol, so missing modules cannot hide behind source-only tests. The review regression suite compares the previous validator to the candidate: 36/45 vs 45/45 checks across three repetitions of 15 synthetic cases. This small deterministic result does not establish live AI accuracy. Official NSE PDF recovery now accepts a ticker-bound archive URL when discovery links fail; both HAVELLS and DABUR downloads passed through the packaged endpoint.
+
+
+## Completed investigation and extraction update
+
+Automatic issuer-site recovery now supplements directory links. The browser preserves annual-statement columns, extracts comparable revenue/PBT/group PAT, and sends the original indexed evidence to the backend for validation. One usable two-year statement can complete a comparison. Old browser indexes are invalidated after parser changes.
+
+Research retains the originating event, management's attributed explanation and a source-specific follow-up question. Analytical model output receives a separate claim-support check before display; incomplete verification returns source evidence. Live verifier accuracy remains unmeasured because hosted sign-in was blocked by automatic approval review.
+
+Run `node scripts/evaluate-primary-tables.mjs` for two real held-out annual-statement layouts: 12 checked facts, six annual changes, 12 corrupted-input cases, three trials, zero model calls. The resulting 72/72 contract checks are not a live AI accuracy score. See [engineering evaluation](docs/engineering-evaluation.md) for provenance, observations, current limitations and submission steps.

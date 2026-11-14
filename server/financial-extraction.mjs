@@ -9,7 +9,7 @@ function boundValue(quote, metric, unit, value) {
  const label=labels[metric]; if(!label||!number(value))return false;
  const numeric='([+-]?\\d[\\d,]*(?:\\.\\d+)?)';
  const money=unit==='%'?'':unit.startsWith('INR')?'(?:INR|Rs\\.?|₹)':'(?:USD|US\\$|\\$)';
- const magnitude=unit==='%'?'%':unit.endsWith('crore')?'crores?':unit.endsWith('billion')?'(?:billion|bn)':'(?:million|mn)';
+ const magnitude=unit==='%'?'%':unit.endsWith('crore')?'crores?':unit.endsWith('lakh')?'(?:lakhs?|lacs?)':unit.endsWith('billion')?'(?:billion|bn)':'(?:million|mn)';
  // Require a local metric-value binding, not merely a number somewhere on a page.
  const pattern=new RegExp(`\\b${label}\\s*(?:was|were|stood at|of|at|is|:|amounted to)?\\s*${money}\\s*${numeric}\\s*${magnitude}`,'ig');
  return [...quote.matchAll(pattern)].some(m=>number(m[1])?.eq(number(value)));

@@ -18,9 +18,10 @@ test("findings answer a margins/cash question with comparable evidence pairs", (
   );
   assert.deepEqual(
     f.map((x) => x.metric),
-    ["operating_margin", "free_cash_flow", "fcf_conversion"],
+    ["fcf_conversion", "free_cash_flow", "operating_margin"],
   );
-  assert.match(f[0].text, /-0.10 pp/);
+  assert.match(f[0].text, /-3.50 pp/);
+  assert.match(f[2].text, /-0.10 pp/);
   assert.match(f[1].text, /-2.83%/);
   assert.ok(f.every((x) => x.current.documentId && x.prior.documentId));
 });

@@ -2596,3 +2596,16 @@ dialog {
 .coverage-summary p { margin:10px 0; line-height:1.55; overflow-wrap:anywhere; }
 .coverage-summary .subtle { color:#526071; }
 .coverage-summary .button { margin-top:6px; }
+
+.management-explanation {border-top:1px solid var(--line,#d8dee5);margin-top:20px;padding-top:16px;}
+.management-explanation blockquote {margin:10px 0;font-size:14px;line-height:1.6;max-width:70ch;}
+.investigation-origin {padding:12px 0 16px;border-bottom:1px solid #d8dee5;margin-bottom:18px;}
+.investigation-origin .text-button {display:block;text-align:left;white-space:normal;margin-top:8px;}
+.investigation-origin p {font-size:12px;color:#526071;margin:6px 0;}
+
+.source-financial-table {width:100%;border-collapse:collapse;font-size:12px;line-height:1.5;font-variant-numeric:tabular-nums;}
+.source-financial-table caption {text-align:left;color:#526071;margin:8px 0 16px;}
+.source-financial-table th,.source-financial-table td {padding:10px 4px;border-bottom:1px solid #d8dee5;text-align:right;}
+.source-financial-table th:first-child {text-align:left;font-weight:500;}
+.source-financial-table td {white-space:nowrap;}
+.source-financial-table mark {background:#e4eefa;color:#173b73;padding:3px;}

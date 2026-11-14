@@ -1,5 +1,5 @@
 import React from "react";
-import { findings, investigationQuestion } from "./investigation.mjs";
+import { findings, investigationQuestion, investigationBrief } from "./investigation.mjs";
 import { periodLabel } from "./finance.mjs";
 export function ResearchFinding({
   ticker,
@@ -7,15 +7,17 @@ export function ResearchFinding({
   documents,
   question,
   onSource,
+  onPassage,
 }) {
-  const rows = findings(ticker, facts, documents, question);
+  const brief=investigationBrief(ticker,facts,documents,question);
+  const rows=brief.rows;
   if (!rows.length) return null;
   return (
     <section className="research-finding" aria-label="Evidence-led findings">
       <h3>What changed</h3>
       <p className="subtle">
-        {periodLabel(rows[0].period)} · Calculated from reviewed primary
-        evidence
+        {periodLabel(rows[0].period)} · Calculated from source-linked
+        figures
       </p>
       <ul>
         {rows.map((r) => (
@@ -32,7 +34,8 @@ export function ResearchFinding({
           </li>
         ))}
       </ul>
-      <div className="next-question"><h4>Question to resolve</h4><p>{investigationQuestion(question)}</p></div>
+      {brief.explanation && <div className="management-explanation"><h4>Management’s explanation</h4><blockquote>{brief.explanation.text}</blockquote><button className="text-button" onClick={()=>onPassage?.(brief.explanation)}>Check the passage · p. {brief.explanation.page}</button><p className="subtle">Management’s account, not independently established causality.</p></div>}
+      <div className="next-question"><h4>Question to resolve</h4><p>{brief.question}</p></div>
       <p>
         These comparisons establish the movement, not its cause. Check
         management’s explanation and the accounting basis before drawing a

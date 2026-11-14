@@ -1,3 +1,4 @@
+import {pdfRows,tablePassages} from './financial-tables.mjs';
 import {reportPeriod} from "./report-period.mjs";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
@@ -6,7 +7,7 @@ export async function indexPdf(source, onProgress, suppliedBytes) {
   let bytes = suppliedBytes;
   if (!bytes) {
     const response = await fetch(
-      `/api/document?ticker=${encodeURIComponent(source.ticker)}&url=${encodeURIComponent(source.url)}`,
+      `/api/document?ticker=${encodeURIComponent(source.ticker)}&url=${encodeURIComponent(source.url)}${source.discovery==="issuer-website"?"&recover=1":""}`,
     );
     if (!response.ok) {
       let detail;
@@ -61,6 +62,7 @@ export async function indexPdf(source, onProgress, suppliedBytes) {
           if (passages.length > 80)
             passages.sort((a, b) => b.score - a.score).splice(60);
         }
+      if(source.type==="Annual report")passages.push(...tablePassages(pdfRows(content.items),n));
       page.cleanup();
     }
   } finally {
@@ -72,6 +74,7 @@ export async function indexPdf(source, onProgress, suppliedBytes) {
     );
   return {
     ...source,
+    indexVersion: 2,
     userProvided: !!source.userProvided || !!suppliedBytes,
     id: sha256.slice(0, 16),
     sha256,
@@ -80,7 +83,7 @@ export async function indexPdf(source, onProgress, suppliedBytes) {
     period: reportPeriod(header,source.type) || source.period || "See original document",
     retrievedAt: new Date().toISOString(),
     passages: passages
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => Number(!!b.table)-Number(!!a.table)||b.score-a.score)
       .slice(0, 24)
       .map((p, i) => ({ ...p, id: `${sha256.slice(0, 16)}:${p.page}:${i}` })),
   };

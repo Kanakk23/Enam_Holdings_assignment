@@ -42,7 +42,7 @@ import "@fontsource/ibm-plex-sans/latin-600.css";
 import "./style.css";
 import { FinancialAnalysis, RecordEvidence } from "./finance-ui.jsx";
 import { ResearchFinding } from "./finding-ui.jsx";
-import { networkMatches, conversationPrompts, investigationQuestion } from "./investigation.mjs";
+import { networkMatches, conversationPrompts, investigationQuestion, investigationBrief } from "./investigation.mjs";
 import { sourcePassage } from "./finance.mjs";
 import { ModelAnswer } from "./model-ui.jsx";
 function readableCheckDate(value) {
@@ -168,6 +168,7 @@ function App() {
     );
   const [refreshing, setRefreshing] = useState(false);
   const [lastInvestigation,setLastInvestigation]=useState(()=>stored("finn-last-investigation",null));
+  const [investigationOrigin,setInvestigationOrigin]=useState(null);
   const [automaticFacts, setAutomaticFacts] = useState([]), [financialStatus,setFinancialStatus]=useState("");
   const financialSignature = research?.documents?.map(d=>d.id).join("|") || "";
   useEffect(()=>{
@@ -175,9 +176,9 @@ function App() {
     if(busy || indexing || !research?.documents?.length || (data.facts||[]).filter(f=>f.ticker===research.ticker).length>=2)return;
     const controller=new AbortController();
     setFinancialStatus("Checking financial actuals against the original passages…");
-    fetch("/api/financials",{method:"POST",headers:{"Content-Type":"application/json"},signal:controller.signal,body:JSON.stringify({ticker:research.ticker,documents:research.documents.filter(d=>d.sha256).slice(-8).map(d=>({id:d.id,ticker:d.ticker,title:d.title,type:d.type,url:d.url,period:d.period,partial:d.partial,userProvided:d.userProvided,passages:d.passages.map(p=>({id:p.id,page:p.page,text:p.text}))}))})})
-      .then(async r=>{if(!r.ok)throw Error();return r.json();}).then(r=>{setAutomaticFacts(r.facts||[]);setFinancialStatus(r.message);})
-      .catch(e=>{if(e.name!=="AbortError")setFinancialStatus("Automatic figures are unavailable. You can still inspect the original evidence or record a checked figure.");});
+    fetch("/api/financials",{method:"POST",headers:{"Content-Type":"application/json"},signal:controller.signal,body:JSON.stringify({ticker:research.ticker,documents:data.documents.filter(d=>d.ticker===research.ticker&&d.sha256).slice(-8).map(d=>({id:d.id,ticker:d.ticker,title:d.title,type:d.type,url:d.url,period:d.period,partial:d.partial,userProvided:d.userProvided,passages:d.passages.map(p=>({id:p.id,page:p.page,text:p.text,...(p.table?{table:p.table}:{})}))}))})})
+      .then(async r=>{const result=await r.json();if(!r.ok)throw Error(result.error||"Financial evidence could not be checked.");return result;}).then(r=>{setAutomaticFacts(r.facts||[]);setFinancialStatus(r.message);})
+      .catch(e=>{if(e.name!=="AbortError")setFinancialStatus(e.message||"Automatic figures are unavailable. You can still inspect the original evidence or record a checked figure.");});
     return ()=>controller.abort();
   },[research?.ticker,financialSignature,busy,indexing]);
   async function refreshPortfolio() {
@@ -320,7 +321,7 @@ function App() {
       setError("The original passage is unavailable.");
       return;
     }
-    evidence({...passage, focus:evidenceFocus(passage,record)});
+    evidence({...passage, focus:evidenceFocus(passage,record),focusRecord:{metric:record.metric,period:record.period}});
   };
   const open = (v) => {
     stack.current.push({ view, scroll: window.scrollY });
@@ -358,6 +359,8 @@ function App() {
       sector: "",
     };
   const docs = (t) => data.documents.filter((d) => d.ticker === t);
+  const eventDocument=view?.kind === "event" ? data.documents.find(d=>d.id===view.event.id || d.id===view.event.documentId || (view.event.url&&d.url===view.event.url)) : null;
+  const eventEvidence=view?.kind === "event" ? passagesFor(eventDocument?[eventDocument]:docs(view.event.ticker),view.event.question,{limit:2}) : [];
   const evidence = (p) =>
     open({
       kind: "source",
@@ -385,13 +388,15 @@ function App() {
   async function runResearch(
     t,
     prompt = "What do the primary documents say about growth, margins and cash generation?",
+    origin = null,
   ) {
     t = t.trim().toUpperCase().replace(/\.NS$/, "");
     if (!validTicker(t)) {
       setError("Enter a valid NSE symbol, such as INFY.");
       return;
     }
-    const savedInvestigation={ticker:t,question:prompt,date:new Date().toISOString()};
+    const event=origin || (research?.ticker===t ? investigationOrigin : null);setInvestigationOrigin(event);
+    const savedInvestigation={ticker:t,question:prompt,event,date:new Date().toISOString()};
     setLastInvestigation(savedInvestigation);try{localStorage.setItem("finn-last-investigation",JSON.stringify(savedInvestigation));}catch{}
     setFoundSources([]);
     setQuery(t);
@@ -404,7 +409,8 @@ function App() {
     });
     try {
       setError("");
-      const local = docs(t);
+      const browserIds=new Set(stored("finn-documents",[]).filter(d=>d.indexVersion!==2).map(d=>d.id));
+      const local = docs(t).filter(d=>!browserIds.has(d.id));
       if (local.length) {
         let result;
         try {
@@ -414,7 +420,7 @@ function App() {
             body: JSON.stringify({ ticker: t, question: prompt, documents: local.filter(d => d.sha256).slice(-8).map(d => ({
               id: d.id, ticker: d.ticker, title: d.title, type: d.type, url: d.url,
               period: d.period, partial: d.partial, userProvided: d.userProvided,
-              passages: d.passages.map(p => ({ id: p.id, page: p.page, text: p.text })),
+              passages: d.passages.map(p => ({ id: p.id, page: p.page, text: p.text, ...(p.table?{table:p.table}:{}) })),
             })) }),
             cache: "no-store",
           });
@@ -435,7 +441,7 @@ function App() {
               },
         );
       } else {
-        const r = await fetch(`/api/discover?ticker=${encodeURIComponent(t)}`);
+        const r = await fetch(`/api/discover?ticker=${encodeURIComponent(t)}&recover=1`);
         const result = await r.json();
         if (!r.ok)
           throw Error(result.error || "Document discovery is unavailable.");
@@ -453,9 +459,16 @@ function App() {
             Number(b.url.includes("bseindia.com")),
         );
         const imported=[];
-        for (const source of choices.slice(0, 2)) {const d=await importSource(source);if(d)imported.push(d);}
+        for (const source of choices.slice(0, 2)) {const d=await importSource(source,undefined,true);if(d)imported.push(d);if(d?.passages.some(p=>p.table))break;}
+        if(imported.length<2&&!imported.some(d=>d.passages.some(p=>p.table))){
+          setError("");setResearch(r=>({...r,status:"Checking the issuer’s own report archive…"}));
+          try {const recovery=await fetch(`/api/discover?ticker=${encodeURIComponent(t)}&recover=1`);const recovered=await recovery.json();
+            const extra=(recovered.sources||[]).filter(s=>!choices.slice(0,2).some(c=>c.url===s.url));setFoundSources(recovered.sources||choices);
+            for(const source of extra.slice(0,3)){const d=await importSource(source,undefined,true);if(d&&!imported.some(x=>x.id===d.id))imported.push(d);if(imported.length>=2||d?.passages.some(p=>p.table))break;}
+          }catch{/* Existing evidence remains useful after recovery failure. */}
+        }
         if(imported.length){
-          const response=await fetch("/api/research",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ticker:t,question:prompt,documents:imported.map(d=>({id:d.id,ticker:t,title:d.title,type:d.type,url:d.url,period:d.period,partial:d.partial,userProvided:d.userProvided,passages:d.passages.map(p=>({id:p.id,page:p.page,text:p.text}))}))})});
+          const response=await fetch("/api/research",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ticker:t,question:prompt,documents:imported.map(d=>({id:d.id,ticker:t,title:d.title,type:d.type,url:d.url,period:d.period,partial:d.partial,userProvided:d.userProvided,passages:d.passages.map(p=>({id:p.id,page:p.page,text:p.text,...(p.table?{table:p.table}:{})}))}))})});
           const answer=await response.json();if(response.ok)setResearch(answer);
         }
       }
@@ -473,7 +486,7 @@ function App() {
     }));
     try {
       const response = await fetch(
-        `/api/discover?ticker=${encodeURIComponent(research.ticker)}`,
+        `/api/discover?ticker=${encodeURIComponent(research.ticker)}&recover=1`,
       );
       const result = await response.json();
       if (!response.ok) throw Error(result.error);
@@ -486,7 +499,7 @@ function App() {
       setBusy(false);
     }
   }
-  async function importSource(source, suppliedBytes) {
+  async function importSource(source, suppliedBytes, automatic=false) {
     setIndexing(true);
     setError("");
     setResearch((r) => ({ ...r, status: "Downloading the original PDF…" }));
@@ -525,23 +538,24 @@ function App() {
           status: "",
         };
       });
-      return d;
       setFoundSources((v) => v.filter((x) => x.url !== source.url));
+      return d;
     } catch (e) {
-      setError(e.message);
+      if(!automatic)setError(e.message);
     } finally {
       setIndexing(false);
     }
   }
   function PersonStrip({ t, question = research?.question || "" }) {
-    const c = company(t),
-      matches = matchPeople(t, c.sector, people, question);
+    const c = company(t),directMatches=matchPeople(t,c.sector,people,question),
+      matches=directMatches.length?directMatches:networkMatches(question,people).slice(0,2);
     return (
       <section className="people-strip">
         <div className="section-line">
           <h3>Who could add context?</h3>
           <span className="label">Synthetic network</span>
         </div>
+        {!directMatches.length && matches.length>0 && <p className="subtle">No company or sector relationship is recorded. These people offer functional experience; fit needs checking.</p>}
         {!matches.length && (
           <p className="subtle">
             No relevant experience is recorded for this company. Try a broader
@@ -571,13 +585,13 @@ function App() {
               <em>
                 {p.company === t
                   ? "First-hand company experience"
-                  : "Relevant sector experience"}{" "}
+                  : p.sector===c.sector ? "Relevant sector experience" : "Functional experience · sector fit unverified"}{" "}
                 · {p.start}–{p.end} ·{" "}
                 {p.relationship === "Known demo contact"
                   ? "Known contact"
                   : "Inferred overlap"}
               </em>
-              <small>{contactRelevance(p,question,t)}</small>
+              <small>{contactRelevance(p,question,t,c.sector)}</small>
             </span>
             <ChevronRight size={16} />
           </button>
@@ -673,7 +687,7 @@ function App() {
                 numerical interpretations in the original document.
               </p>
               {p.section && <p className="source-section">{p.section}</p>}
-              <blockquote className="focused-quote"><mark>{p.focus || evidenceFocus(p)}</mark></blockquote>
+              {p.table ? <table className="source-financial-table"><caption>{p.table.basis} · {p.table.unit} · extracted annual statement</caption><thead><tr><th scope="col">Metric</th>{p.table.columns.map(c=><th scope="col" key={c.period}>{c.label}</th>)}</tr></thead><tbody>{p.table.rows.map(row=><tr key={row.metric}><th scope="row">{row.label}</th>{row.values.map((value,i)=><td key={p.table.columns[i].period}>{p.focusRecord?.metric===row.metric&&p.focusRecord?.period===p.table.columns[i].period?<mark>{value}</mark>:value}</td>)}</tr>)}</tbody></table> : <blockquote className="focused-quote"><mark>{p.focus || evidenceFocus(p)}</mark></blockquote>}
               <details><summary>Surrounding page context</summary><blockquote>{String(p.context || p.text).replace(/\s+/g," ").trim()}</blockquote></details>
             </div>
             <p className="subtle">
@@ -869,28 +883,24 @@ function App() {
                   {view.event.historical ? " · Historical document" : ""}
                 </p>
               </div>
-              <details className="raw-title"><summary>Original exchange title</summary><p>{view.event.rawTitle}</p></details>
+              <details className="raw-title"><summary>{view.event.historical ? "Original document title" : "Original exchange title"}</summary><p>{view.event.rawTitle}</p></details>
               <div className="insight-box">
                 <h2>{view.event.question}</h2>
                 <p>{view.event.description}</p>
               </div>
               <section className="section">
-                <h3>Start with the evidence</h3><p className="subtle">Verify this event’s terms in the original filing. Company research uses annual reports and transcripts and may not cover this announcement.</p>
-                {view.event.url && (
+                <h3>Start with the evidence</h3><p className="subtle">{eventDocument ? "This is archived primary evidence. Research uses this original alongside comparable reports and transcripts." : "Verify this event’s terms in the original filing. Company research uses annual reports and transcripts and may not cover this announcement."}</p>
+                {(view.event.url || eventDocument?.url) && (
                   <a
                     className="button secondary"
-                    href={view.event.url}
+                    href={view.event.url || eventDocument?.url}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Read original BSE filing <ExternalLink size={15} />
+                    Read original {view.event.sourceType === "BSE filing" ? "exchange filing" : "document"} <ExternalLink size={15} />
                   </a>
                 )}
-                {docs(view.event.ticker)
-                  .flatMap((d) =>
-                    d.passages.slice(0, 2).map((p) => ({ ...p, document: d })),
-                  )
-                  .map((p, i) => (
+                {eventEvidence.map((p, i) => (
                     <button
                       className="passage-preview"
                       key={i}
@@ -910,7 +920,7 @@ function App() {
                 className="button primary"
                 onClick={() => {
                   setView(null);
-                  runResearch(view.event.ticker, "What do the annual reports and transcripts establish about growth, margins and capital allocation? The linked event terms require verification in its original filing.");
+                  runResearch(view.event.ticker, view.event.question+" Use permitted annual reports and transcripts to test the company’s operating assumptions; the event’s terms remain in its original filing.",view.event);
                 }}
               >
                 Research company fundamentals <ArrowRight size={16} />
@@ -944,7 +954,7 @@ function App() {
                   claim about a real person.
                 </p>
               </div>
-              <p>{contactRelevance(view.person,view.question,view.ticker)}</p>
+              <p>{contactRelevance(view.person,view.question,view.ticker,company(view.ticker).sector)}</p>
               <section className="section">
                 <h3>Your connection</h3>
                 <Connection person={view.person} />
@@ -954,6 +964,7 @@ function App() {
               </section>
               <section className="section">
                 <h3>Questions to take into a conversation</h3>
+                {view.question && <p className="question-display">{view.question}</p>}
                 <ol className="questions">
                   {conversationPrompts(view.question, view.person.role).map(
                     (q) => (
@@ -994,7 +1005,7 @@ function App() {
                 <button
                   className="button secondary"
                   onClick={() =>
-                    runResearch(lastInvestigation?.ticker||"INFY",lastInvestigation?.question||"Did margins improve and did cash conversion keep up?")
+                    runResearch(lastInvestigation?.ticker||"INFY",lastInvestigation?.question||"Did margins improve and did cash conversion keep up?",lastInvestigation?.event||null)
                   }
                 >
                   {lastInvestigation ? lastInvestigation.ticker+" · resume research" : "Infosys · margins, cash and guidance"} <ArrowRight size={15} />
@@ -1299,6 +1310,7 @@ function App() {
                     </div>
                   ) : (
                     <>
+                      {investigationOrigin && <div className="investigation-origin"><span className="label">Investigation started from</span><button className="text-button" onClick={()=>open({kind:"event",event:investigationOrigin})}>{investigationOrigin.title}</button><p>{investigationOrigin.date} · Filing terms require checking in the original.</p></div>}
                       {financialStatus && <p className="notice" role="status">{financialStatus}</p>}
                       <ResearchFinding
                         ticker={research.ticker}
@@ -1306,9 +1318,10 @@ function App() {
                         documents={data.documents}
                         question={research.question}
                         onSource={factEvidence}
+                        onPassage={evidence}
                       />
                       {research.answer && <ModelAnswer research={research} onSource={evidence} />}
-                      {research.documents?.length>0 && <PersonStrip t={research.ticker} question={investigationQuestion(research.question)} />}
+                      {research.documents?.length>0 && <PersonStrip t={research.ticker} question={investigationBrief(research.ticker,[...(data.facts||[]),...localFacts,...automaticFacts],data.documents,research.question).question} />}
                       {research.warning && <p className="notice" role="status">{research.warning}</p>}
                       {research.sourceWarning && <p className="notice">{research.sourceWarning}</p>}
 

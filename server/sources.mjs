@@ -1,3 +1,4 @@
+import {issuerSources} from './issuer-discovery.mjs';
 const decode = (s) =>
   s
     .replace(/&amp;/g, "&")
@@ -60,8 +61,9 @@ export function sourceLinks(html, ticker) {
   ];
 }
 const discoveryCache = new Map();
-export async function discover(ticker) {
-  const cached = discoveryCache.get(ticker);
+export async function discover(ticker, {recover=false}={}) {
+  const cacheKey=ticker+(recover?":recovery":"");
+  const cached = discoveryCache.get(cacheKey);
   if (cached && cached.expires > Date.now()) return cached.sources;
   const response = await fetch(
     `https://www.screener.in/company/${encodeURIComponent(ticker)}/consolidated/`,
@@ -74,19 +76,22 @@ export async function discover(ticker) {
     throw Error(
       "Document discovery is temporarily unavailable. Try again or use the documented official-PDF import.",
     );
-  const sources = sourceLinks(await response.text(), ticker);
+  const html=await response.text();
+  const listed=sourceLinks(html,ticker);
+  const extra=recover ? (await issuerSources(html,ticker,{allowedUrl:publicUrl})).sources : [];
+  const sources=[...new Map([...extra,...listed].map(s=>[s.url,s])).values()];
   if (discoveryCache.size > 100) discoveryCache.clear();
-  discoveryCache.set(ticker, { sources, expires: Date.now() + 3600000 });
+  discoveryCache.set(cacheKey, { sources, expires: Date.now() + 3600000 });
   return sources;
 }
 export async function download(source) {
-  let url = source;
+  let url = source;const deadline=Date.now()+18000;
   for (let n = 0; n < 4; n++) {
     if (!publicUrl(url))
       throw Error("Only public HTTPS document sources are allowed.");
     const r = await fetch(url, {
       redirect: "manual",
-      signal: AbortSignal.timeout(25000),
+      signal: AbortSignal.timeout(Math.max(1,deadline-Date.now())),
     });
     if (r.status >= 300 && r.status < 400) {
       url = new URL(r.headers.get("location"), url).href;
