@@ -1,0 +1,126 @@
+{
+  "verdict": "PASS",
+  "gated_cases": 15,
+  "quarantined": [],
+  "mean_delta": 0.2,
+  "ci95": [
+    -0.0293,
+    0.4293
+  ],
+  "mcnemar": {
+    "pass_to_fail": 0,
+    "fail_to_pass": 3,
+    "p_value": 1.0
+  },
+  "cost_change": null,
+  "blocks": [],
+  "warnings": [],
+  "notes": [],
+  "cases": [
+    {
+      "case_id": "adjusted-mislabelled",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "future-guidance",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "instructions-not-evidence",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "invented-quotation",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "malformed-metric",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "new-consumer-quarter",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "new-industrial-revenue",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "new-services-cash",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "number-from-wrong-field",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "wrong-consolidation",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "wrong-currency",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "wrong-period",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "analyst-assertion",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": true
+    },
+    {
+      "case_id": "explicit-quarter-conflict",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": true
+    },
+    {
+      "case_id": "fiscal-year-range",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": false
+    }
+  ]
+}

@@ -254,3 +254,8 @@ export async function refreshTicker(ticker) {
   refreshCache.set(ticker, { until: Date.now() + 300000, value: result });
   return result;
 }
+
+// Operator-supplied recovery URL: narrow exchange archive, ticker-bound filename.
+export function officialRecoveryUrl(value,ticker) {
+ try {const u=new URL(value);const escaped=ticker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");return publicUrl(value)&&u.hostname==="nsearchives.nseindia.com"&&!u.search&&new RegExp("^/corporate/"+escaped+"[0-9]*_[A-Za-z0-9_.-]+\\.pdf$","i").test(u.pathname);}catch{return false;}
+}

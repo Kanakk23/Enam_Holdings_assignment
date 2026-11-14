@@ -167,6 +167,7 @@ function App() {
       stored("finn-threshold", { price: 5, volume: 2 }),
     );
   const [refreshing, setRefreshing] = useState(false);
+  const [lastInvestigation,setLastInvestigation]=useState(()=>stored("finn-last-investigation",null));
   const [automaticFacts, setAutomaticFacts] = useState([]), [financialStatus,setFinancialStatus]=useState("");
   const financialSignature = research?.documents?.map(d=>d.id).join("|") || "";
   useEffect(()=>{
@@ -390,6 +391,8 @@ function App() {
       setError("Enter a valid NSE symbol, such as INFY.");
       return;
     }
+    const savedInvestigation={ticker:t,question:prompt,date:new Date().toISOString()};
+    setLastInvestigation(savedInvestigation);try{localStorage.setItem("finn-last-investigation",JSON.stringify(savedInvestigation));}catch{}
     setFoundSources([]);
     setQuery(t);
     setBusy(true);
@@ -872,7 +875,7 @@ function App() {
                 <p>{view.event.description}</p>
               </div>
               <section className="section">
-                <h3>Start with the evidence</h3>
+                <h3>Start with the evidence</h3><p className="subtle">Verify this event’s terms in the original filing. Company research uses annual reports and transcripts and may not cover this announcement.</p>
                 {view.event.url && (
                   <a
                     className="button secondary"
@@ -907,10 +910,10 @@ function App() {
                 className="button primary"
                 onClick={() => {
                   setView(null);
-                  runResearch(view.event.ticker, view.event.question);
+                  runResearch(view.event.ticker, "What do the annual reports and transcripts establish about growth, margins and capital allocation? The linked event terms require verification in its original filing.");
                 }}
               >
-                Research this question <ArrowRight size={16} />
+                Research company fundamentals <ArrowRight size={16} />
               </button>
               <PersonStrip t={view.event.ticker} question={view.event.question} />
               <button
@@ -985,6 +988,18 @@ function App() {
                   </span>
                 </div>
               </div>
+              <section className="continue-research">
+                <h2>Continue an investigation</h2>
+                <p>{lastInvestigation ? "Your last research question · not a new filing alert" : "Archived primary evidence · not a new filing alert"}</p>
+                <button
+                  className="button secondary"
+                  onClick={() =>
+                    runResearch(lastInvestigation?.ticker||"INFY",lastInvestigation?.question||"Did margins improve and did cash conversion keep up?")
+                  }
+                >
+                  {lastInvestigation ? lastInvestigation.ticker+" · resume research" : "Infosys · margins, cash and guidance"} <ArrowRight size={15} />
+                </button>
+              </section>
               <div className="filter-bar">
                 <div className="segmented">
                   <button
@@ -1078,21 +1093,6 @@ function App() {
                   {showReviewed ? "Hide reviewed" : "Show reviewed"}
                 </button>
               </div>
-              <section className="continue-research">
-                <h2>Continue an investigation</h2>
-                <p>Archived primary evidence · not a new filing alert</p>
-                <button
-                  className="button secondary"
-                  onClick={() =>
-                    runResearch(
-                      "INFY",
-                      "Did margins improve and did cash conversion keep up?",
-                    )
-                  }
-                >
-                  Infosys · margins, cash and guidance <ArrowRight size={15} />
-                </button>
-              </section>
               <div className="section-line attention-heading">
                 <h2>
                   Worth your attention <span>{important.length}</span>
@@ -1308,7 +1308,7 @@ function App() {
                         onSource={factEvidence}
                       />
                       {research.answer && <ModelAnswer research={research} onSource={evidence} />}
-                      <PersonStrip t={research.ticker} question={investigationQuestion(research.question)} />
+                      {research.documents?.length>0 && <PersonStrip t={research.ticker} question={investigationQuestion(research.question)} />}
                       {research.warning && <p className="notice" role="status">{research.warning}</p>}
                       {research.sourceWarning && <p className="notice">{research.sourceWarning}</p>}
 
@@ -1376,6 +1376,14 @@ function App() {
                             </span>
                           </div>
                         )}
+                        <details className="official-recovery"><summary>Use another official exchange document</summary>
+                          <p>Paste the selected company’s annual report or raw earnings-call transcript from the NSE archive. Reporting periods are checked from the document; unavailable evidence stays unresolved.</p>
+                          <form onSubmit={async e=>{e.preventDefault();const form=new FormData(e.currentTarget);const url=String(form.get("url")||"").trim();await importSource({ticker:research.ticker,url,type:String(form.get("type")),title:research.ticker+" · supplied NSE original",userProvided:true});}}>
+                            <label>Original NSE PDF URL<input name="url" type="url" required placeholder="https://nsearchives.nseindia.com/corporate/…" /></label>
+                            <label>Document type<select name="type"><option>Annual report</option><option>Earnings-call transcript</option></select></label>
+                            <button className="button secondary" disabled={indexing}>Read official document</button>
+                          </form>
+                        </details>
                         {foundSources.length > 0 && (
                           <section className="source-discovery">
                             <h3>Original documents available</h3>

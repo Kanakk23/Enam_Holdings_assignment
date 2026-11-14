@@ -72,7 +72,7 @@ export async function indexPdf(source, onProgress, suppliedBytes) {
     );
   return {
     ...source,
-    userProvided: !!suppliedBytes,
+    userProvided: !!source.userProvided || !!suppliedBytes,
     id: sha256.slice(0, 16),
     sha256,
     pageCount,

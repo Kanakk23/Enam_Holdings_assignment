@@ -1,5 +1,5 @@
 import { passagesFor } from "../src/retrieval.mjs";
-import { discover, download, refreshTicker, publicUrl } from "./sources.mjs";
+import { discover, download, refreshTicker, publicUrl, officialRecoveryUrl } from "./sources.mjs";
 import { ModelError, probeConfiguredAccess } from "./models.mjs";
 import { createResearchEngine, researchTask } from "./research-engine.mjs";
 const researchEngine = createResearchEngine();
@@ -81,10 +81,11 @@ export default {
       if (!valid(ticker))
         return json({ error: "Enter a valid NSE ticker." }, 400);
       try {
-        const sources = await discover(ticker);
-        if (url.pathname === "/api/discover") return json({ ticker, sources });
         const source = url.searchParams.get("url");
-        if (!sources.some((s) => s.url === source))
+        const recovery = url.pathname === "/api/document" && officialRecoveryUrl(source,ticker);
+        const sources = recovery ? [] : await discover(ticker);
+        if (url.pathname === "/api/discover") return json({ ticker, sources });
+        if (!recovery && !sources.some((s) => s.url === source))
           return json(
             {
               error:

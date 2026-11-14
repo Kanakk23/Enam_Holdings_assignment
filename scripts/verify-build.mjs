@@ -52,3 +52,10 @@ assert.equal((await call("/missing-file.js")).status, 404);
 console.log(
   "Built Worker verified: page, bundled assets, strict snapshot, extractive API, backend routing/synthesis fixtures, client-key rejection, credential redaction, provenance and 404.",
 );
+// Exercise the shipped financial path, not the modular development handler.
+const financial = await call('/api/financials',{method:'POST',body:JSON.stringify({ticker:'INFY'})});
+assert.equal(financial.status,200);assert.ok(Array.isArray((await financial.json()).facts));
+const literalDoc={id:'build-literal',ticker:'UNSEEN',title:'Clearly synthetic build fixture',type:'Annual report',url:'https://issuer.example/report.pdf',period:'FY2026',passages:[{page:1,text:'For FY2026 consolidated revenue was INR 1,200 crore. For FY2025 consolidated revenue was INR 1,000 crore.'}]};
+const literalResult=await (await call('/api/financials',{method:'POST',body:JSON.stringify({ticker:'UNSEEN',documents:[literalDoc]})})).json();assert.equal(literalResult.facts.length,2);
+const invalidFinancial=await call('/api/financials',{method:'POST',body:'{bad'});assert.equal(invalidFinancial.status,400);
+console.log('Packaged financial endpoint: seeded, unseen literal extraction and invalid input verified.');

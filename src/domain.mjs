@@ -83,6 +83,7 @@ export const people = Array.from({ length: 36 }, (_, i) => {
     end: 2020 + (i % 5),
     relationship:
       i % 4 === 0 ? "Employment overlap only" : "Known demo contact",
+    expertise: ["Capacity planning, manufacturing constraints and plant execution", "Financial reporting, working capital and cash conversion", "Enterprise demand, customer renewals and pricing", "Supplier terms, inventory and procurement cycles", "Industry structure, competitor positioning and public disclosures", "Product adoption, investment priorities and execution"][i===20?1:i%6],
     synthetic: true,
   };
 });

@@ -31,34 +31,12 @@ async function collect(dir) {
   }
 }
 await collect("dist/client");
-const sources = (await readFile("server/sources.mjs", "utf8")).replace(
-  /export /g,
-  "",
-);
-const retrieval = (await readFile("src/retrieval.mjs", "utf8")).replace(
-  /export /g,
-  "",
-);
-const engine = (await readFile("server/research-engine.mjs", "utf8"))
-  .replace(/import\s+\{[^}]+\}\s+from\s+["'][^"']+["'];?\s*/g, "")
-  .replace(/export /g, "");
-const models = (await readFile("server/models.mjs", "utf8"))
-  .replace(/import\s+\{[^}]+\}\s+from\s+["'][^"']+["'];?\s*/g, "")
-  .replace(/export /g, "");
-const handler = (await readFile("server/worker.mjs", "utf8"))
-  .replace(
-    /import\s+\{[^}]+\}\s+from\s+["'](?:\.\/sources|\.\/models|\.\/research-engine|\.\.\/src\/retrieval)\.mjs["'];?\s*/g,
-    "",
-  )
-  .replace("export default", "const handler=");
 const serve = `const files=${JSON.stringify(files)};function serveAsset(request){const u=new URL(request.url);const file=files[u.pathname==='/'?'/index.html':u.pathname];if(!file)return new Response('Not found',{status:404});const bytes=Uint8Array.from(atob(file[0]),c=>c.charCodeAt(0));return new Response(request.method==='HEAD'?null:bytes,{headers:{'Content-Type':file[1],'Cache-Control':u.pathname.startsWith('/assets/')?'public, max-age=31536000, immutable':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','Content-Security-Policy':\"default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self'; font-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'\"}})};`;
 await mkdir("dist/server", { recursive: true });
 await mkdir("dist/.openai", { recursive: true });
 await copyFile(".openai/hosting.json", "dist/.openai/hosting.json");
-await writeFile(
-  "dist/server/index.js",
-  `${sources}\n${retrieval}\n${models}\n${engine}\n${serve}\n${handler}\nexport default {fetch(request,env,ctx){return handler.fetch(request,{...env,ASSETS:{fetch:serveAsset}},ctx)}};`,
-);
-console.log(
-  `Worker built with ${Object.keys(files).length} self-contained assets.`,
-);
+const entry = path.resolve("dist/.worker-entry.mjs");
+await writeFile(entry, `import handler from "../server/worker.mjs";\n${serve}\nexport default {fetch(request,env,ctx){return handler.fetch(request,{...env,ASSETS:{fetch:serveAsset}},ctx)}};`);
+const { build } = await import("vite");
+await build({configFile:false,logLevel:"error",ssr:{noExternal:true},build:{ssr:entry,target:"es2022",outDir:"dist/server",emptyOutDir:true,minify:false,rollupOptions:{output:{entryFileNames:"index.js",inlineDynamicImports:true}}}});
+console.log(`Worker bundled with ${Object.keys(files).length} self-contained assets and resolved ESM dependencies.`);
