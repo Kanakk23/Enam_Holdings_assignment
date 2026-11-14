@@ -48,7 +48,7 @@ The literal parser extracted DABUR's explicitly consolidated revenue YoY growth 
 
 `node scripts/evaluate-live-research.mjs` makes no calls. With locally configured backend keys, `node scripts/evaluate-live-research.mjs --live` runs twelve questions across five issuers, three independent trials, with at most one request per minute. It saves public evidence and answers plus latency, provider calls, reported tokens where available, and failure categories to `evals/live-review.json`. Credentials are never included. Review claim correctness, citation support and abstention before computing any accuracy score. This runner has been syntax-checked but its authenticated network run has not been completed here. Automatic approval review blocked the hosted authenticated smoke-check attempt because it contained a temporary site credential and document payloads; no successful hosted AI result is claimed for this revision.
 
-The final local suite has 109 passing tests. The production Worker, finance renderer and frontend secret/provider scan also pass. The phone brief, research navigation and highlighted evidence screen were checked in the local preview. The deployment retains its owner-only audience; evaluator access and original session links remain submission steps.
+The final local suite has 110 passing tests. The production Worker, finance renderer and frontend secret/provider scan also pass. The phone brief, research navigation and highlighted evidence screen were checked in the local preview. The deployment retains its owner-only audience; evaluator access and original session links remain submission steps.
 
 
 ## Review fixes and reproducible regression comparison
