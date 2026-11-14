@@ -45,6 +45,12 @@ import { ResearchFinding } from "./finding-ui.jsx";
 import { networkMatches, conversationPrompts, investigationQuestion } from "./investigation.mjs";
 import { sourcePassage } from "./finance.mjs";
 import { ModelAnswer } from "./model-ui.jsx";
+function readableCheckDate(value) {
+  const date = new Date(value);
+  return value && Number.isFinite(date.getTime())
+    ? new Intl.DateTimeFormat("en-IN", {dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Kolkata"}).format(date) + " IST"
+    : "Date unavailable";
+}
 const Icon = ({ as: C, ...p }) => <C size={18} strokeWidth={1.7} {...p} />;
 const stored = (key, fallback) => {
   try {
@@ -372,6 +378,9 @@ function App() {
     since: windowMode === "24h" ? Date.now() - 864e5 : null,
   }).filter((e) => showReviewed || !e.reviewed);
   const {important,ordinary} = selectAttention(liveEvents);
+  const coverageRecords = data.filingCoverage || [];
+  const coverageGaps = coverageRecords.length ? portfolio.filter(c => !coverageRecords.some(r => r.ticker === c.ticker && r.status === "ok")).map(c => c.ticker) : [];
+  const checkedCompanies = portfolio.filter(c => coverageRecords.some(r => r.ticker === c.ticker && r.status === "ok")).length;
   async function runResearch(
     t,
     prompt = "What do the primary documents say about growth, margins and cash generation?",
@@ -1042,36 +1051,19 @@ function App() {
               </details>
               <details className="coverage-detail">
                 <summary>Coverage and freshness</summary>
-                <button
-                  className="button secondary"
-                  disabled={refreshing}
-                  onClick={refreshPortfolio}
-                >
-                  {refreshing
-                    ? "Refreshing public sources…"
-                    : "Refresh portfolio sources"}
-                </button>
-                <p>
-                  Last refresh attempt: {data.lastRefresh || "Not yet run"}.
-                  Source checks are cached for five minutes.
-                </p>
-                {data.filingCoverage?.map((c) => (
-                  <p key={c.ticker}>
-                    {c.ticker}: {c.status} · {c.count} links{" "}
-                    {c.errors?.join(" · ")}
-                  </p>
-                ))}
-                <p>
-                  Bounded sample: up to five recent directory links per company.
-                  Failed fetches and an empty window do not mean no disclosures
-                  exist. Checked through {data.asOf}. EOD market sessions are
-                  shown separately.
-                </p>
-                <p>
-                  {data.errors?.length || 0} archived ingestion errors recorded
-                  (separate from the latest refresh). Refreshing this page
-                  reloads the saved snapshot; source refresh runs separately.
-                </p>
+                <div className="coverage-summary">
+                  <p>Saved snapshot: <strong>{readableCheckDate(data.asOf)}</strong></p>
+                  {data.lastRefresh && <p>Latest source check: {readableCheckDate(data.lastRefresh)}</p>}
+                  {coverageGaps.length ? (
+                    <p role="status">Recent filings could not be checked for {coverageGaps.join(", ")}. Previously available information is retained.</p>
+                  ) : (
+                    <p>{checkedCompanies ? `Recent filing sources checked for ${checkedCompanies} portfolio companies.` : "Recent filing coverage has not been confirmed."}</p>
+                  )}
+                  <p className="subtle">Coverage is limited to recent filings and may be incomplete. A quiet period does not confirm that no new disclosures exist.</p>
+                  <button className="button secondary" disabled={refreshing} onClick={refreshPortfolio}>
+                    {refreshing ? "Checking sources…" : "Refresh sources"}
+                  </button>
+                </div>
               </details>
               <div className="coverage">
                 <span className="availability" />

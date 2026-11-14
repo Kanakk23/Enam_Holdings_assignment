@@ -2591,3 +2591,8 @@ dialog {
  .source-note { font-size:13px; line-height:1.5; }
  .person-row { align-items:flex-start; }
 }
+
+.coverage-summary { max-width:65ch; padding:4px 0 16px; }
+.coverage-summary p { margin:10px 0; line-height:1.55; overflow-wrap:anywhere; }
+.coverage-summary .subtle { color:#526071; }
+.coverage-summary .button { margin-top:6px; }
