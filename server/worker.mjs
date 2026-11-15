@@ -2,7 +2,9 @@ import { passagesFor } from "../src/retrieval.mjs";
 import { discover, download, refreshTicker, publicUrl, officialRecoveryUrl } from "./sources.mjs";
 import { ModelError, probeConfiguredAccess } from "./models.mjs";
 import { createResearchEngine, researchTask } from "./research-engine.mjs";
+import {createEvaluationService} from './evaluation.mjs';
 const researchEngine = createResearchEngine();
+const evaluation=createEvaluationService();
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
@@ -62,6 +64,7 @@ function browserDocuments(input, ticker, seed) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if(url.pathname==='/ops/evaluation'||url.pathname==='/api/evaluation')return evaluation.fetch(request,env);
     if (request.method === "POST" && request.headers.get("origin") && request.headers.get("origin") !== url.origin)
       return json({ error: "Requests must originate from FINN." }, 403);
     if (url.pathname === "/api/refresh") {

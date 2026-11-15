@@ -1,61 +1,58 @@
 # Backend model routing
 
-The challenge's page 4 treats cheap extraction, selective stronger reasoning, caching and chunking as examples of good engineering judgment. Multiple models are an efficiency choice, not an additional investor-facing feature.
+FINN spends model calls on evidence selection and interpretation. It calculates financial changes and matches network experience in code. Provider configuration and credentials are server concerns; the investor sees findings, citations and incomplete-result warnings.
 
-## Tasks and choices
+## Tasks
 
-| Task | Primary | Fallback | Design rationale |
+| Task | Preferred route | Recovery | Reason |
 | --- | --- | --- | --- |
-| Select literal financial/business evidence | Groq GPT-OSS 20B | Gemini 3.5 Flash-Lite | Structured selection is smaller than writing a research note. Exact quotes can be checked mechanically. |
-| Interpret guidance, compare accounts across periods, discuss narrative versus results | Gemini 3.8 Flash | Groq GPT-OSS 120B | Reserve a stronger model for synthesis across several sources. |
-| Financial arithmetic and comparability | Decimal calculations | Withhold result if inputs are missing/incompatible | Models do not compute growth, convert currencies or resolve statement-basis conflicts. |
-| Filing priority and network relationships | Deterministic rules and supplied role dates | Explicit missing/uncertain states | No model credits or personal-profile transmission are required. |
+| Literal evidence selection | Groq GPT-OSS 20B | Gemini Flash-Lite | A small structured selection with mechanically checked quotations needs no rewriting pass. |
+| Interpretation across sources | Groq GPT-OSS 120B | Gemini Flash | Prefer the route that responded during the live availability experiment. This is not a claim that it is universally the better model. |
+| Analytical claim verification | Separate small model, normally on the other available provider | Other configured small verifier within the same attempt budget | Check complete claims for support, period, subject, basis, certainty and attribution before display. |
+| Annual statement/prose actuals | Deterministic validated parsing first | Bounded structured extraction when configured | Values still need original quotation, period, units, consolidation and unambiguous basis. |
+| Arithmetic, event ranking and network matching | Deterministic code | Explain unavailable/incomparable inputs | No generated figures, invented relationship paths or model arithmetic. |
 
-These choices are hypotheses based on documented capabilities and constraints. No live financial-analysis benchmark has established that any of these models is the best. Models are pinned and allowlisted on the server. The retired Llama free-tier routes and paid-only Gemini Pro route are excluded. The Gemini reasoning route uses low thinking; extraction uses minimal thinking. Groq uses low reasoning effort. No search, URL-context, code-execution, grounding or agent tools are enabled.
+`server/models.mjs` pins the allowlist. The current defaults are GPT-OSS 20B/120B and Gemini 3.5 Flash-Lite/3.8 Flash. The backend-only `AI_REASON_PRIMARY` can explicitly select `groq` or `gemini`; its default is Groq. No model search, browsing, URL-context, execution or agent tools are enabled. Models receive low/minimal reasoning settings appropriate to their task and bounded output caps. No paid-only fallback is selected.
 
-Sources checked on 14 November 2026: [Groq supported models](https://console.groq.com/docs/models), [strict structured output support](https://console.groq.com/docs/structured-outputs), [deprecations](https://console.groq.com/docs/deprecations), [free-plan limits](https://console.groq.com/docs/rate-limits), [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing), [Gemini 3.8 Flash](https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash), and [thinking levels](https://ai.google.dev/gemini-api/docs/thinking).
+Provider model availability and free allowances can change. The live traces establish which routes actually answered on 14–15 November 2026; they do not establish a general model ranking. Earlier documentation chose Gemini first. The repeated baseline exposed timeouts, 503s and 429s; the experiment preserves those failures rather than discarding them.
 
-## Execution
+## Evidence and execution
 
-1. Validate the request. Accept only ticker, question and bounded browser-indexed primary documents. Reject client credentials and routing instructions.
-2. Choose the task in code. Explicit arithmetic requests bypass models. Analytical prompts receive up to eight relevant passages; ordinary evidence questions receive four.
-3. Remove duplicate source/page text and cap each passage at 1,800 characters. No model sees the full repository, network profiles or unrelated company documents.
-4. A short ordinary question makes one structured extraction request. Each returned quote must occur verbatim in its numbered input. The interface receives up to three original extracts, within 180 words, with source-reference buttons. There is no separate rewriting call.
-5. A short analytical question goes directly to the stronger model. For more than four retrieved passages, at most two four-passage extraction chunks first reduce the context. Invalid or unavailable compression can leave the original context available for reasoning within the same request budget.
-6. The reasoning output must contain valid references and cannot introduce numerical tokens absent from cited text. This does not establish semantic entailment or repair ambiguous financial-table layout. Unsupported output is withheld.
-7. Provider availability/quota failures permit only the relevant allowlisted fallback. Invalid evidence, truncated output, invented numbers and citation failures do not trigger another writer call. Original source passages remain accessible.
+1. Validate ticker, question and bounded primary-document inputs. Reject client keys, provider instructions and arbitrary remote document addresses.
+2. Explicit arithmetic questions route to the financial comparison, with zero model calls. Other questions retrieve at most eight analytical or four extraction passages from annual reports and raw transcripts.
+3. Keep original page text around the relevant passage, remove duplicate source/page contexts and retain reference IDs. Extraction uses at most 1,800 characters per passage; analytical context uses 1,200. Table metadata is not duplicated in prompts.
+4. Literal selections must occur in the original text, allowing whitespace differences caused by PDF line wrapping. Invalid selections are withheld individually. No valid items means no generated answer. The UI receives the original bytes and a warning when other items were withheld.
+5. Analytical input keeps the largest ordered prefix of complete passages that fits the available provider reservation. It does not replace evidence with a generated summary. Omitted passages cannot validate the answer. Partial coverage is explicit and is cached briefly.
+6. A structured analytical draft contains at most four complete claims and numbered references. Deterministic checks reject unknown references, invented numbers, unsupported fiscal labels, lost cumulative durations/adjusted qualifiers, and composite causal explanations across different sources. Absence claims must explicitly refer to supplied evidence; their verifier also receives the other retrieved context to catch contradictions. A separate verifier then checks semantic support. Only retained complete claims are rendered; incomplete verification withholds the analysis.
+7. Provider availability, timeout, quota or model access failures can use the relevant allowlisted fallback. Invalid evidence does not buy another writer call. Source passages remain available even when synthesis fails.
 
-Quote extraction does not automatically add financial records to the reviewed ledger. Financial-table automation remains separate unfinished work; a quotation without a trustworthy period, unit and statement basis is insufficient for arithmetic.
+Management's explanation is attributed evidence, not proof of causality. Unknown document periods stay unresolved; a source-supported qualitative explanation can use “the quoted period”. A successful quotation is not automatically a financial ledger record. The independent verifier is fallible; see the [engineering report](engineering-evaluation.md) and retained raw trials.
 
-## Bounds and caching
+## Time, quotas and cache
 
-- At most three provider attempts per investigation, including failed attempts and fallbacks; a 30-second model-work deadline bounds the whole sequence, with each individual request capped at 25 seconds or the remaining budget.
-- A bounded 64-entry, 30-minute LRU cache holds successful answers and extraction results in Worker memory. An in-flight map coalesces identical concurrent requests.
-- Cache keys hash the original bounded evidence, question, ticker, prompt/routing version, backend model configuration, credentials and authenticated user scope. Only hashes appear as cache keys. The platform's trusted user header supplies scope; the existing owner-private service boundary covers identity-less operator requests.
-- New source content, changed questions, changed credentials/model settings, cache expiry or deployment produces fresh work. Ordinary source refresh does not blindly regenerate every answer.
-- Conservative token reservations include estimated input and the output cap before each request. Defaults are six calls per provider per minute, 7,000 estimated tokens/minute for Groq and 18,000 for Gemini, configurable downward or within bounded maxima on the backend.
-- Quota failures cause a one-minute model cooldown; authentication/model errors cause ten minutes; availability failures cause fifteen seconds. There is no immediate retry loop.
-- Output caps include reasoning tokens. Hitting a limit is an incomplete result, not a successful note.
+- Research: at most three provider attempts in thirty seconds. Individual reasoning requests have ten seconds; selection and verification have seven. Financial extraction has eighteen seconds overall.
+- Default per-isolate reservation limits: six calls/provider/minute, 7,000 estimated Groq tokens/minute and 18,000 Gemini tokens/minute. Backend overrides are bounded. These are FINN's admission limits, not a promise of the provider account's actual entitlement.
+- Reserve conservative input bytes plus the output cap before calling. Reconcile only when the provider reports complete valid usage. Gemini output accounting uses reported total minus input, including thoughts; incomplete visible-candidate-only counts do not authorize a refund. Unknown/timeout usage remains reserved; it is never assumed free or zero.
+- Quota failure cools down the model for one minute; authentication/model errors for ten minutes; timeout/unavailability for thirty seconds. No immediate retry loop.
+- A 64-entry in-memory LRU caches successful work for thirty minutes; partial-coverage answers for one minute. Identical in-flight work coalesces.
+- Keys hash evidence, question, ticker, engine/prompt version, configuration, credential fingerprint and trusted user scope. Changed inputs/configuration invalidate work. Raw keys are never cache identifiers or response fields.
 
-Caches, request reservations and cooldowns are per isolate. They are not a durable queue or a globally enforced provider quota. Provider limits apply at the account/project level and can vary. Multi-instance production needs a shared limiter and private durable cache, rather than claiming these local counters cover every request globally.
+These controls are per Worker isolate. They do not globally coordinate all concurrent visitors or provider account traffic. A public production service would need a shared limiter, durable private cache and an appropriate access model. Reported tokens are not a dollar-cost invoice. No subscription or credits were purchased.
 
-## Keys and privacy
+## Keys, privacy and operator access
 
-Only `GROQ_API_KEY` and `GEMINI_API_KEY` server secrets are used. `ENABLE_FREE_MODEL=true` opts into calls. The local `npm run configure:ai` command collects keys in a terminal without echo and saves the Git-ignored `.env.local`; it does not configure hosted runtime secrets. No provider/key controls are shipped to investors. `/api/model/test` has been removed, health exposes no configuration, and response serializers omit routing, credentials and budget traces.
+Hosting stores `GROQ_API_KEY` and `GEMINI_API_KEY` as server secrets; `ENABLE_FREE_MODEL=true` enables generation. Local `npm run configure:ai` accepts hidden terminal input into Git-ignored `.env.local`. Hosted secrets cannot be read back into this checkout. There are no investor-facing setup controls, route names or provider endpoints in the client bundle.
 
-Use Groq Free and a Gemini project without billing enabled. The server cannot inspect a key's billing arrangement; an allowlist of models that have free tiers cannot stop a separately funded provider account from billing normal usage. FINN does not buy credits, upgrade plans or choose paid-only alternatives.
+Use a Groq Free account and a Gemini project without billing enabled. An allowlisted model having a free tier cannot prevent charges on an independently funded provider project; FINN cannot inspect billing status. Exhausted or unavailable service leaves source evidence usable.
 
-Provider inputs contain the investor's question and bounded public-document excerpts. The network remains outside model prompts. Gemini's free-tier policy allows product improvement from submitted content: private notes and real personal profiles should not be submitted under this prototype arrangement. Questions must not contain confidential investor information. A real deployment needs the corresponding privacy/consent agreements and access model before expanding data scope.
+Only bounded public-document excerpts and the investor's question go to the providers. Network profiles remain outside prompts. The prototype's synthetic profiles are clearly labelled. Free-tier provider data policies require care with confidential questions; this arrangement is not suitable for private investor documents or real relationship data without an appropriate data agreement.
 
-Optional server logs show task, model, number of calls, cache hits and estimated reservations. They omit questions, tickers, profile identities, document contents and credentials. Model configuration is documented here for engineering review, rather than shown as product controls.
+`AI_LOG_USAGE=true` logs safe route/stage metadata, counts, timings, reported usage and failures. It excludes credentials, question text, source passages and profile identities. `/api/model/test` is removed. Optional connection diagnostics perform authenticated metadata checks and return no configuration to the health response; the flag is disabled after use.
 
-## Validation boundary
+A separate `/ops/evaluation` route was temporarily enabled for the owner to run twelve fixed questions three times, with a fresh engine per trial and at least one minute between requests. It rejects arbitrary prompts, model choices and keys. This route must be disabled before evaluator release. It is not part of the investor navigation.
 
-The tests repeat 30 task-routing cases three times and exercise both provider fallbacks, cache/deduplication, scope separation, source invalidation, bounds and source-preserving failures using controlled responses. The production build checks backend-only credentials and scans client bundles for provider/model identifiers and removed setup controls. This validates orchestration and data boundaries, not real model accuracy, measured latency or dollar savings. Both hosted keys have since passed authenticated model-list checks. A live paired quality evaluation on unseen issuers, missing evidence and conflicting periods is still needed; Gemini generation timed out in the tested request.
+## Verification
 
+Controlled tests cover routing, both explicit preference orders, malformed output, independent verification, literal partial success, source/configuration/user cache separation, token reconciliation, fallback budgets and timeouts. Packaged-Worker smoke checks exercise the actual bundled endpoints and scan investor scripts for secret/provider leakage.
 
-## Live access diagnostics
-
-`AI_CONNECTION_DIAGNOSTICS=true` temporarily makes the private deployment's health handler query authenticated model-list endpoints and write redacted results to backend logs. The health response itself remains `{ok:true}`. Metadata checks do not generate model tokens. Results are cached for five minutes per backend credential configuration, and the flag is disabled after checking. `AI_LOG_USAGE` separately enables safe outcome categories, upstream HTTP statuses and counts; full prompts, response text and credentials are excluded.
-
-Long-page context is centred on the matched source passage rather than always taking the first 1,800 characters. If a reviewed table label is not contiguous original prose, query terms select a bounded window of original page text. Whitespace-only quotation differences are resolved to the original source bytes; numerical or punctuation changes still fail validation.
+The repeated live evaluation uses exactly the same twelve questions and sources for baseline and candidate, with all failures retained. See `evals/live-experiment-plan.md`, `evals/live-review-rubric.md` and the engineering report. This small related set across five issuers does not establish all-company accuracy, verifier recall or production-scale quota safety.

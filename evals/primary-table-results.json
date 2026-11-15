@@ -1,6 +1,6 @@
 {
   "kind": "held-out-real-statement-deterministic-extraction",
-  "date": "2026-11-14T17:13:55.948Z",
+  "date": "2026-11-15T00:01:07.693Z",
   "scope": "Two manually inspected annual-statement pages, twelve facts, six changes. Not live-model quality or universal table support.",
   "runs": [
     {
@@ -8,7 +8,7 @@
       "trial": 1,
       "extracted": 6,
       "providerCalls": 0,
-      "latencyMs": 20,
+      "latencyMs": 23,
       "changes": {
         "revenue": "+5.01%",
         "pbt": "+7.20%",
@@ -20,7 +20,7 @@
       "trial": 1,
       "extracted": 6,
       "providerCalls": 0,
-      "latencyMs": 6,
+      "latencyMs": 5,
       "changes": {
         "revenue": "+17.67%",
         "pbt": "+33.07%",
@@ -44,7 +44,7 @@
       "trial": 2,
       "extracted": 6,
       "providerCalls": 0,
-      "latencyMs": 4,
+      "latencyMs": 10,
       "changes": {
         "revenue": "+17.67%",
         "pbt": "+33.07%",
@@ -53,22 +53,22 @@
     },
     {
       "ticker": "DABUR",
+      "trial": 3,
+      "extracted": 6,
+      "providerCalls": 0,
+      "latencyMs": 3,
+      "changes": {
+        "revenue": "+5.01%",
+        "pbt": "+7.20%",
+        "pat": "+7.37%"
+      }
+    },
+    {
+      "ticker": "VGUARD",
       "trial": 3,
       "extracted": 6,
       "providerCalls": 0,
       "latencyMs": 13,
-      "changes": {
-        "revenue": "+5.01%",
-        "pbt": "+7.20%",
-        "pat": "+7.37%"
-      }
-    },
-    {
-      "ticker": "VGUARD",
-      "trial": 3,
-      "extracted": 6,
-      "providerCalls": 0,
-      "latencyMs": 4,
       "changes": {
         "revenue": "+17.67%",
         "pbt": "+33.07%",

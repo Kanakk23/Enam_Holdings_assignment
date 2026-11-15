@@ -1,3 +1,5 @@
+> This is a chronological implementation log. Earlier statements about unconfigured models or unfinished capabilities describe that stage, not the current release. Read README and engineering-evaluation.md for current measured status. This is not an original AI-session export.
+
 # Build history
 
 This is a concise engineering log of this implementation session, not an edited chat transcript or an attempt to reconstruct earlier conversations.

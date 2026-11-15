@@ -5,7 +5,7 @@ import { createResearchEngine, checkedExtraction, checkedAnswer, researchTask, s
 import worker from "../server/worker.mjs";
 import {analysisDraft} from "../server/grounding.mjs";
 const fakeKey = "test-only-placeholder-key";
-const enabled = { ENABLE_FREE_MODEL: "true", GROQ_API_KEY: fakeKey, GEMINI_API_KEY: fakeKey };
+const enabled = { AI_REASON_PRIMARY:"gemini", ENABLE_FREE_MODEL: "true", GROQ_API_KEY: fakeKey, GEMINI_API_KEY: fakeKey };
 const quote = "Management discussed operating cash generation and its outlook in the original report.";
 const passages = (count = 2) => Array.from({ length: count }, (_, i) => ({ page: i + 1, text: quote, document: { id: `d${i}`, ticker: "UNSEEN", type: "Earnings-call transcript", title: `Original call ${i}`, period: "FY2027-Q2", passages: [{ page: i + 1, text: quote }] } }));
 const query = (question = "What did management say about cash?", count = 2, scope = "owner") => ({ ticker: "UNSEEN", question, passages: passages(count), scope });
@@ -59,7 +59,35 @@ test("routine evidence extraction uses one small Groq call and quotes validated 
   assert.equal(seen.length, 1); assert.equal(seen[0].payload.model, "openai/gpt-oss-20b");
   assert.equal(seen[0].payload.response_format.json_schema.strict, true);
 });
-test("short complex research uses Gemini and an independent small-model verifier", async () => {
+test('the measured-availability default uses Groq reasoning and a separate Gemini Lite verifier',async()=>{
+ const seen=[],config={...enabled};delete config.AI_REASON_PRIMARY;
+ const result=await createResearchEngine({fetcher:recordingFetcher(seen)}).research(query('Why did margins change?'),config);
+ assert.equal(result.kind,'analysis');assert.equal(seen.length,2);assert.equal(seen[0].payload.model,'openai/gpt-oss-120b');assert.ok(seen[1].url.includes('gemini-3.5-flash-lite'));
+ for(let trial=0;trial<3;trial++)assert.equal(researchTask('What evidence is missing for a financial comparison?'),'reason');
+});
+test('independently literal excerpts survive rejection of another proposed excerpt',async()=>{
+ const seen=[],config={...enabled};
+ const result=await createResearchEngine({fetcher:recordingFetcher(seen,e=>response(e.provider,JSON.stringify({items:[{reference:1,quote,topic:'cash'},{reference:1,quote:'This invented statement does not occur in the original financial document.',topic:'cash'}]})))}).research(query(),config);
+ assert.equal(result.answer,quote+' [1]');assert.match(result.warning,/withheld/);assert.equal(seen.length,1);assert.ok(!result.answer.includes('invented'));
+});
+test('reasoning packs whole original passages to the active token cap without admitting omitted reference IDs',async()=>{
+ const input=query('Why did cash conversion change?',8);input.passages.forEach(p=>p.text=quote+' Supporting source context.'.repeat(60));
+ const config={...enabled,AI_REASON_PRIMARY:'groq',GROQ_TOKENS_PER_MINUTE:'4500'},seen=[];
+ const result=await createResearchEngine({fetcher:recordingFetcher(seen)}).research(input,config);
+ assert.equal(result.kind,'analysis');assert.ok(result.coverage.provided>0&&result.coverage.provided<8);assert.equal(seen[0].input.passages.length,result.coverage.provided);assert.match(result.warning,/part of the retrieved evidence/);
+ const bad=await createResearchEngine({fetcher:recordingFetcher([],e=>e.input.outputFormat==='claims'?response(e.provider,JSON.stringify({claims:[{text:'Management discussed cash generation.',references:[8]}]})):null)}).research(input,config);
+ assert.equal(bad.answer,undefined);assert.equal(bad.stats.failureDetail,'unknown_reference');assert.equal(bad.stats.calls,1);
+});
+test('reported token usage reconciles reservations; missing usage never receives a speculative refund',async()=>{
+ for(const reported of [true,false]){
+  let calls=0;const engine=createResearchEngine({fetcher:async()=>{calls++;return Response.json({...(reported?{usage:{prompt_tokens:100,completion_tokens:30}}:{}),choices:[{finish_reason:'stop',message:{content:JSON.stringify({items:[{reference:1,quote,topic:'cash'}]})}}]});}});
+  const config={ENABLE_FREE_MODEL:'true',GROQ_API_KEY:fakeKey,GROQ_TOKENS_PER_MINUTE:'3000'};
+  const first=await engine.research(query('What did management say about cash?'),config),second=await engine.research(query('Show cash generation evidence'),config);
+  assert.ok(first.answer);assert.equal(calls,reported?2:1);
+  if(reported){assert.ok(second.answer);assert.equal(first.stats.stages[0].reconciledTokens,130);}else{assert.equal(second.answer,undefined);assert.equal(second.stats.failureCode,'budget');}
+ }
+});
+test("configured Gemini-first research retains an independent small-model verifier", async () => {
   const seen = [], result = await createResearchEngine({ fetcher: recordingFetcher(seen) }).research(query("Compare guidance and delivery"), enabled);
   assert.equal(result.kind, "analysis"); assert.equal(seen.length, 2);
   assert.ok(seen[0].url.includes("gemini-3.8-flash:generateContent"));

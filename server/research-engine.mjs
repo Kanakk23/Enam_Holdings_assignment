@@ -1,12 +1,13 @@
 import {tableActuals} from './table-financials.mjs';
+import {checkClaimScope,absenceClaim} from './claim-scope.mjs';
 import {analysisDraft,analysisCandidates,verifiedClaims,renderVerified,verificationInstructions} from './grounding.mjs';
 import { financialInstructions, validateFinancialCandidates, proseCandidates } from "./financial-extraction.mjs";
 import { ModelError, configuredModels, modelCompletion, researchInstructions, extractionInstructions } from "./models.mjs";
-const engineVersion = "grounded-investigation-v11";
+const engineVersion = "grounded-investigation-v13";
 export function researchTask(question) {
   const q = String(question).toLowerCase();
   if (/\b(calculate|compute|work out)\b/.test(q) && /\b(growth|yoy|qoq|ratio|conversion|change|percentage)\b/.test(q)) return "calculation";
-  return /\b(compare|versus|vs\.?|promis\w*|deliver\w*|guidance|narrative|contradict\w*|conflict\w*|trajectory|multi.year|bull|bear|why|risk\w*|leverage|cash quality|cash conversion|balance sheet)\b|what (?:has )?changed|four quarters|4 quarters|year.over.year|quarter.over.quarter/.test(q) ? "reason" : "extract";
+  return /\b(compare|versus|vs\.?|promis\w*|deliver\w*|guidance|narrative|contradict\w*|conflict\w*|trajectory|multi.year|bull|bear|why|risk\w*|leverage|cash quality|cash conversion|balance sheet)\b|what (?:has )?changed|four quarters|4 quarters|year.over.year|quarter.over.quarter|what evidence.*missing|missing.*(?:evidence|comparison)|financial comparison/.test(q) ? "reason" : "extract";
 }
 const modelLimit = (value, fallback, max) => Number.isFinite(Number(value)) && Number(value) > 0 ? Math.min(max, Math.floor(Number(value))) : fallback;
 function focusedContext(passage, maxChars, question) {
@@ -64,6 +65,14 @@ export function checkedExtraction(text, sources) {
     return { reference: item.reference, quote: literal, topic: item.topic };
   }).filter(item => { const key = `${item.reference}:${item.quote}`; if (seen.has(key)) return false; seen.add(key); return true; });
 }
+export function checkedExtractionItems(text,sources){
+ let output;try{output=JSON.parse(text);}catch{throw new ModelError('evidence');}
+ if(!Array.isArray(output?.items)||output.items.length>4)throw new ModelError('evidence');
+ const items=[];let withheld=0;
+ for(const item of output.items){try{items.push(...checkedExtraction(JSON.stringify({items:[item]}),sources));}catch(error){if(error.code!=='evidence')throw error;withheld++;}}
+ if(!items.length)throw new ModelError('evidence');
+ return {items:[...new Map(items.map(item=>[`${item.reference}:${item.quote}`,item])).values()],withheld};
+}
 const numericTokens = text => (text.match(/\d[\d,]*(?:\.\d+)?/g) || []).map(n => n.replaceAll(",", "").replace(/\.0+$/, ""));
 // Period labels are supported by document metadata as well as page prose. They
 // are not monetary amounts: FY27 must not be mistaken for an invented value 27.
@@ -106,6 +115,7 @@ export function checkedAnswer(answer, sources) {
   for (const chunk of answer.matchAll(/([\s\S]*?)((?:\[\d+\]\s*)+)/g)) {
     const references=[...chunk[2].matchAll(/\[(\d+)\]/g)].map(m=>+m[1]);
     const evidence=sources.filter(s=>references.includes(s.reference)).map(s=>s.text).join(" ");
+    checkClaimScope(chunk[1],evidence);
     const localNumbers=new Set(numericTokens(evidence));
     if(numericTokens(withoutSupportedPeriods(chunk[1],sources.filter(s=>references.includes(s.reference)))).some(n=>!localNumbers.has(n)))throw new ModelError("numbers");
     durationBoundNumbers(chunk[1],sources.filter(s=>references.includes(s.reference)));
@@ -121,6 +131,19 @@ async function engineHash(value) {
 }
 export function createResearchEngine({ fetcher = (...args) => fetch(...args), now = () => Date.now() } = {}) {
   const memo = new Map(), pending = new Map(), usage = new Map(), cooldown = new Map();
+  const reserve=(config,system,input)=>Math.ceil(new TextEncoder().encode(system+input).byteLength/2)+config.maxTokens;
+  const cap=(provider,env)=>provider==='groq'?modelLimit(env.GROQ_TOKENS_PER_MINUTE,7000,8000):modelLimit(env.GEMINI_TOKENS_PER_MINUTE,18000,50000);
+  function packReasoningSources(config,question,sources,env){
+    const bucket=usage.get(config.provider),used=bucket&&now()-bucket.start<60000?bucket.tokens:0;
+    // Keep original passages and reference IDs. Drop lower-ranked whole passages,
+    // never shorten a claim's evidence or fabricate a compressed replacement.
+    for(let count=sources.length;count>0;count--){
+      const selected=sources.slice(0,count).map(({table,...source})=>source);
+      const input=JSON.stringify({question,passages:selected,outputFormat:'claims'});
+      if(reserve(config,researchInstructions,input)+used<=cap(config.provider,env))return {selected,input,total:sources.length};
+    }
+    throw new ModelError('budget');
+  }
   async function cached(key, work, stats) {
     const hit = memo.get(key);
     if (hit?.expires > now()) { stats.cacheHits++; memo.delete(key); memo.set(key, hit); return hit.value; }
@@ -129,7 +152,7 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
     pending.set(key, task);
     try {
       const value = await task;
-      memo.set(key, { value, expires: now() + 30 * 60 * 1000 });
+      memo.set(key, { value, expires: now() + (value.coverage?.provided<value.coverage?.total?60000:30*60*1000) });
       while (memo.size > 64) memo.delete(memo.keys().next().value);
       return value;
     } finally { pending.delete(key); }
@@ -139,17 +162,24 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
     if ((cooldown.get(bucketKey) || 0) > now()) throw new ModelError("cooldown");
     if (stats.calls >= 3 || now() >= stats.deadline) throw new ModelError("budget");
     // Approximate token reservations include output and conservative input overhead.
-    const estimate = Math.ceil(new TextEncoder().encode(system + input).byteLength / 2) + config.maxTokens;
+    const estimate = reserve(config,system,input);
     let bucket = usage.get(config.provider);
     if (!bucket || now() - bucket.start >= 60000) { bucket = { start: now(), calls: 0, tokens: 0 }; usage.set(config.provider, bucket); }
     const rpm = modelLimit(env.AI_REQUESTS_PER_MINUTE, 6, 30);
-    const tokenCap = config.provider === "groq" ? modelLimit(env.GROQ_TOKENS_PER_MINUTE, 7000, 8000) : modelLimit(env.GEMINI_TOKENS_PER_MINUTE, 18000, 50000);
+    const tokenCap = cap(config.provider,env);
     if (bucket.calls >= rpm || bucket.tokens + estimate > tokenCap) throw new ModelError("budget");
     bucket.calls++; bucket.tokens += estimate; stats.calls++; stats.reservedTokens += estimate;
     const stage = { provider: config.provider, model: config.model, purpose: structured === "analysis" ? "reason" : structured === "financial" ? "financial" : structured === "verify" ? "verify" : structured ? "extract" : "reason" };
     stage.startedAt = now(); stats.stages.push(stage);
     try {
-      const answer = await modelCompletion(config, system, input, { structured, fetcher, onUsage: usage => { stage.usage = usage; }, timeoutMs: Math.max(1, Math.min(structured && structured!=="analysis" ? 7000 : 10000, stats.deadline - now())) });
+      const answer = await modelCompletion(config, system, input, { structured, fetcher, onUsage: actual => {
+        stage.usage=actual;
+        if(Number.isFinite(actual.inputTokens)&&actual.inputTokens>=0&&Number.isFinite(actual.outputTokens)&&actual.outputTokens>=0){
+          const reported=Math.max(actual.inputTokens+actual.outputTokens,Number.isFinite(actual.totalTokens)?actual.totalTokens:0);
+          bucket.tokens=Math.max(0,bucket.tokens-estimate+reported);
+          stage.reconciledTokens=reported;
+        }
+      }, timeoutMs: Math.max(1, Math.min(structured && structured!=="analysis" ? 7000 : 10000, stats.deadline - now())) });
       stage.durationMs = now() - stage.startedAt; stage.outcome = "completed"; stage.outputCharacters = answer.length;
       return answer;
     }
@@ -203,12 +233,14 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
       if (!Object.keys(configs).length) return { stats };
       const sources = sourceInputs(passages, stats.task === "reason" ? 1200 : 1800, question);
       if (!sources.length) return { stats, warning: "No matching primary-source passages were found. Try a more specific question." };
-      const namespace = await engineHash([engineVersion, scope, Object.entries(configs).map(([role, c]) => [role, c.model, c.apiKey])]);
+      const primary=env.AI_REASON_PRIMARY||'groq';
+      if(!['groq','gemini'].includes(primary))return {stats,warning:'The research note is unavailable. Original source passages remain accessible.'};
+      const namespace = await engineHash([engineVersion, primary, scope, Object.entries(configs).map(([role, c]) => [role, c.model, c.apiKey])]);
       const normalizedQuestion = question.trim().replace(/\s+/g, " ").toLowerCase();
       const answerKey = await engineHash([namespace, ticker, normalizedQuestion, sources]);
       try {
         const result = await cached(answerKey, async () => {
-          let records = [];
+          let records = [],extractionWithheld=0;
           // Simple questions use one small extraction call and no writer model.
           // Large reasoning contexts are reduced in at most two independent chunks.
           const mapFirst = stats.task === "extract";
@@ -217,13 +249,13 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
             for (const chunk of chunks) {
               const key = await engineHash([namespace, "extract", normalizedQuestion, chunk]);
               try {
-                const items = await cached(key, () => withFallback([configs.extract, configs.extractFallback], async config => {
+                const selection = await cached(key, () => withFallback([configs.extract, configs.extractFallback], async config => {
                   // Preserve one attempt for the actual analytical answer after map-stage failures.
                   if (stats.task === "reason" && stats.calls >= 2) throw new ModelError("budget");
-                  const raw = await invoke(config, extractionInstructions, JSON.stringify({ question, passages: chunk }), true, env, stats);
-                  return checkedExtraction(raw, chunk);
+                  const raw = await invoke(config, extractionInstructions, JSON.stringify({ question, passages: chunk.map(({table,...source})=>source) }), true, env, stats);
+                  return checkedExtractionItems(raw, chunk);
                 }), stats);
-                records.push(...items);
+                records.push(...selection.items);extractionWithheld+=selection.withheld;
               } catch (error) {
                 if (stats.task === "extract") throw error;
                 // Keep the original context available when compression is unavailable.
@@ -240,22 +272,26 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
               lines.push(`${item.quote} [${item.reference}]`); words += count;
             }
             if (!lines.length) throw new ModelError("evidence");
-            return { answer: lines.join("\n\n"), kind: "selected-evidence" };
+            return { answer: lines.join("\n\n"), kind: "selected-evidence",...(extractionWithheld?{warning:'Some proposed excerpts were withheld because they did not match the original wording.'}:{}) };
           }
           const selected = records.length ? sources.filter(source => records.some(item => item.reference === source.reference)).map(source => ({ ...source, text: records.filter(item => item.reference === source.reference).map(item => item.quote).join("\n") })) : sources;
-          const draft = await withFallback([configs.reason, configs.reasonFallback], async config => {
-            const output = await invoke(config, researchInstructions, JSON.stringify({ question, passages: selected, outputFormat:"claims" }), "analysis", env, stats);
+          const reasoningChoices=primary==='groq'?[configs.reasonFallback,configs.reason]:[configs.reason,configs.reasonFallback];
+          const draft = await withFallback(reasoningChoices, async config => {
+            const packed=packReasoningSources(config,question,selected,env),provided=packed.selected;
+            const output = await invoke(config, researchInstructions, packed.input, "analysis", env, stats);
+            stats.stages.at(-1).sourceCount=provided.length;
             let raw;
             try{raw=analysisDraft(output);}catch{const error=new ModelError("citations");error.detail="invalid_structured_claims";throw error;}
             if (raw.split(/\s+/).length > 220) { const error=new ModelError("citations"); error.detail="word_limit"; throw error; }
             let proposed;
             let formattingWithheld=0;
-            try { const parsed=analysisCandidates(raw,selected); proposed=parsed.claims; formattingWithheld=parsed.withheld; }
+            try { const parsed=analysisCandidates(raw,provided); proposed=parsed.claims; formattingWithheld=parsed.withheld; }
             catch { const error=new ModelError("citations"); error.detail="uncited_or_oversized_claims"; throw error; }
-            if ([...raw.matchAll(/\[(\d+)\]/g)].some(m=>!selected.some(s=>s.reference===+m[1]))) {
+            if ([...raw.matchAll(/\[(\d+)\]/g)].some(m=>!provided.some(s=>s.reference===+m[1]))) {
               const error=new ModelError("citations"); error.detail="unknown_reference"; throw error;
             }
             const accepted=[];
+            const rejection=reason=>{stats.claimRejections||={};stats.claimRejections[reason]=(stats.claimRejections[reason]||0)+1;};
             for (const claim of proposed) {
               // Validate each complete cited claim. Never truncate a sentence or
               // preserve its unsupported number just to make the note available.
@@ -263,25 +299,28 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
               // Multi-source causal narratives proved unreliable in live review.
               // Keep causal explanations confined to a single original passage;
               // cross-period movements remain in the deterministic comparisons.
-              if(claim.evidence.length>1 && /\battribut\w*\b|\bdue to\b|\bbecause\b|\bdriven by\b|\blinked to\b|\bled to\b/i.test(claim.text))continue;
+              if(claim.evidence.length>1 && /\battribut\w*\b|\bdue to\b|\bbecause\b|\bdriven by\b|\blinked to\b|\bled to\b/i.test(claim.text)){rejection('composite_causal_sources');continue;}
               const text=`${claim.text} ${claim.evidence.map(s=>`[${s.reference}]`).join(" ")}`;
-              try { checkedAnswer(text,selected); accepted.push(claim); }
-              catch(error) { if (!["numbers","evidence","citations"].includes(error.code)) throw error; }
+              try { checkedAnswer(text,provided); accepted.push(claim); }
+              catch(error) { if (!["numbers","evidence","citations"].includes(error.code)) throw error;rejection(error.detail||error.code); }
             }
             stats.validationWithheld=proposed.length-accepted.length+formattingWithheld;
             if (!accepted.length) { const error=new ModelError("evidence"); error.detail="no_valid_claims"; throw error; }
-            return {claims:accepted.map((c,index)=>({...c,index})),withheld:stats.validationWithheld};
+            return {claims:accepted.map((c,index)=>({...c,index})),withheld:stats.validationWithheld,provider:config.provider,coverage:{provided:provided.length,total:packed.total},...(accepted.some(c=>absenceClaim(c.text))?{retrievedContext:provided}:{})};
           });
           const claims=draft.claims;
           let verification;
           try {
-            const raw=await withFallback([configs.extract,configs.extractFallback],config=>invoke({...config,maxTokens:800},verificationInstructions,JSON.stringify({claims}),"verify",env,stats));
+            const failedProviders=new Set(stats.stages.filter(s=>s.outcome==='failed').map(s=>s.provider));
+            const choices=(draft.provider==='groq'?[configs.extractFallback,configs.extract]:[configs.extract,configs.extractFallback]).filter(Boolean).sort((a,b)=>Number(failedProviders.has(a.provider))-Number(failedProviders.has(b.provider)));
+            const raw=await withFallback(choices,config=>invoke({...config,maxTokens:800},verificationInstructions,JSON.stringify({claims,...(draft.retrievedContext?{retrievedContext:draft.retrievedContext}:{})}),"verify",env,stats));
             verification=verifiedClaims(raw,claims);
           }catch(error){throw new ModelError("evidence");}
           const grounded=renderVerified(verification);
           if(!grounded)throw new ModelError("evidence");
           const withheld=draft.withheld+verification.filter(v=>v.verdict==="unsupported").length;
-          return {answer:grounded,kind:"analysis",...(withheld?{warning:"Some proposed claims were withheld because their cited evidence did not support them."}:{}),grounding:{checked:claims.length+draft.withheld,withheld}};
+          const warnings=[];if(withheld)warnings.push('Some proposed claims were withheld because their cited evidence did not support them.');if(draft.coverage.provided<draft.coverage.total)warnings.push('This note covers part of the retrieved evidence; remaining source passages are available below.');
+          return {answer:grounded,kind:'analysis',...(warnings.length?{warning:warnings.join(' ')}:{}),coverage:draft.coverage,grounding:{checked:claims.length+draft.withheld,withheld}};
         }, stats);
         return { ...result, stats };
       } catch (error) {

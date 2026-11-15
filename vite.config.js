@@ -4,7 +4,7 @@ import worker from "./server/worker.mjs";
 export default defineConfig(({ mode }) => {
   // Only the development server receives these values. Never use VITE_ for secrets.
   const values = loadEnv(mode, process.cwd(), "");
-  const localEnv = Object.fromEntries(["ENABLE_FREE_MODEL", "GROQ_API_KEY", "GEMINI_API_KEY", "GROQ_EXTRACT_MODEL", "GROQ_REASON_MODEL", "GEMINI_EXTRACT_MODEL", "GEMINI_REASON_MODEL", "AI_REQUESTS_PER_MINUTE", "GROQ_TOKENS_PER_MINUTE", "GEMINI_TOKENS_PER_MINUTE", "AI_LOG_USAGE", "AI_CONNECTION_DIAGNOSTICS"].map(key => [key, values[key]]));
+  const localEnv = Object.fromEntries(["ENABLE_FREE_MODEL", "GROQ_API_KEY", "GEMINI_API_KEY", "GROQ_EXTRACT_MODEL", "GROQ_REASON_MODEL", "GEMINI_EXTRACT_MODEL", "GEMINI_REASON_MODEL", "AI_REQUESTS_PER_MINUTE", "GROQ_TOKENS_PER_MINUTE", "GEMINI_TOKENS_PER_MINUTE", "AI_LOG_USAGE", "AI_CONNECTION_DIAGNOSTICS", "AI_REASON_PRIMARY"].map(key => [key, values[key]]));
   return {
   build: { outDir: "dist/client" },
   plugins: [

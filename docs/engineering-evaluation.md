@@ -16,7 +16,18 @@ FINN separates source-linked arithmetic, extraction quality and live-model quali
 
 Issuer recovery prefers a compact consolidated statement where available. One original containing a usable comparison is sufficient to continue; the investor does not wait for a second large download. Redirects share an 18-second download deadline. Unsupported documents remain available externally.
 
-## Reproduce the checks
+## Automated and real-document checks
+
+| Evidence | Observed result | Scope |
+| --- | --- | --- |
+| `npm test` | 150 passing tests | Financial invariants, source restrictions, generic extraction, routing/cache isolation, failure handling and claim guards. Controlled responses are not live accuracy. |
+| Built-Worker smoke | Pass | Bundled assets/dependencies, real financial/research endpoints, malformed requests, client-key rejection, private evaluation authorization and 404. |
+| Investor/render checks | Pass | Source controls and financial presentation; no secret/provider configuration in investor scripts. Browser/physical-device checks are separate. |
+| Two held-out annual statement layouts | 72/72 repeated contract checks, zero model calls | Twelve checked facts and twelve corrupt-input cases, each three times; six compatible annual changes. |
+| Synthetic answer-period contract | 48/48, versus frozen previous validator 33/48 | Sixteen correlated cases, three times; not synthesis or verifier accuracy. |
+| Synthetic final claim-scope contract | 27/27, versus frozen intermediate validator 15/27 | Nine small product-boundary cases, three times; not live generation. |
+
+Reproduce:
 
 ```sh
 npm test
@@ -24,75 +35,69 @@ npm run build
 node scripts/verify-build.mjs
 node scripts/verify-finance-render.mjs
 node scripts/verify-model-render.mjs
-node scripts/evaluate-review.mjs
 node scripts/evaluate-primary-tables.mjs
+node scripts/evaluate-answer-periods.mjs
+node scripts/evaluate-claim-scope.mjs
+python scripts/check-release-secrets.py
 ```
 
-The current suite has 131 passing tests. The built-Worker test exercises real financial endpoints, malformed input, frontend credential rejection, routing fixtures, asset handling and extraction from the two held-out statement layouts. It catches missing bundled dependencies, rather than only testing source imports.
+No DABUR or VGUARD financial answers are in the production seed. `evals/annual-table-cases.json` retains original URLs, PDF hashes, coordinate-preserving text, physical/printed pages and manually checked expected values.
 
-The prior synthetic validator comparison remains 36/45 versus 45/45 checks over 15 cases repeated three times. Its scope is period/quotation contracts, not model quality.
+| Original | Physical page | Printed page | Periods and figures |
+| --- | --- | --- | --- |
+| Dabur consolidated financial-statements component of its 2025–26 annual report | 12 | 411 | FY2026 / FY2025 revenue, PBT and group PAT |
+| V-Guard annual report 2023–24 | 259 | 257 | FY2024 / FY2023 revenue, PBT and group PAT |
 
-## Held-out real annual statements
+V-Guard is an explicitly historical source, demonstrating a second layout/industry rather than current 2026 coverage. The previous prose-only validator passed 36/72 by abstaining on every table, including positive cases. The candidate's twelve values and six changes match the checked originals. Millisecond local processing timings exclude download and PDF parsing. Two documents with correlated values do not establish all-company coverage.
 
-No DABUR or VGUARD financial answers are in the application seed. Evaluation inputs and manually checked expected values live only in `evals/annual-table-cases.json`. The layouts were extracted using the same PDF.js version as the browser. Original URLs, PDF hashes, physical/printed pages and periods are retained.
+## Repeated hosted model experiment
 
-| Document | Physical PDF page | Printed page | Periods | Checked actuals |
-| --- | --- | --- | --- | --- |
-| Dabur consolidated financial-statements component of its 2025–26 annual report | 12 | 411 | FY2026 / FY2025 | Revenue, PBT and group PAT, both years |
-| V-Guard annual report 2023–24 | 259 | 257 | FY2024 / FY2023 | Revenue, PBT and group PAT, both years |
+The same twelve questions, five issuers and three fresh trials were retained across three revisions. Baseline Site source: `08a49cfcf86fd3e48257003c7837fa422fafbe57`; intermediate: `0311f67dcb8c71620c6be7ee09d62e263c3b96dd`; final application code: `1ef752a837909c2c0d443cba21ad3b61c1bad52b`. Later release commits may change documentation/evaluation artifacts while preserving this measured application code.
 
-V-Guard is an explicitly historical source. It demonstrates a second layout and industry, not current 2026 coverage.
+The plan and rubric are in `evals/live-experiment-plan.md` and `evals/live-review-rubric.md`. The two held-out transcript excerpts are identified originals; this benchmark does not perform blind ticker discovery, PDF downloads or PDF parsing. The HAVELLS missing-margin case is a zero-call retrieval-level abstention check. The arithmetic case checks zero-call handoff, not calculation accuracy.
 
-`evaluate-primary-tables` runs 24 cases three times: twelve expected facts and twelve corrupt unit/basis/column/header/period cases. Candidate: **72/72**. The frozen previous prose-only validator passed **36/72** by withholding every table, including the negative cases. All twelve facts and six annual changes match the manually checked values; extraction used **zero provider calls**. Measured local processing is milliseconds and excludes download and PDF parsing.
+<!-- LIVE_RESULTS_START -->
+Final v3 run is in progress. Completed baseline and intermediate raw results/reviews are retained; the final table is filled only after all final trials and evidence reviews finish.
+<!-- LIVE_RESULTS_END -->
 
-Raw rows, repeated-trial stability, gate output and execution observations are under `evals/primary-table-*`. The gate passed without a regression. These are two source documents with correlated facts; the statistics do not establish performance across all companies or document layouts.
+“Fully supported displayed notes” requires all material claims and their financial scope/attribution to meet the rubric. A valid citation or a returned note alone does not pass. Safe generic withholding on an answerable case is a usefulness failure. A specific, accurate explanation of missing supplied evidence can pass as appropriate abstention. The baseline risk-case utility label was corrected on consistency review; that amendment and its reason are retained in its review file.
 
-## Model efficiency and failure handling
+Labels are **coding-agent evidence review, not independent human annotation**. Another reviewer can inspect the complete answers and supplied evidence. There is no verifier-recall estimate because rejected drafts are not retained. Repetitions are averaged within each case for paired comparisons; they are not thirty-six independent companies. All failures and the critical missing-margin case remain; nothing was quarantined.
 
-Backend routing retains Groq GPT-OSS 20B for extraction, Gemini Flash for reasoning, and the existing Lite/120B fallbacks. Analytical answers now use a structured claims-and-reference-IDs schema and reserve a separate small-model verification call. The provider schema bounds the claim count and reference IDs; duplicate inline citation markup is normalized only when its IDs match the structured references. The server renders citations; it does not depend on citation punctuation generated in free text. Unsupported claims are omitted; incomplete verification withholds the analysis while original evidence remains usable. Explicitly tentative interpretations remain labelled as inference. No provider selection, model names or credentials are presented in the investor interface.
+The runs are sequential on external free services, under uncontrolled quota/availability conditions, and bundle several related changes. They cannot isolate the causal effect of one policy or establish a general model ranking. Twelve related questions across five issuers are a small sample. A gate that does not block regression is not proof of general reliability.
 
-Research is capped at three attempts and thirty seconds, with individual reasoning attempts of ten seconds and extraction/verification attempts of seven seconds. Financial extraction has an eighteen-second budget. Timeouts and quota failures cool down routes. Calculations, annual-table extraction, source matching and network matching use no LLM. Source/configuration/user-scoped caches avoid repeated valid model work; quotas remain per isolate, not a durable account-wide scheduler.
+## What the failures changed
 
-With `AI_LOG_USAGE=true`, backend traces retain purpose, route, duration, reported input/output tokens, cache hits, reservations, rejection reasons and failure codes. They exclude credentials, private network records and original source passages. Reservations are estimates, not a cost invoice.
+| Observed failure | Final behaviour and tradeoff |
+| --- | --- |
+| Gemini reasoning timed out, returned 503/429, and consumed fallback reservations | Prefer responsive Groq reasoning; retain the existing alternative, bounded attempts and cooldowns. This improves availability without adding providers. |
+| One invalid proposed quotation erased valid selections | Validate selections independently. Return original literal bytes and a partial warning; an entirely invalid selection still withholds. |
+| Annual guidance announced at Q1/Q2 was framed as a quarterly target | Require an explicit annual horizon when annual evidence and a quarterly call are mentioned together. Conservative rejection can remove otherwise understandable wording. |
+| A cash sentence called 111% a decline after 106% and mixed a quarter with a full-year aggregate | Generated numerical movements defer to the deterministic comparison. Models can describe period-specific facts; they do not compute or narrate cross-period arithmetic. |
+| A management explanation was asserted as proven causality, with attribution attached only to the forecast | Require explicit attribution on the causal explanation itself; source-specific explanations stay separate. |
+| Absence from one excerpt became absence from an entire transcript; another retrieved passage contradicted a missing-value claim | Scope absence to supplied evidence. Its independent verifier also receives the other retrieved context, which can invalidate a claim but cannot replace cited support. |
+| Gemini accounting recorded visible candidate tokens without total/thought usage | Use complete reported total usage, including thoughts, for reconciliation. Incomplete/unknown usage keeps its reservation. Earlier traces are labelled incomplete lower bounds. |
 
-## Live evaluation status
+These are generic constraints, not company-specific answers. Original sources and deterministic comparisons remain accessible when a generated note fails. The verifier remains fallible; these guards cover observed patterns rather than proving all financial language safe.
 
-`node scripts/evaluate-live-research.mjs --live` supports twelve questions across five issuers and three trials using locally configured backend keys. It records answers, evidence, latency, calls and reported usage for manual review. The keys configured in hosting cannot be read back into local code.
+`node scripts/replay-live-guards.mjs evals/live-intermediate-raw.json` rechecks recorded displayed claims with final deterministic guards, making zero provider calls. Its output is explicitly an **offline replay**, not a fresh final-version generation benchmark.
 
-The owner completed ChatGPT sign-in. Hosted checks on 14 November 2026 UTC reached both providers and exercised extraction, reasoning, fallback and verification. This was a diagnostic walkthrough across changing versions, not the full twelve-question, three-trial evaluation. It must not be presented as an accuracy or reliability percentage.
+## Efficiency and reliability
 
-| Hosted check | Observed result | Review |
-| --- | --- | --- |
-| Infosys operating-margin question | Three literal extracts with original passage links | Values/qualifiers match cited passages. Different periods should be more visible beside each extract; one later general query selected overlapping quotations. |
-| Persistent general research | Note withheld; original excerpts retained; financial extraction returned no comparable facts | A failed note, not a successful analytical answer. No missing financial figures were invented. |
-| Persistent cash-conversion question | Live analytical note citing transcript page 9 | Matches management's unbilled-revenue explanation and preserves its forward-looking normalization qualifier. Citation opened the exact passage. No numerical comparison was established. Causal attribution could be clearer, and the source period remains explicitly unresolved. |
-| Infosys combined margin/cash question | Earlier attempts were withheld for citation/numeric validation; a later attempt hit the conservative token reservation budget after another request | The source-linked comparisons remained usable. A subsequent note completed but failed human review on scope/basis; after adding those guards, an attempt again withheld the note before the structured-output change. The later structured run is assessed below. Availability remains unresolved. These failed attempts remain part of the record. |
+The default backend routes small literal selection to Groq GPT-OSS 20B, interpretation to GPT-OSS 120B with Gemini Flash recovery, and a separate small-model verification to the other available provider where possible. No writer retry is bought for invalid evidence. Models receive bounded original passages, not the whole repository or network. Whole-passage packing preserves reference IDs and excludes omitted evidence from validation; partial coverage is visible and cached only briefly.
 
-Gemini Flash returned a 503 and multiple ten-second timeouts. Groq 120B generated fallback text; Gemini Lite and Groq 20B generated evidence selections. Successful generation is not evidence that every generated claim was correct. The server's three-attempt cap and thirty-second research deadline remain in force.
+Research permits three provider attempts in thirty seconds, with ten-second reasoning and seven-second selection/verification requests. Financial extraction has eighteen seconds. Cache/coalescing keys include source content, question, engine/prompt/configuration version, credentials and trusted user scope. Successful work lasts thirty minutes; partial coverage one minute. Model quota/authentication/timeouts cause bounded cooldowns. Arithmetic, annual-table extraction, source matching and network matching use zero LLM calls.
 
-The walkthrough identified and fixed: free-text citation failures (replaced by structured claims), overlong/poorly formatted synthesis, fiscal labels mistaken for financial amounts, punctuation after citations mistaken for uncited content, and all-or-nothing numerical validation. Complete cited claims are now checked individually; only independently valid claims reach the separate verifier. Invalid claims are withheld and a partial-result warning is shown. Unknown references, unsupported periods and invented values remain rejected. Uncited trailing text and claims beyond a four-claim note budget are withheld; only complete cited claims can reach verification. A later Infosys note exposed verifier false acceptance: a nine-month conversion was presented as quarterly, and adjusted basis was omitted from a margin claim. These are recorded research-quality failures. Generic duration and adjusted-basis retention checks now guard such numerical claims before verification; semicolon fragments are normalized for display. This does not establish that all accounting qualifiers are covered.
+Fresh engine instances deliberately disable answer-cache reuse in the repeated benchmark; zero cache hits there are expected. Cache correctness and scope/invalidation are exercised separately in controlled tests. Per-isolate counters/caches are not a durable global provider quota coordinator.
 
-`node scripts/evaluate-answer-periods.mjs` reproduces sixteen synthetic answer-contract cases repeated three times: frozen previous validator **33/48**, candidate **48/48**, with no pass-to-fail cases. The paired gate passed. This small, correlated contract suite does not measure stochastic synthesis, verifier precision/recall, or broad company coverage.
+The earlier v1/v2 traces retained Gemini candidate counts but not total/thought counts. Their recorded token figures are incomplete lower bounds, not complete cost or token-saving measurements. Failed/unreported usage is unknown, not zero. Final accounting uses the provider's reported total where valid; [Gemini's documented usage metadata](https://aistudio.google.com/api-reference/generate-content) includes prompt, thoughts and candidates. No paid-cost invoice or dollar savings are inferred.
 
-Sanitized observed traces and manually reviewed visible outcomes are retained in `evals/hosted-smoke-2026-11-14.json`. They contain no credentials or original conversation/session exports. A later structured-output Infosys run completed with two retained claims and a partial warning. The margin claim retained its adjusted basis. Human review still found an overbroad composite causal narrative. A conservative guard now withholds multi-source causal claims before verification; this sacrifices some analytical breadth while retaining source-specific findings. Its regression case reproduces the observed failure. The complete trace and earlier withheld attempts remain in the record. A successful earlier Persistent note and working extraction do not establish reliable multi-period synthesis. A post-deployment repeat after the final causal guard still withheld the Infosys note. A subsequent bounded-schema run completed with four cited findings, all matching their retrieved passages: FY2027 Q1/Q2 margins, FY2026 Q3 adjusted margin, and explicitly nine-month adjusted cash conversion. That run retained the qualifiers lost earlier. It did not fully explain the latest-period conversion movement, and one successful run does not establish reliable availability. The successful bounded run used three attempts: a ten-second Gemini Flash timeout, Groq reasoning in 1.419 seconds, and Gemini Lite verification in 2.567 seconds (about fourteen seconds of model stages, excluding retrieval/UI). The two completed calls reported 4,986 input/output tokens combined; usage for the timed-out call is unknown. This is one observation, not a latency percentile or cost invoice. Full live quality evaluation remains unfinished; do not replace that limitation with deterministic test scores.
+Private traces retain route/stage/count/timing/usage/rejection metadata. Investor responses omit these details, credentials and provider setup. Network profiles do not enter prompts. The temporary fixed-case evaluation endpoint is owner-only and is disabled before external release; source code tests cover its disabled/unauthorized 404 behaviour.
 
-## Three-minute phone demonstration
+## Investor demonstration and boundaries
 
-1. Brief: inspect a leading archived event and its priority reason/date. Routine disclosures remain in the archive.
-2. Open company fundamentals; the originating event remains available from research.
-3. Inspect an Infosys cash/margin change, management's attributed passage and the specific unresolved question.
-4. Open current/prior evidence and a synthetic contact; distinguish dated expertise from a known relationship.
-5. Enter DABUR without manually entering figures. Original-document recovery and supported annual columns feed the comparison. Open the row and original PDF page.
-6. Show the held-out extraction report and one rejected ambiguous/corrupt input. Distinguish it from the limited hosted AI checks and the unfinished full live evaluation.
+The [three-minute phone demo](verification.md) connects an event, a compatible change, original evidence and a synthetic person. A typed DABUR query has recovered the issuer original and displayed automatic annual comparisons without manual figures. Source navigation preserved dates, units, selected values, period/basis and investigation context. These are responsive-layout/functional observations, not a physical-device or assistive-technology study.
 
-## Remaining product boundaries
+Older changing-version hosted walkthroughs are retained in `evals/hosted-smoke-2026-11-14.json`; the repeated experiment above supersedes their status as the main model-quality evidence. The small suite still leaves broad OCR/table coverage, lexical retrieval recall, independent financial annotation, unattended refresh publication and durable multi-user storage unresolved.
 
-Broad OCR/table-layout coverage, unattended refresh publication and durable multi-user storage are later capabilities. User-provided browser text has a visible authenticity warning; the server does not certify an uploaded PDF's identity. Non-March fiscal calendars require explicit configuration.
-
-## Submission material requiring the owner
-
-- Original coding-agent/LLM conversation exports or original share links; reconstructed logs do not qualify.
-- The required repository visibility and evaluator access decision, followed by a test outside the owner allowlist.
-- Final covering email after verifying these links. No email has been sent.
-
-Phone verification completed: a typed DABUR query recovered the issuer original, extracted the annual columns and displayed source-linked revenue/PBT/PAT comparisons without manual figures. Current/prior source navigation showed the original column dates and highlighted selected value. An Infosys margin question displayed the management passage and recurring-cost question. These were local functional checks. The later signed-in hosted checks and their limitations are described above.
+See [release checklist](release-checklist.md) for evaluator access, required repository visibility and original AI-session sharing. A reconstructed build log does not satisfy the original-session requirement. The covering email is drafted; it has not been sent.

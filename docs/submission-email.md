@@ -1,25 +1,28 @@
+To: assessment@enam.com
 Subject: IIT Kanpur – Founding AI Engineer - 2027
 
-Draft only. Before sending: arrange evaluator access, make the reviewed repository public, and add the ORIGINAL AI session export/share links. This file is not a substitute for those sessions.
+Draft only; not sent. Before sending, complete the release checklist: evaluator access, the required public repository, and an actual original-session share/export. The original authenticated conversation pointer alone will not give evaluators access.
+
+---
 
 Hello,
 
-I built FINN around a connected investigation: a portfolio disclosure leads to primary evidence, comparable financial movements, and someone with relevant experience in the investor's network.
+I built FINN around one investigation: a portfolio disclosure leads to primary evidence, a comparable financial change, an unresolved question and someone with relevant experience to consult.
 
-Prototype: https://finn-research-brief.kanakxaviers123.chatgpt.site (currently owner-private; evaluator access must be arranged)
-Repository: https://github.com/Kanakk23/Enam_Holdings_assignment (currently private)
-AI build sessions: [Add original exports/share links before submission]
+Prototype: https://finn-research-brief.kanakxaviers123.chatgpt.site
+Repository: https://github.com/Kanakk23/Enam_Holdings_assignment
+Original AI build sessions: [insert the reviewed original share/export link]
 
-The prototype includes an 18-company brief with configurable EOD thresholds, primary-document discovery for arbitrary NSE symbols, source-linked comparisons and guidance assessment, and a clearly synthetic network. The comparison and evidence-review logic is generic; the reviewed financial cache is currently concentrated on Infosys. Additional company sources are included, with narrower coverage.
+The mobile-first prototype covers an 18-company brief, primary-source research for NSE tickers, source-linked comparisons and guidance assessment, and a clearly labelled synthetic network.
 
-I chose deterministic decimal calculations and explicit basis/period matching for numerical claims. A backend router uses Groq GPT-OSS 20B for structured evidence extraction and Gemini 3.8 Flash for cross-document reasoning, with Gemini Flash-Lite and Groq GPT-OSS 120B as bounded fallbacks. Keys and model choices are absent from the interface. Source/query caching, chunk limits and cooldowns reduce repeat calls; arithmetic and network matching use no LLM. Both backend keys passed authenticated access checks. Groq generation and the stronger fallback responded; Gemini generation timed out in the tested request. A full financial-quality evaluation remains unfinished. The selected models have free tiers; no paid service subscription was purchased.
+I used deterministic parsing and Decimal calculations before model calls. Groq GPT-OSS 20B selects literal evidence; GPT-OSS 120B handles interpretation, with Gemini fallbacks and a separate small-model verifier. Keys and routing stay in the backend. Bounded context, scoped caches, token reservations and cooldowns control repeat work. Live review exposed scope and attribution errors, so annual targets now retain their horizon, numerical movements defer to code, and absence claims are checked against the other retrieved evidence. Verification remains fallible; the evaluation retains failures alongside successes.
 
-React and PDF.js run in the browser; a Worker serves the app and restricts primary-PDF retrieval to discovered source URLs. Yahoo EOD data and exchange-link metadata refresh on demand in bounded requests, with five-minute server caching. Partial failures retain previous observations and remain visible. Filings are a bounded directory sample, not a complete exchange feed.
+React and PDF.js run in the browser; a Worker handles restricted primary-document retrieval, validation and models. Python supports snapshot ingestion. On-demand EOD/filing refresh retains partial failures. Questions and public excerpts can reach providers; network data stays outside prompts. Prototype records are browser-local.
 
-Contacts are fictional demonstration inputs. Real deployments would require tenant-scoped access controls, consented imports, provenance and deletion controls. Public reports can go to an inference provider; private relationship data should remain outside those requests. Browser-local prototype data is not a multi-user backend.
+The repository includes 150 tests, two held-out annual-statement layouts with twelve checked values and six comparisons using zero LLM calls, and repeated hosted model trials with evidence reviews, timing and usage. These measure different things; they are not an all-company accuracy claim.
 
-I deliberately left out trading, real-time alerts, unrestricted web answers and general table-layout extraction. Automatic extraction validates explicit prose and aligned annual-statement columns, retaining quotations, dates, units and basis before calculating. Two unseeded issuers’ statement layouts reproduce twelve checked values and six comparisons with zero LLM calls. Analytical answers have a separate claim-support check; its live accuracy remains unmeasured. The regression suite compares the actual previous validator with the candidate across 15 synthetic cases repeated three times (36/45 to 45/45 checks). Packaged-Worker smoke tests exercise the financial endpoint, and an explicit official-NSE recovery path has downloaded two unseeded issuers’ PDFs. These checks do not establish real-company AI accuracy. Next I would expand reviewed coverage, evaluate extraction and synthesis on unseen documents, and add durable private storage and an unattended refresh/publication pipeline.
+I left out OCR, arbitrary tables, exhaustive exchange coverage, unattended alerts and multi-user storage. Next I would expand held-out coverage and add shared quota enforcement and durable private storage. The build uses open-source libraries and free service allowances; no credits or paid service upgrade was purchased.
 
 Regards,
 Kanak Khandelwal
-IIT Kanpur, graduating May 2027
+IIT Kanpur · graduating May 2027

@@ -1,0 +1,113 @@
+{
+  "scope": "synthetic deterministic product-boundary checks, not live AI accuracy",
+  "cases": [
+    {
+      "id": "annual-labelled-quarter",
+      "text": "For FY2027 Q2, revenue growth guidance is 1% to 2%. [1]",
+      "evidence": [
+        {
+          "reference": 1,
+          "period": "FY2027-Q2",
+          "text": "Based on Q2 performance and the revised outlook for the rest of the year, our revenue growth guidance is 1% to 2%. Our full-year operating margin guidance remains at 20% to 22%."
+        }
+      ],
+      "accepted": false
+    },
+    {
+      "id": "wrong-generated-direction",
+      "text": "Adjusted cash conversion declined to 111% in FY26 Q4 after being 106% for the full year. [1]",
+      "evidence": [
+        {
+          "reference": 1,
+          "period": "FY2026-Q4",
+          "text": "Adjusted free cash flow as a percentage of net profit was 106% for FY26 and 111% for Q4."
+        }
+      ],
+      "accepted": false
+    },
+    {
+      "id": "right-generated-direction-still-calculator",
+      "text": "Adjusted cash conversion increased to 111% in FY26 Q4 after being 106% for the full year. [1]",
+      "evidence": [
+        {
+          "reference": 1,
+          "period": "FY2026-Q4",
+          "text": "Adjusted free cash flow as a percentage of net profit was 106% for FY26 and 111% for Q4."
+        }
+      ],
+      "accepted": false
+    },
+    {
+      "id": "unattributed-cause",
+      "text": "Cash flow declined because unbilled revenue increased, and management expects it to normalize next quarter. [1]",
+      "evidence": [
+        {
+          "reference": 1,
+          "period": "See original document",
+          "text": "Management said this decline in operational cash flow to PAT was primarily on account of a higher proportion of unbilled revenue, which we expect to normalize in the next quarter."
+        }
+      ],
+      "accepted": false
+    },
+    {
+      "id": "annual-horizon-explicit",
+      "text": "At its FY2027 Q2 call, management gave full-year revenue growth guidance of 1% to 2%. [1]",
+      "evidence": [
+        {
+          "reference": 1,
+          "period": "FY2027-Q2",
+          "text": "Based on Q2 performance and the revised outlook for the rest of the year, our revenue growth guidance is 1% to 2%. Our full-year operating margin guidance remains at 20% to 22%."
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "id": "annual-without-quarter",
+      "text": "Full-year operating margin guidance remains at 20% to 22%. [1]",
+      "evidence": [
+        {
+          "reference": 1,
+          "period": "FY2027-Q2",
+          "text": "Based on Q2 performance and the revised outlook for the rest of the year, our revenue growth guidance is 1% to 2%. Our full-year operating margin guidance remains at 20% to 22%."
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "id": "actual-single-period",
+      "text": "Adjusted FY26 Q4 cash flow conversion was 111%. [1]",
+      "evidence": [
+        {
+          "reference": 1,
+          "period": "FY2026-Q4",
+          "text": "Adjusted free cash flow as a percentage of net profit was 106% for FY26 and 111% for Q4."
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "id": "attributed-cause",
+      "text": "Management said cash flow declined because of higher unbilled revenue, which it expects to normalize next quarter. [1]",
+      "evidence": [
+        {
+          "reference": 1,
+          "period": "See original document",
+          "text": "Management said this decline in operational cash flow to PAT was primarily on account of a higher proportion of unbilled revenue, which we expect to normalize in the next quarter."
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "id": "literal-reported-movement",
+      "text": "Operating margin improved by 20 bps to 21.1%. [1]",
+      "evidence": [
+        {
+          "reference": 1,
+          "period": "FY2027-Q2",
+          "text": "Operating margin improved by 20 bps to 21.1%."
+        }
+      ],
+      "accepted": true
+    }
+  ]
+}

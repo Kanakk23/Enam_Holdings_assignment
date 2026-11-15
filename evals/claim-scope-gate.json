@@ -1,0 +1,87 @@
+{
+  "verdict": "PASS",
+  "gated_cases": 9,
+  "quarantined": [],
+  "mean_delta": 0.4444,
+  "ci95": [
+    0.0393,
+    0.8496
+  ],
+  "mcnemar": {
+    "pass_to_fail": 0,
+    "fail_to_pass": 4,
+    "p_value": 1.0
+  },
+  "cost_change": null,
+  "blocks": [],
+  "warnings": [],
+  "notes": [
+    "significant improvement: mean delta +0.444",
+    "only 9 gated cases; small samples detect only large regressions"
+  ],
+  "cases": [
+    {
+      "case_id": "actual-single-period",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "annual-horizon-explicit",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "annual-without-quarter",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "attributed-cause",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "literal-reported-movement",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "annual-labelled-quarter",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": true
+    },
+    {
+      "case_id": "right-generated-direction-still-calculator",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": true
+    },
+    {
+      "case_id": "unattributed-cause",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": true
+    },
+    {
+      "case_id": "wrong-generated-direction",
+      "baseline": 0.0,
+      "candidate": 1.0,
+      "delta": 1.0,
+      "critical": true
+    }
+  ]
+}

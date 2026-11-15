@@ -65,6 +65,14 @@ try {
   console.log('Packaged structured synthesis and independent verification passed.');
 } finally {globalThis.fetch=savedFetch;}
 assert.equal((await call("/missing-file.js")).status, 404);
+assert.equal((await call('/ops/evaluation')).status,404);
+const operatorEnv={AI_EVALUATION_ENABLED:'true',AI_EVALUATION_OWNER_ID:'test-owner'};
+assert.equal((await call('/ops/evaluation',{},operatorEnv)).status,404);
+const privateOps=await call('/ops/evaluation',{headers:{'oai-authenticated-user-id':'test-owner'}},operatorEnv);
+assert.equal(privateOps.status,200);assert.match(await privateOps.text(),/Run 36 live trials/);
+const trial=await call('/api/evaluation',{method:'POST',headers:{'oai-authenticated-user-id':'test-owner'},body:JSON.stringify({runId:'00000000-0000-4000-8000-000000000000',caseId:'dabur-growth',trial:1})},operatorEnv);
+assert.equal(trial.status,200);const trialResult=await trial.json();assert.equal(trialResult.evidence[0].period,'FY2026-Q4');assert.equal(trialResult.stats.calls,0);
+console.log('Packaged private evaluation authorization and fixed-case endpoint passed.');
 console.log(
   "Built Worker verified: page, bundled assets, strict snapshot, extractive API, backend routing/synthesis fixtures, client-key rejection, credential redaction, provenance and 404.",
 );

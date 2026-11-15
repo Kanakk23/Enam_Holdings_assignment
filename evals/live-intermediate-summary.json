@@ -1,0 +1,153 @@
+{
+  "reviewer": "coding-agent evidence review; not independent human annotation",
+  "suiteVersion": "live-12x3-v2",
+  "rawFile": "evals/live-intermediate-raw.json",
+  "trials": 36,
+  "issuers": 5,
+  "cases": 12,
+  "passedTrials": 24,
+  "passAt3Cases": 10,
+  "passAll3Cases": 6,
+  "displayedNotes": 28,
+  "fullySupportedDisplayedNotes": 18,
+  "latencyMs": {
+    "median": 817,
+    "p95": 2954,
+    "includes": "model endpoint execution; excludes retrieval/download/PDF parsing and one-minute trial spacing"
+  },
+  "providerAttempts": 48,
+  "failedAttempts": 0,
+  "cacheHits": 0,
+  "recordedInputAndOutputTokens": 61315,
+  "attemptsWithUnknownUsage": 0,
+  "tokenAccountingNote": "Earlier Gemini traces retained candidatesTokenCount but not thoughts/total tokens. Recorded counts are incomplete lower bounds; no complete token-saving claim.",
+  "costUsd": null,
+  "caseResults": [
+    {
+      "caseId": "infy-margin",
+      "passed": [
+        true,
+        true,
+        true
+      ],
+      "passAt3": true,
+      "passAll3": true
+    },
+    {
+      "caseId": "infy-guidance",
+      "passed": [
+        false,
+        true,
+        true
+      ],
+      "passAt3": true,
+      "passAll3": false
+    },
+    {
+      "caseId": "infy-cash",
+      "passed": [
+        false,
+        true,
+        true
+      ],
+      "passAt3": true,
+      "passAll3": false
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "passed": [
+        true,
+        true,
+        true
+      ],
+      "passAt3": true,
+      "passAll3": true
+    },
+    {
+      "caseId": "persistent-cash",
+      "passed": [
+        true,
+        true,
+        true
+      ],
+      "passAt3": true,
+      "passAll3": true
+    },
+    {
+      "caseId": "persistent-cause",
+      "passed": [
+        false,
+        false,
+        false
+      ],
+      "passAt3": false,
+      "passAll3": false
+    },
+    {
+      "caseId": "persistent-guidance",
+      "passed": [
+        false,
+        false,
+        true
+      ],
+      "passAt3": true,
+      "passAll3": false
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "passed": [
+        true,
+        true,
+        true
+      ],
+      "passAt3": true,
+      "passAll3": true
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "passed": [
+        true,
+        false,
+        false
+      ],
+      "passAt3": true,
+      "passAll3": false
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "passed": [
+        false,
+        false,
+        false
+      ],
+      "passAt3": false,
+      "passAll3": false
+    },
+    {
+      "caseId": "dabur-growth",
+      "passed": [
+        true,
+        true,
+        true
+      ],
+      "passAt3": true,
+      "passAll3": true
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "passed": [
+        true,
+        true,
+        true
+      ],
+      "passAt3": true,
+      "passAll3": true
+    }
+  ],
+  "limits": [
+    "Twelve correlated questions across five issuers, not broad all-company accuracy.",
+    "The arithmetic case tests routing only; the missing-margin case expects abstention.",
+    "Sequential external-provider conditions are not controlled.",
+    "No verifier recall estimate: rejected drafts are not retained."
+  ]
+}

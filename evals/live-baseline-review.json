@@ -1,0 +1,331 @@
+{
+  "rawFile": "evals/live-baseline-raw.json",
+  "reviewer": "coding-agent evidence review",
+  "labels": [
+    {
+      "caseId": "infy-margin",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 1,
+      "passed": false,
+      "supported": false,
+      "periodAndBasis": false,
+      "useful": false,
+      "notes": "Annual guidance announced at Q1/Q2 calls is phrased \u201cFor FY2027 Q1/Q2\u201d, obscuring the target horizon. No delivered-result comparison or open-year explanation. Source supports the ranges but not that quarterly scope."
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "trial": 1,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected deterministic comparison handoff, zero model calls. Does not test actual calculation here."
+    },
+    {
+      "caseId": "persistent-cash",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal management quotation retains unbilled-revenue explanation and expected normalization."
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "persistent-guidance",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Contains literal consolidated headline revenue/growth with original scope; other selected quotations add noise and weaken ordering."
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "trial": 1,
+      "passed": false,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": false,
+      "notes": "Literal smaller-markets quotation does not answer which retrieved evidence is missing for a financial comparison."
+    },
+    {
+      "caseId": "dabur-growth",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal consolidated YoY revenue-growth quotation matches held-out primary excerpt."
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "trial": 1,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected margin abstention: held-out excerpt has revenue growth but no margin evidence."
+    },
+    {
+      "caseId": "infy-margin",
+      "trial": 2,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 2,
+      "passed": false,
+      "supported": false,
+      "periodAndBasis": false,
+      "useful": false,
+      "notes": "Annual guidance announced at Q1/Q2 calls is phrased \u201cFor FY2027 Q1/Q2\u201d, obscuring the target horizon. No delivered-result comparison or open-year explanation. Source supports the ranges but not that quarterly scope."
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 2,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "trial": 2,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected deterministic comparison handoff, zero model calls. Does not test actual calculation here."
+    },
+    {
+      "caseId": "persistent-cash",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal management quotation retains unbilled-revenue explanation and expected normalization."
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Attributes unbilled-revenue explanation to management and retains expected, rather than achieved, normalization. Quarter remains the quoted period."
+    },
+    {
+      "caseId": "persistent-guidance",
+      "trial": 2,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Contains literal consolidated headline revenue/growth with original scope; other selected quotations add noise and weaken ordering."
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Correctly limits the missing detailed operating-cash statement to supplied passages and explains that magnitude/drivers cannot be fully assessed. This is useful evidence-limited abstention; no outside risk is invented."
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "trial": 2,
+      "passed": false,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": false,
+      "notes": "Literal smaller-markets quotation does not answer which retrieved evidence is missing for a financial comparison."
+    },
+    {
+      "caseId": "dabur-growth",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal consolidated YoY revenue-growth quotation matches held-out primary excerpt."
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "trial": 2,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected margin abstention: held-out excerpt has revenue growth but no margin evidence."
+    },
+    {
+      "caseId": "infy-margin",
+      "trial": 3,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 3,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 3,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "trial": 3,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected deterministic comparison handoff, zero model calls. Does not test actual calculation here."
+    },
+    {
+      "caseId": "persistent-cash",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal management quotation retains unbilled-revenue explanation and expected normalization."
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Attributes unbilled-revenue explanation to management and retains expected, rather than achieved, normalization. Quarter remains the quoted period."
+    },
+    {
+      "caseId": "persistent-guidance",
+      "trial": 3,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No answer on an answerable question; safe withholding is an availability/usefulness failure."
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Contains literal consolidated headline revenue/growth with original scope; other selected quotations add noise and weaken ordering."
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "trial": 3,
+      "passed": false,
+      "supported": false,
+      "periodAndBasis": true,
+      "useful": false,
+      "notes": "Cash-flow projections for CGU enterprise valuation do not alone establish the asserted uncertainty in operating cash generation forecasts. Extension is unlabelled and insufficiently supported."
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "trial": 3,
+      "passed": false,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": false,
+      "notes": "Literal smaller-markets quotation does not answer which retrieved evidence is missing for a financial comparison."
+    },
+    {
+      "caseId": "dabur-growth",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal consolidated YoY revenue-growth quotation matches held-out primary excerpt."
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "trial": 3,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected margin abstention: held-out excerpt has revenue growth but no margin evidence."
+    }
+  ],
+  "reviewAmendment": "Consistency review during v2: the risk question lacks direct risk evidence in retrieved inputs. A specific scoped explanation of the missing cash-flow statement passes as appropriate abstention, under the unchanged rubric. This corrects the earlier overly strict utility label; the unlabelled valuation-risk extension remains a failure."
+}

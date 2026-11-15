@@ -1,0 +1,279 @@
+{
+  "kind": "offline-deterministic-guard-replay",
+  "inputFile": "evals/live-baseline-raw.json",
+  "inputSuite": "live-12x3-v1",
+  "liveProviderCalls": 0,
+  "scope": "Recheck previously displayed analytical claims with final deterministic guards. This is not a fresh live final-version generation benchmark.",
+  "rows": [
+    {
+      "caseId": "infy-margin",
+      "trial": 1,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 1,
+      "originalAnswer": "For FY2027 Q1, management revised revenue growth guidance to 1.5%‑3% YoY in constant currency, while operating margin guidance remained at 20%‑22%. [3]\n\nFor FY2027 Q2, management set revenue growth guidance to 1%‑2% YoY in constant currency and kept operating margin guidance at 20%‑22%. [1]",
+      "retainedAnswer": null,
+      "rejected": [
+        {
+          "text": "For FY2027 Q1, management revised revenue growth guidance to 1.5%‑3% YoY in constant currency, while operating margin guidance remained at 20%‑22%.",
+          "reason": "ambiguous_annual_guidance_horizon"
+        },
+        {
+          "text": "For FY2027 Q2, management set revenue growth guidance to 1%‑2% YoY in constant currency and kept operating margin guidance at 20%‑22%.",
+          "reason": "ambiguous_annual_guidance_horizon"
+        }
+      ]
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 1,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "trial": 1,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "persistent-cash",
+      "trial": 1,
+      "originalAnswer": "This decline in Operational Cash Flow to PAT was \nprimarily on account of higher proportion of unbilled revenue in this \nquarter, which we expect to normalize in the next quarter. [1]",
+      "retainedAnswer": "This decline in Operational Cash Flow to PAT was \nprimarily on account of higher proportion of unbilled revenue in this \nquarter, which we expect to normalize in the next quarter. [1]",
+      "rejected": []
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 1,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "persistent-guidance",
+      "trial": 1,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "trial": 1,
+      "originalAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [1]\n\nTata Chemicals Limited individually, accounts for 11% of \nprocurement spend and 19.8% of total revenue of TCP for FY 2025-26. [3]\n\nRevenue from operations at Rs 20,290 Crores, grew by \n15% (13% in constant currency) driven by growth in both \nBranded and Non-Branded Business. [4]",
+      "retainedAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [1]\n\nTata Chemicals Limited individually, accounts for 11% of \nprocurement spend and 19.8% of total revenue of TCP for FY 2025-26. [3]\n\nRevenue from operations at Rs 20,290 Crores, grew by \n15% (13% in constant currency) driven by growth in both \nBranded and Non-Branded Business. [4]",
+      "rejected": []
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "trial": 1,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "trial": 1,
+      "originalAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [2]",
+      "retainedAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [2]",
+      "rejected": []
+    },
+    {
+      "caseId": "dabur-growth",
+      "trial": 1,
+      "originalAnswer": "our consolidated revenue grew by 7.3% year-on-year [1]",
+      "retainedAnswer": "our consolidated revenue grew by 7.3% year-on-year [1]",
+      "rejected": []
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "trial": 1,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "infy-margin",
+      "trial": 2,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 2,
+      "originalAnswer": "For FY2027 Q1, management revised revenue growth guidance to 1.5%‑3% YoY in constant currency, while operating margin guidance remained at 20%‑22%. [3]\n\nFor FY2027 Q2, management set revenue growth guidance to 1%‑2% YoY in constant currency and kept operating margin guidance at 20%‑22%. [1]",
+      "retainedAnswer": null,
+      "rejected": [
+        {
+          "text": "For FY2027 Q1, management revised revenue growth guidance to 1.5%‑3% YoY in constant currency, while operating margin guidance remained at 20%‑22%.",
+          "reason": "ambiguous_annual_guidance_horizon"
+        },
+        {
+          "text": "For FY2027 Q2, management set revenue growth guidance to 1%‑2% YoY in constant currency and kept operating margin guidance at 20%‑22%.",
+          "reason": "ambiguous_annual_guidance_horizon"
+        }
+      ]
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 2,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "trial": 2,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "persistent-cash",
+      "trial": 2,
+      "originalAnswer": "This decline in Operational Cash Flow to PAT was \nprimarily on account of higher proportion of unbilled revenue in this \nquarter, which we expect to normalize in the next quarter. [1]",
+      "retainedAnswer": "This decline in Operational Cash Flow to PAT was \nprimarily on account of higher proportion of unbilled revenue in this \nquarter, which we expect to normalize in the next quarter. [1]",
+      "rejected": []
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 2,
+      "originalAnswer": "Management said the decline in cash conversion (Operational Cash Flow to PAT) in the quarter was primarily caused by a higher proportion of unbilled revenue, which they expect to normalize in the next quarter. [2]",
+      "retainedAnswer": "Management said the decline in cash conversion (Operational Cash Flow to PAT) in the quarter was primarily caused by a higher proportion of unbilled revenue, which they expect to normalize in the next quarter. [2]",
+      "rejected": []
+    },
+    {
+      "caseId": "persistent-guidance",
+      "trial": 2,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "trial": 2,
+      "originalAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [1]\n\nTata Chemicals Limited individually, accounts for 11% of \nprocurement spend and 19.8% of total revenue of TCP for FY 2025-26. [3]\n\nRevenue from operations at Rs 20,290 Crores, grew by \n15% (13% in constant currency) driven by growth in both \nBranded and Non-Branded Business. [4]",
+      "retainedAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [1]\n\nTata Chemicals Limited individually, accounts for 11% of \nprocurement spend and 19.8% of total revenue of TCP for FY 2025-26. [3]\n\nRevenue from operations at Rs 20,290 Crores, grew by \n15% (13% in constant currency) driven by growth in both \nBranded and Non-Branded Business. [4]",
+      "rejected": []
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "trial": 2,
+      "originalAnswer": "The supplied passages do not include a detailed statement of operating cash flows, so the magnitude and drivers of cash generation risk cannot be fully assessed. [2]",
+      "retainedAnswer": "The supplied passages do not include a detailed statement of operating cash flows, so the magnitude and drivers of cash generation risk cannot be fully assessed. [2]",
+      "rejected": []
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "trial": 2,
+      "originalAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [2]",
+      "retainedAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [2]",
+      "rejected": []
+    },
+    {
+      "caseId": "dabur-growth",
+      "trial": 2,
+      "originalAnswer": "our consolidated revenue grew by 7.3% year-on-year [1]",
+      "retainedAnswer": "our consolidated revenue grew by 7.3% year-on-year [1]",
+      "rejected": []
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "trial": 2,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "infy-margin",
+      "trial": 3,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 3,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 3,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "trial": 3,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "persistent-cash",
+      "trial": 3,
+      "originalAnswer": "This decline in Operational Cash Flow to PAT was \nprimarily on account of higher proportion of unbilled revenue in this \nquarter, which we expect to normalize in the next quarter. [1]",
+      "retainedAnswer": "This decline in Operational Cash Flow to PAT was \nprimarily on account of higher proportion of unbilled revenue in this \nquarter, which we expect to normalize in the next quarter. [1]",
+      "rejected": []
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 3,
+      "originalAnswer": "Management said the decline in cash conversion (Operational Cash Flow to PAT) in the quarter was primarily caused by a higher proportion of unbilled revenue, which they expect to normalize in the next quarter. [2]",
+      "retainedAnswer": "Management said the decline in cash conversion (Operational Cash Flow to PAT) in the quarter was primarily caused by a higher proportion of unbilled revenue, which they expect to normalize in the next quarter. [2]",
+      "rejected": []
+    },
+    {
+      "caseId": "persistent-guidance",
+      "trial": 3,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "trial": 3,
+      "originalAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [1]\n\nTata Chemicals Limited individually, accounts for 11% of \nprocurement spend and 19.8% of total revenue of TCP for FY 2025-26. [3]\n\nRevenue from operations at Rs 20,290 Crores, grew by \n15% (13% in constant currency) driven by growth in both \nBranded and Non-Branded Business. [4]",
+      "retainedAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [1]\n\nTata Chemicals Limited individually, accounts for 11% of \nprocurement spend and 19.8% of total revenue of TCP for FY 2025-26. [3]\n\nRevenue from operations at Rs 20,290 Crores, grew by \n15% (13% in constant currency) driven by growth in both \nBranded and Non-Branded Business. [4]",
+      "rejected": []
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "trial": 3,
+      "originalAnswer": "The enterprise value calculations for cash‑flow projections rely on medium‑term strategic plans over a 3‑5 year horizon, introducing uncertainty into cash generation forecasts. [3]",
+      "retainedAnswer": "The enterprise value calculations for cash‑flow projections rely on medium‑term strategic plans over a 3‑5 year horizon, introducing uncertainty into cash generation forecasts. [3]",
+      "rejected": []
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "trial": 3,
+      "originalAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [2]",
+      "retainedAnswer": "Other smaller markets delivered mixed performance, with \nrevenues broadly flat compared to the previous year. [2]",
+      "rejected": []
+    },
+    {
+      "caseId": "dabur-growth",
+      "trial": 3,
+      "originalAnswer": "our consolidated revenue grew by 7.3% year-on-year [1]",
+      "retainedAnswer": "our consolidated revenue grew by 7.3% year-on-year [1]",
+      "rejected": []
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "trial": 3,
+      "originalAnswer": null,
+      "retainedAnswer": null,
+      "rejected": []
+    }
+  ]
+}

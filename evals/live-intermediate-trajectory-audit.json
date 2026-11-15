@@ -1,0 +1,20 @@
+{
+  "kind": "recorded-model-stage-audit",
+  "rawFile": "evals/live-intermediate-raw.json",
+  "suiteVersion": "live-12x3-v2",
+  "trials": 36,
+  "passed": true,
+  "checks": [
+    "complete three-trial case set",
+    "recorded call ceiling",
+    "allowlisted model stages",
+    "fresh-cache isolation",
+    "separate completed verifier for displayed analysis",
+    "recorded stage/deadline bounds",
+    "zero-call arithmetic and missing-margin retrieval paths"
+  ],
+  "limits": [
+    "Audits recorded model stages; does not establish citation support, answer usefulness, provider-internal behaviour or all application actions."
+  ],
+  "findings": []
+}

@@ -1,0 +1,226 @@
+{
+  "verdict": "ALL_MATCH",
+  "trials_checked": 36,
+  "trials_deviating": 0,
+  "finding_counts": {},
+  "cases_not_run": [],
+  "unknown_case_ids": [],
+  "trials": [
+    {
+      "case_id": "infy-margin",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-guidance",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-cash",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-arithmetic",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "persistent-cash",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "persistent-cause",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "persistent-guidance",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "tataconsum-revenue",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "tataconsum-risk",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "tataconsum-missing",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "dabur-growth",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "havells-missing-margin",
+      "trial": 1,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-margin",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-guidance",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-cash",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-arithmetic",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "persistent-cash",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "persistent-cause",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "persistent-guidance",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "tataconsum-revenue",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "tataconsum-risk",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "tataconsum-missing",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "dabur-growth",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "havells-missing-margin",
+      "trial": 2,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-margin",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-guidance",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-cash",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "infy-arithmetic",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "persistent-cash",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "persistent-cause",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "persistent-guidance",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "tataconsum-revenue",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "tataconsum-risk",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "tataconsum-missing",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "dabur-growth",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    },
+    {
+      "case_id": "havells-missing-margin",
+      "trial": 3,
+      "ok": true,
+      "findings": []
+    }
+  ]
+}

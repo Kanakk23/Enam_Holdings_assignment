@@ -1,0 +1,74 @@
+{
+  "infy-margin": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "infy-guidance": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "infy-cash": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "infy-arithmetic": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 0
+  },
+  "persistent-cash": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "persistent-cause": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "persistent-guidance": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "tataconsum-revenue": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "tataconsum-risk": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "tataconsum-missing": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "dabur-growth": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 3
+  },
+  "havells-missing-margin": {
+    "expected": [],
+    "match": "superset",
+    "args_match": "ignore",
+    "max_calls": 0
+  }
+}
