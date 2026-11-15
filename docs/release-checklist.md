@@ -1,6 +1,6 @@
 # Submission release checklist
 
-## Prepared privately
+## Prepared
 
 - Working Push, Pull and embedded/direct synthetic Network workflows.
 - Generic primary-source recovery and bounded automatic financial extraction, with deterministic comparisons.
@@ -14,16 +14,16 @@
 
 The release environment sets `AI_EVALUATION_ENABLED=false` and removes the evaluation owner identifiers. Connection diagnostics remain disabled. Environment revision 11 is deployed. The production worker log confirms `/ops/evaluation` returned HTTP 404; see `evals/release-deployment-verification.json`. Credentials remain backend secrets.
 
-## Owner access decisions
+## Submission access and remaining actions
 
 | Item | Current state | Required action |
 | --- | --- | --- |
-| FINN demo | Owner-private | Approve a public demo or name evaluator viewers. Test outside the owner allowlist after the change. A public demo can consume the backend free-tier quota. |
-| Assignment repository | Private | Make the reviewed repository public, as the brief requires. This exposes the complete Git history as well as current files. The connected GitHub tools do not provide repository-administration changes. |
+| FINN demo | Public; hosting access revision 2 | The owner explicitly requested public access on 15 November. The live browser page loads. An anonymous command-line request returned HTTP 403/1010, so access from a separate visitor browser remains unverified in this environment. |
+| Assignment repository | Public | Changed by the owner; verified through repository metadata and an unauthenticated GitHub API request (HTTP 200). |
 | Original AI build session | Original conversation found; no public share/export created | Review the original and create an official share/export. A public link exposes the original prompts and replies. A reconstructed build log does not qualify. |
 | Covering email | Draft only | Insert the actual accessible links, verify them, then explicitly authorize sending or send it yourself. |
 
-Access has not been widened as a side effect of deploying or evaluating. The app, repository and conversation are separate sharing decisions. No billing settings or paid plan changes were made.
+The owner explicitly authorized making FINN and the repository public. The original conversation has not been shared publicly. No billing settings or paid plan changes were made. Public use shares the backend free-tier allowance.
 
 ## Final review
 

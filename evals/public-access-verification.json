@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-15",
+  "site": {
+    "url": "https://finn-research-brief.kanakxaviers123.chatgpt.site",
+    "access_mode": "public",
+    "access_revision": 2,
+    "existing_browser_page": "loaded",
+    "anonymous_http_status": 403,
+    "anonymous_http_body": "error code: 1010",
+    "independent_visitor_browser": "not verified"
+  },
+  "repository": {
+    "url": "https://github.com/Kanakk23/Enam_Holdings_assignment",
+    "visibility": "public",
+    "unauthenticated_api_status": 200
+  },
+  "original_ai_session_share": "not created",
+  "covering_email": "not sent",
+  "scope": "Access verification and documentation only; no application or environment changes beyond the previously requested site visibility change."
+}

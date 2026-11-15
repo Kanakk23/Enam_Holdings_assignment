@@ -1,7 +1,7 @@
 To: assessment@enam.com
 Subject: IIT Kanpur – Founding AI Engineer - 2027
 
-Draft only; not sent. Before sending, complete the release checklist: evaluator access, the required public repository, and an actual original-session share/export. The original authenticated conversation pointer alone will not give evaluators access.
+Draft only; not sent. FINN and the repository are public. Before sending, insert an actual original-session share/export and complete the final link checks in the release checklist. The original authenticated conversation pointer alone will not give evaluators access.
 
 ---
 

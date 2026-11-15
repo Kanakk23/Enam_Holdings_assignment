@@ -57,6 +57,6 @@ Owner-authenticated hosted model trials supplement these interface checks. Provi
 | Unseen ticker | Same generic discovery, issuer recovery, PDF indexing and financial validation | Source must be accessible and text-readable; no ticker-specific answer fallback |
 | Network | Embedded and direct search, question/role/date relevance, known versus inferred paths | Clearly synthetic; overlap does not establish acquaintance or current inside knowledge |
 | AI | Small selection, selective stronger reasoning, separate verification, bounded recovery, caching and backend-only keys | Verifier remains fallible; generated numerical comparisons defer to deterministic calculations |
-| Submission | Reproducible private source/build/evaluation and prepared covering note | Public repository/demo access and original-session sharing require the owner's access decision |
+| Submission | Public repository and demo, reproducible build/evaluation and prepared covering note | Original-session share/export and final email remain outstanding; independent visitor-browser verification remains to be completed |
 
 No physical-device study, assistive-technology user study, exhaustive accessibility certification, global quota scheduler or production multi-tenant assessment was performed.

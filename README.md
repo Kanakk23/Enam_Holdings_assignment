@@ -4,7 +4,7 @@ FINN is a mobile-first research brief for an Indian public-markets investor: mov
 
 Prototype: https://finn-research-brief.kanakxaviers123.chatgpt.site
 
-The hosted app and repository remain private during release preparation. Evaluator access and original-session sharing are explicit owner decisions; see [release checklist](docs/release-checklist.md).
+The hosted app and repository are public as of 15 November 2026. The original AI-session share/export and final covering email remain outstanding; see [release checklist](docs/release-checklist.md).
 
 ## What works
 
