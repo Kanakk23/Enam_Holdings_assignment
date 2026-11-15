@@ -1,0 +1,105 @@
+{
+  "verdict": "PASS",
+  "gated_cases": 12,
+  "quarantined": [],
+  "mean_delta": 0.0,
+  "ci95": [
+    -0.2019,
+    0.2019
+  ],
+  "mcnemar": {
+    "pass_to_fail": 2,
+    "fail_to_pass": 2,
+    "p_value": 0.6875
+  },
+  "cost_change": null,
+  "blocks": [],
+  "warnings": [],
+  "notes": [],
+  "cases": [
+    {
+      "case_id": "infy-guidance",
+      "baseline": 0.667,
+      "candidate": 0.0,
+      "delta": -0.667,
+      "critical": false
+    },
+    {
+      "case_id": "infy-cash",
+      "baseline": 0.667,
+      "candidate": 0.333,
+      "delta": -0.333,
+      "critical": false
+    },
+    {
+      "case_id": "dabur-growth",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "havells-missing-margin",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": true
+    },
+    {
+      "case_id": "infy-arithmetic",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "infy-margin",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "persistent-cash",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "persistent-cause",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "tataconsum-revenue",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "tataconsum-risk",
+      "baseline": 0.333,
+      "candidate": 0.333,
+      "delta": 0.0,
+      "critical": false
+    },
+    {
+      "case_id": "persistent-guidance",
+      "baseline": 0.333,
+      "candidate": 0.667,
+      "delta": 0.333,
+      "critical": false
+    },
+    {
+      "case_id": "tataconsum-missing",
+      "baseline": 0.0,
+      "candidate": 0.667,
+      "delta": 0.667,
+      "critical": false
+    }
+  ]
+}

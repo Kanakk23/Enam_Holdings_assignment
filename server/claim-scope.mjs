@@ -13,7 +13,8 @@ export function checkClaimScope(text,evidence){
 
  const withoutPeriods=text.replace(/\bFY\s*['’]?(?:20\d{2}|\d{2})\b|\bQ[1-4]\b|\b20\d{2}\b/gi,'');
  const numbers=new Set(withoutPeriods.match(/\d[\d,]*(?:\.\d+)?/g)||[]);
- if(numbers.size>1&&/\b(?:increased|decreased|fell|declined|rose|dropped|improved|deteriorated|expanded|contracted|higher|lower)\b/i.test(text)&&/\bfrom\b[\s\S]*\bto\b|\bafter\b|\bversus\b|\bcompared\b|\brelative to\b/i.test(text))reject('numeric_comparison_requires_calculator');
+ const literal=evidence.replace(/\s+/g,' ').includes(text.replace(/\s+/g,' ').trim());
+ if(numbers.size>1&&/\b(?:increased|decreased|fell|declined|rose|dropped|improved|deteriorated|expanded|contracted|higher|lower|down|up)\b/i.test(text)&&!literal)reject('numeric_comparison_requires_calculator');
 
  const causal=text.search(/\bbecause\b|\bdue to\b|\bdriven by\b|\bled to\b|\bcaused by\b|\bon account of\b/i);
  if(causal>=0){

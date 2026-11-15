@@ -12,6 +12,8 @@ test('annual guidance announced in a quarter retains its annual target horizon',
 test('generated cross-period numeric movements route to deterministic comparisons regardless of direction',()=>{
  for(const verb of ['declined','increased','fell','rose'])for(const [a,b] of [[111,106],[106,111],[116.5,113]])assert.throws(()=>checkClaimScope(`Adjusted cash conversion ${verb} to ${a}% after being ${b}% for the full year.`,'Original facts are available.'),e=>e.detail==='numeric_comparison_requires_calculator');
  assert.throws(()=>checkClaimScope('Conversion fell from 116.5% in FY2027 Q1 to 113% in FY2027 Q2.','Both original facts are available.'),e=>e.detail==='numeric_comparison_requires_calculator');
+ assert.throws(()=>checkClaimScope('Adjusted cash flow conversion fell to 111% for the quarter and 106% for the full year.','Adjusted cash flow conversion was 111% for the quarter and 106% for the full year.'),e=>e.detail==='numeric_comparison_requires_calculator');
+ assert.throws(()=>checkClaimScope('Conversion was 113% in Q2, down from 116.5% in Q1.','Both original facts are available.'),e=>e.detail==='numeric_comparison_requires_calculator');
  assert.ok(checkClaimScope('Q2 adjusted cash conversion was 111%.','Q2 adjusted cash conversion was 111%.'));
  assert.ok(checkClaimScope('Operating margin improved by 20 bps to 21.1%.','Operating margin improved by 20 bps to 21.1%.'));
 });

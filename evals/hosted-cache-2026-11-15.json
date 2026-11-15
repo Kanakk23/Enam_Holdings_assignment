@@ -1,0 +1,31 @@
+{
+  "kind": "hosted-cache-observation",
+  "ticker": "INFY",
+  "question": "What do the primary documents say about growth, margins and cash generation?",
+  "observations": [
+    {
+      "timestamp": 1794744534313,
+      "calls": 0,
+      "cacheHits": 1,
+      "task": "extract"
+    },
+    {
+      "timestamp": 1794744490270,
+      "calls": 1,
+      "cacheHits": 0,
+      "task": "extract",
+      "stages": [
+        {
+          "purpose": "extract",
+          "provider": "groq",
+          "model": "openai/gpt-oss-20b",
+          "durationMs": 748
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "One repeated request in a retained Worker isolate; not a durable/global cache guarantee.",
+    "These UI observations are separate from the 117 benchmark trials."
+  ]
+}

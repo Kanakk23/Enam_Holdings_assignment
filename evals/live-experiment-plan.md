@@ -31,3 +31,12 @@ A third full run, `live-12x3-v3`, will use the same twelve case IDs/questions/so
 The writer and verifier prompts state those boundaries. The small synthetic claim-scope suite and zero-call replay of recorded outputs test the new deterministic guards separately. They must not be described as fresh live synthesis.
 
 Retain all three full runs. Compare final against both the original baseline and intermediate v2, with the original question-usefulness rubric and unchanged critical missing-margin case. This is a sequence of related engineering revisions under uncontrolled external service conditions, not a randomized experiment or a model leaderboard. Any fresh failures remain in the record.
+
+## Targeted release closure after reviewing v3
+
+The complete v3 run retains 36/36 outputs; it is not replaced or relabelled as the release closure. It exposed a remaining multi-value “fell” sentence and source-citation scope issues. Source commit `5bf44b6c97419336b38120fae7c69883a1b8e7f6` adds two bounded changes:
+
+1. Reject nonliteral multi-value directional language, including “fell to” without “from” and “down from”. Original literal issuer quotations remain quotations; period-specific facts and deterministic comparisons remain available.
+2. A plain single-topic “why” question with exactly one explicit past-change explanation uses a small literal-selection request. Future, explicit-period, comparative and multi-source questions do not use that shortcut. It preserves original attribution/qualifiers instead of generating a causal assertion. The fixed twelve-case source set triggers this new route only for `persistent-cause`; an unseen-issuer test covers the generic rule.
+
+Run the already-defined focused suite (`infy-guidance`, `infy-cash`, `persistent-cause`) three times under `live-12x3-v5-scope-guards-v1`. These nine trials are a targeted post-fix check, not another twelve-case benchmark or a replacement for failures in v3. Keep all outcomes, including conservative withholding. The writer/verifier model configuration is unchanged. Replay all recorded full runs through the final deterministic guards with zero model calls, labelled offline replay. Do not claim a fresh full-suite score for v5.

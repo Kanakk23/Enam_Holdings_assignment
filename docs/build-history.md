@@ -42,3 +42,8 @@ Reread the supplied complete challenge, especially the efficiency examples on pa
 ## Live provider access verification
 
 Applied owner-supplied hosted secrets without exposing their values. Both authenticated model-list endpoints returned HTTP 200 and listed the configured models. Groq returned structured completions and a cited reasoning fallback; Gemini generation timed out in the observed test. Added backend-only status categories and zero-generation-token access probes, then disabled temporary diagnostics. Fixed focused source context and recovery of original quote bytes across PDF whitespace. The suite now has 76 tests. These observations establish access and selected integration behaviours, not broad financial-analysis accuracy.
+
+
+## Release evaluation — 15 November 2026
+
+Retained three full 36-trial hosted runs and a separate nine-trial targeted closure, with exact supplied passages, provider stages, timing, token-accounting limits and coding-agent evidence reviews. The full-run rubric counts are 18/36, 24/36 and 24/36; returned-note support is 15/18, 18/28 and 18/20. These counts are not broad company accuracy. The targeted closure returns six supported/scoped notes and withholds three guidance answers. It is not substituted into the full-suite score. Literal source explanations replace avoidable causal rewrites; nonliteral multi-value direction language is rejected. The release suite has 152 tests. Evaluator access, public repository visibility, original-session sharing and sending the prepared email remain explicit owner release actions.

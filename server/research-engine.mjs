@@ -3,7 +3,19 @@ import {checkClaimScope,absenceClaim} from './claim-scope.mjs';
 import {analysisDraft,analysisCandidates,verifiedClaims,renderVerified,verificationInstructions} from './grounding.mjs';
 import { financialInstructions, validateFinancialCandidates, proseCandidates } from "./financial-extraction.mjs";
 import { ModelError, configuredModels, modelCompletion, researchInstructions, extractionInstructions } from "./models.mjs";
-const engineVersion = "grounded-investigation-v13";
+const engineVersion = "grounded-investigation-v15";
+export function directExplanation(question,sources){
+ if(!/^why\b/i.test(question.trim())||/\b(?:compare|versus|across|different|risks?|Q[1-4]|FY\d+|20\d{2})\b|multi.year|four quarters/i.test(question))return null;
+ const topics=[/\bcash\b/i,/\bmargins?\b/i,/\brevenue\b/i,/\bprofits?\b/i,/\bcosts?\b/i].filter(pattern=>pattern.test(question));
+ if(topics.length!==1)return null;
+ const eligible=sources.filter(source=>{
+  const text=source.text.replace(/\s+/g,' '),cause=text.search(/\b(?:primarily on account of|because|due to|driven by|on account of)\b/i);
+  if(cause<0||!topics[0].test(text))return false;
+  const prefix=text.slice(0,cause);
+  return /\b(?:decline|declined|increased|decreased|improved|fell|rose|reduced)\b/i.test(prefix)&&!/\b(?:may|might|could|would|expect|expected|hypothetical)\b/i.test(prefix);
+ });
+ return eligible.length===1?eligible[0]:null;
+}
 export function researchTask(question) {
   const q = String(question).toLowerCase();
   if (/\b(calculate|compute|work out)\b/.test(q) && /\b(growth|yoy|qoq|ratio|conversion|change|percentage)\b/.test(q)) return "calculation";
@@ -241,11 +253,13 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
       try {
         const result = await cached(answerKey, async () => {
           let records = [],extractionWithheld=0;
-          // Simple questions use one small extraction call and no writer model.
-          // Large reasoning contexts are reduced in at most two independent chunks.
-          const mapFirst = stats.task === "extract";
+          // An explicit single-source explanation is a quotation task, not a
+          // license to turn management's account into generated causal fact.
+          const explanation=stats.task==='reason'?directExplanation(question,sources):null;
+          if(explanation)stats.resolution='literal-explanation';
+          const mapFirst = stats.task === "extract"||!!explanation;
           if (mapFirst) {
-            const chunks = stats.task === "extract" ? [sources.slice(0, 4)] : [sources.slice(0, 4), sources.slice(4, 8)];
+            const chunks = explanation?[[explanation]]:[sources.slice(0,4)];
             for (const chunk of chunks) {
               const key = await engineHash([namespace, "extract", normalizedQuestion, chunk]);
               try {
@@ -257,13 +271,13 @@ export function createResearchEngine({ fetcher = (...args) => fetch(...args), no
                 }), stats);
                 records.push(...selection.items);extractionWithheld+=selection.withheld;
               } catch (error) {
-                if (stats.task === "extract") throw error;
+                if (stats.task === "extract"||explanation) throw error;
                 // Keep the original context available when compression is unavailable.
                 records = []; break;
               }
             }
           }
-          if (stats.task === "extract") {
+          if (stats.task === "extract"||explanation) {
             if (!records.length) throw new ModelError("evidence");
             const lines = []; let words = 0;
             for (const item of records.slice(0, 3)) {

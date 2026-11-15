@@ -1,0 +1,330 @@
+{
+  "rawFile": "evals/live-final-raw.json",
+  "reviewer": "coding-agent evidence review; final full v3 run, before the targeted release closure",
+  "labels": [
+    {
+      "caseId": "infy-margin",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal operating-margin and guidance quotations retained; partial warning is explicit."
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 1,
+      "passed": false,
+      "supported": false,
+      "periodAndBasis": true,
+      "useful": false,
+      "notes": "Quarter-specific values are correct, but the second claim asserts a lower prior-quarter comparison while citing only the current-period passage. Prior evidence exists in another claim but is not cited for this comparison."
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "trial": 1,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected zero-call comparison handoff, not a calculation accuracy test."
+    },
+    {
+      "caseId": "persistent-cash",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Original cash-flow explanation retains the expected-normalization qualifier."
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "persistent-guidance",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal revenue/growth evidence includes the consolidated headline; lower-value selections remain noisy."
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Appropriately states that the supplied passages do not explicitly discuss cash-generation risks, rather than inventing outside risks."
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "dabur-growth",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal consolidated YoY growth matches held-out primary evidence."
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "trial": 1,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected zero-call retrieval-level margin abstention; not a model-verifier test."
+    },
+    {
+      "caseId": "infy-margin",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal operating-margin and guidance quotations retained; partial warning is explicit."
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 2,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Quarterly conversion values, direction and both citations are consistent. The release closure nevertheless defers generated multi-value directional wording to code."
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "trial": 2,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected zero-call comparison handoff, not a calculation accuracy test."
+    },
+    {
+      "caseId": "persistent-cash",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Original cash-flow explanation retains the expected-normalization qualifier."
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 2,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "persistent-guidance",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "The evidence gap is explicitly limited to the supplied passage, which contains only a guidance question rather than supporting actuals."
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal revenue/growth evidence includes the consolidated headline; lower-value selections remain noisy."
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "trial": 2,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Identifies a specific missing quantitative comparison in the quoted smaller-markets statement, without asserting absence from the full annual report."
+    },
+    {
+      "caseId": "dabur-growth",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal consolidated YoY growth matches held-out primary evidence."
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "trial": 2,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected zero-call retrieval-level margin abstention; not a model-verifier test."
+    },
+    {
+      "caseId": "infy-margin",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal operating-margin and guidance quotations retained; partial warning is explicit."
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 3,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 3,
+      "passed": false,
+      "supported": false,
+      "periodAndBasis": true,
+      "useful": false,
+      "notes": "The second claim says conversion fell to quarterly/full-year values without evidence of that movement. Other period-specific facts are supported. The final closure rejects this multi-value directional pattern."
+    },
+    {
+      "caseId": "infy-arithmetic",
+      "trial": 3,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected zero-call comparison handoff, not a calculation accuracy test."
+    },
+    {
+      "caseId": "persistent-cash",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Original cash-flow explanation retains the expected-normalization qualifier."
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 3,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "persistent-guidance",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "The evidence gap is explicitly limited to the supplied passage, which contains only a guidance question rather than supporting actuals."
+    },
+    {
+      "caseId": "tataconsum-revenue",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal revenue/growth evidence includes the consolidated headline; lower-value selections remain noisy."
+    },
+    {
+      "caseId": "tataconsum-risk",
+      "trial": 3,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "No useful answer on an answerable case; source evidence remains accessible. Safe withholding is recorded separately from usefulness."
+    },
+    {
+      "caseId": "tataconsum-missing",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Identifies a specific missing quantitative comparison in the quoted smaller-markets statement, without asserting absence from the full annual report."
+    },
+    {
+      "caseId": "dabur-growth",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Literal consolidated YoY growth matches held-out primary evidence."
+    },
+    {
+      "caseId": "havells-missing-margin",
+      "trial": 3,
+      "passed": true,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": true,
+      "notes": "Expected zero-call retrieval-level margin abstention; not a model-verifier test."
+    }
+  ]
+}

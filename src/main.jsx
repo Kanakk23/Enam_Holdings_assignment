@@ -210,6 +210,7 @@ function App() {
               ? "unavailable"
               : "ok",
           checkedAt: r.checkedAt,
+          marketStatus: r.market ? "ok" : "unavailable",
           count: r.filings?.length || 0,
           errors: r.errors,
         })),
@@ -385,6 +386,7 @@ function App() {
   const coverageRecords = data.filingCoverage || [];
   const coverageGaps = coverageRecords.length ? portfolio.filter(c => !coverageRecords.some(r => r.ticker === c.ticker && r.status === "ok")).map(c => c.ticker) : [];
   const checkedCompanies = portfolio.filter(c => coverageRecords.some(r => r.ticker === c.ticker && r.status === "ok")).length;
+  const unavailableMarketChecks=coverageRecords.filter(r=>r.marketStatus==='unavailable').length;
   async function runResearch(
     t,
     prompt = "What do the primary documents say about growth, margins and cash generation?",
@@ -1080,6 +1082,7 @@ function App() {
                 <div className="coverage-summary">
                   <p>Saved snapshot: <strong>{readableCheckDate(data.asOf)}</strong></p>
                   {data.lastRefresh && <p>Latest source check: {readableCheckDate(data.lastRefresh)}</p>}
+                  {unavailableMarketChecks>0&&<p role="status">Market refresh unavailable for {unavailableMarketChecks} {unavailableMarketChecks===1?'company':'companies'}. Previously available closes are retained with their original session dates.</p>}
                   {coverageGaps.length ? (
                     <p role="status">Recent filings could not be checked for {coverageGaps.join(", ")}. Previously available information is retained.</p>
                   ) : (

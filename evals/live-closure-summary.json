@@ -1,0 +1,49 @@
+{
+  "kind": "targeted-release-check",
+  "suite": "live-12x3-v5-scope-guards-v1",
+  "trials": 9,
+  "cases": [
+    {
+      "caseId": "infy-guidance",
+      "passes": 0,
+      "trials": 3
+    },
+    {
+      "caseId": "infy-cash",
+      "passes": 3,
+      "trials": 3
+    },
+    {
+      "caseId": "persistent-cause",
+      "passes": 3,
+      "trials": 3
+    }
+  ],
+  "passedTrials": 6,
+  "displayedNotes": 6,
+  "fullySupportedDisplayedNotes": 6,
+  "providerCalls": 12,
+  "literalExplanations": [
+    {
+      "trial": 1,
+      "calls": 1,
+      "latencyMs": 424
+    },
+    {
+      "trial": 2,
+      "calls": 1,
+      "latencyMs": 293
+    },
+    {
+      "trial": 3,
+      "calls": 1,
+      "latencyMs": 833
+    }
+  ],
+  "limits": [
+    "Three affected questions only; not a new twelve-case score.",
+    "Cash notes supply scoped facts with partial coverage, not a complete latest-quarter explanation.",
+    "Guidance synthesis remains withheld.",
+    "Labels are coding-agent review, not independent human annotation."
+  ]
+}

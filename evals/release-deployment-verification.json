@@ -1,0 +1,28 @@
+{
+  "deployment": {
+    "id": "appgdep_6af99feddb5081918731a13da01fbad1",
+    "project_id": "appgprj_6af60efaed688191b426c7d9ea1ae5fc",
+    "title": "FINN \u2014 Investment research",
+    "version_id": "appgprj_6af60efaed688191b426c7d9ea1ae5fc~appgver_8caf28998ed8819193a3214498f002c4",
+    "type": "publish",
+    "status": "succeeded",
+    "url": "https://finn-research-brief.kanakxaviers123.chatgpt.site",
+    "has_mcp": false,
+    "screenshot_asset_pointer": null,
+    "provider_deployment_id": "site---6af60efaed688191b426c7d9ea1ae5fc",
+    "failure_message": null,
+    "env_set_revision": 11,
+    "updated_at": "2026-11-15T12:05:26.759419+00:00"
+  },
+  "operator": [
+    {
+      "timestamp": 1794744396953,
+      "path": "/ops/evaluation",
+      "response": {
+        "status": 404
+      },
+      "outcome": "ok",
+      "requestId": "8c9da5930bde5444143b335c605eea48"
+    }
+  ]
+}

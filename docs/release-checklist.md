@@ -10,9 +10,9 @@
 - [Covering email draft](submission-email.md). No email has been sent.
 - Source/history credential-pattern scan and investor-bundle check; see `evals/release-secret-scan.json`. This is a bounded pattern scan, not a security certification.
 
-## Close before external access
+## Operator route closure
 
-Disable `AI_EVALUATION_ENABLED`, remove the evaluation owner identifiers, redeploy that environment revision, and verify `/ops/evaluation` returns 404. Connection diagnostics must remain disabled. Keep credentials as backend secrets.
+The release environment sets `AI_EVALUATION_ENABLED=false` and removes the evaluation owner identifiers. Connection diagnostics remain disabled. Environment revision 11 is deployed. The production worker log confirms `/ops/evaluation` returned HTTP 404; see `evals/release-deployment-verification.json`. Credentials remain backend secrets.
 
 ## Owner access decisions
 

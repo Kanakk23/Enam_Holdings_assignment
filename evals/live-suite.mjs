@@ -1,5 +1,5 @@
 import primary from './primary-cases.json' with {type:'json'};
-export const suiteVersion='live-12x3-v3';
+export const suiteVersion='live-12x3-v5';
 export const liveCases=[
  ['infy-margin','INFY','What did management say about operating margin?','Select relevant literal evidence; retain period and adjusted basis.'],
  ['infy-guidance','INFY','Compare guidance and delivered results','Do not settle an open full-year target with a quarterly actual.'],

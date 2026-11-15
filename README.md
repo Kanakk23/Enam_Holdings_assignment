@@ -94,9 +94,9 @@ On Windows use `.venv\Scripts\python` and `.venv\Scripts\pip`. `--url` and `--ti
 
 ## Evaluation
 
-The current suite has **150 passing tests**, plus packaged-Worker, investor-bundle and rendered-finance checks. Two held-out annual statement layouts produce twelve checked values and six changes with zero model calls; 72/72 repeated contract checks include corrupt-input rejections. Separate synthetic scope/period tests are not live-model accuracy scores.
+The current suite has **152 passing tests**, plus packaged-Worker, investor-bundle and rendered-finance checks. Two held-out annual statement layouts produce twelve checked values and six changes with zero model calls; 72/72 repeated contract checks include corrupt-input rejections. Separate synthetic scope/period tests are not live-model accuracy scores.
 
-The hosted model experiment uses the same twelve questions across five issuers, three fresh trials per variant. Raw answers, supplied evidence, failures, timing, usage, evidence-review labels and paired comparisons are retained under `evals/`. Reviews are by the coding agent, not independent human annotation. Repetitions are averaged per case; they are not counted as independent companies. The benchmark excludes document discovery/download/PDF parsing, and the missing-margin case is a retrieval-level abstention check.
+The hosted model experiment retains three full runs of the same twelve questions across five issuers, three fresh trials per variant (108 trials). A separate nine-trial release closure checks the affected cases; it is not substituted into the full-suite score. Raw answers, supplied evidence, failures, timing, usage, evidence-review labels and paired comparisons are retained under `evals/`. Reviews are by the coding agent, not independent human annotation. Repetitions are averaged per case; they are not counted as independent companies. The benchmark excludes document discovery/download/PDF parsing, and the missing-margin case is a retrieval-level abstention check.
 
 ```sh
 node scripts/evaluate-primary-tables.mjs

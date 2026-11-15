@@ -19,7 +19,7 @@ I used deterministic parsing and Decimal calculations before model calls. Groq G
 
 React and PDF.js run in the browser; a Worker handles restricted primary-document retrieval, validation and models. Python supports snapshot ingestion. On-demand EOD/filing refresh retains partial failures. Questions and public excerpts can reach providers; network data stays outside prompts. Prototype records are browser-local.
 
-The repository includes 150 tests, two held-out annual-statement layouts with twelve checked values and six comparisons using zero LLM calls, and repeated hosted model trials with evidence reviews, timing and usage. These measure different things; they are not an all-company accuracy claim.
+The repository includes 152 tests, two held-out annual-statement layouts with twelve checked values and six comparisons using zero LLM calls, and repeated hosted model trials with evidence reviews, timing and usage. These measure different things; they are not an all-company accuracy claim.
 
 I left out OCR, arbitrary tables, exhaustive exchange coverage, unattended alerts and multi-user storage. Next I would expand held-out coverage and add shared quota enforcement and durable private storage. The build uses open-source libraries and free service allowances; no credits or paid service upgrade was purchased.
 

@@ -18,13 +18,15 @@ python scripts/check-release-secrets.py
 
 | Check | What it establishes | What it does not establish |
 | --- | --- | --- |
-| 150 automated tests | Financial comparability, generated arithmetic properties, source restrictions, retrieval, network paths, model routing, cache isolation, failure recovery and claim guards | Broad financial-research accuracy |
+| 152 automated tests | Financial comparability, generated arithmetic properties, source restrictions, retrieval, network paths, model routing, cache isolation, failure recovery and claim guards | Broad financial-research accuracy |
 | Built-Worker smoke | Self-contained assets and ESM dependencies; real bundled financial/research endpoints; input rejection and private evaluation authorization | Hosting access for a non-owner |
 | Investor bundle/render checks | Source-reference controls remain; provider names, keys, setup controls and endpoints are absent from investor scripts | An exhaustive accessibility audit |
 | Two held-out annual statement layouts | Twelve checked values, six changes, rejection of twelve corrupt-input cases; 72/72 repeated contract checks, zero LLM calls | OCR, arbitrary tables, all NSE issuers or current V-Guard coverage |
 | Answer-contract regressions | 48/48 checks on sixteen synthetic scope/number/period cases repeated three times | A live synthesis or verifier-accuracy score |
 | Repeated hosted model experiment | Same twelve questions across five issuers, three fresh trials per variant; real responses, failures, timing and usage retained | Blind source discovery, independent human grading, all-company accuracy or verifier recall |
 | Release pattern scan | Redacted checks of source/history and current client outputs; no matched credential patterns | A security certification or a guarantee that every kind of secret is absent |
+
+Three full runs (108 trials) and a separate nine-trial closure are retained. The closure yielded six supported/scoped notes; three guidance answers remained withheld. This is not a new full-suite accuracy score.
 
 The hosted experiment's final review and aggregation are in `evals/live-*-review.json`, `evals/live-*-summary.json` and the engineering report. Do not substitute fixture pass rates for those live findings.
 

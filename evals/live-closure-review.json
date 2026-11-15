@@ -1,0 +1,90 @@
+{
+  "kind": "targeted-release-evidence-review",
+  "rawFile": "evals/live-closure-raw.json",
+  "reviewer": "coding-agent evidence review; not independent human annotation",
+  "releaseSource": "5bf44b6c97419336b38120fae7c69883a1b8e7f6",
+  "fullBenchmark": false,
+  "labels": [
+    {
+      "caseId": "infy-guidance",
+      "trial": 1,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "The generated guidance answer is still withheld; this is a usefulness failure, not a successful comparison. The deterministic guidance ledger is a separate workflow."
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Period-specific Q2/H1, Q4 adjusted and latest Q2 figures match their cited passages. No generated movement is asserted. Partial coverage and withheld claims are explicit; this is useful limited evidence, not a complete latest-quarter explanation."
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 1,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Exact original explanation preserves the forecast qualifier. One small extraction call; no generated causal rewrite."
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 2,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "The generated guidance answer is still withheld; this is a usefulness failure, not a successful comparison. The deterministic guidance ledger is a separate workflow."
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Period-specific Q2/H1, Q4 adjusted and latest Q2 figures match their cited passages. No generated movement is asserted. Partial coverage and withheld claims are explicit; this is useful limited evidence, not a complete latest-quarter explanation."
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 2,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Exact original explanation preserves the forecast qualifier. One small extraction call; no generated causal rewrite."
+    },
+    {
+      "caseId": "infy-guidance",
+      "trial": 3,
+      "passed": false,
+      "supported": null,
+      "periodAndBasis": null,
+      "useful": false,
+      "notes": "The generated guidance answer is still withheld; this is a usefulness failure, not a successful comparison. The deterministic guidance ledger is a separate workflow."
+    },
+    {
+      "caseId": "infy-cash",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Period-specific Q2/H1, Q4 adjusted and latest Q2 figures match their cited passages. No generated movement is asserted. Partial coverage and withheld claims are explicit; this is useful limited evidence, not a complete latest-quarter explanation."
+    },
+    {
+      "caseId": "persistent-cause",
+      "trial": 3,
+      "passed": true,
+      "supported": true,
+      "periodAndBasis": true,
+      "useful": true,
+      "notes": "Exact original explanation preserves the forecast qualifier. One small extraction call; no generated causal rewrite."
+    }
+  ]
+}
